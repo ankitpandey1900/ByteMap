@@ -163,10 +163,14 @@ export const TreemapView: React.FC = () => {
         const sub = normFolder.slice(normCurrent.length).replace(/^[\\/]/, '');
         const directSub = sub.split(/[\\/]/)[0];
         if (directSub && !items.some((it) => it.name.toLowerCase() === directSub.toLowerCase())) {
+          const isWin = currentPath.includes('\\') || currentPath.includes(':');
+          const sep = isWin ? '\\' : '/';
+          const childPath = `${currentPath.replace(/[\\/]+$/, '')}${sep}${directSub}`;
+
           items.push({
-            id: folder.id,
+            id: childPath,
             name: directSub,
-            path: folder.path,
+            path: childPath,
             size: folder.size_bytes,
             isDir: true,
             fileCount: folder.file_count,
