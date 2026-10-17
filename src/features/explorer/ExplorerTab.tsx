@@ -7,11 +7,11 @@ import {
   ArrowUpDown,
   Filter,
   Layers,
+  Compass,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBytes, formatDate, formatNumber, getCategoryBadgeClass } from '@/lib/utils';
 import { api } from '@/lib/api';
-import { CardSpotlight } from '@/components/ui';
 
 type SortColumn = 'name' | 'size' | 'category' | 'date';
 
@@ -48,7 +48,7 @@ export const ExplorerTab: React.FC = () => {
     setPage(1);
   };
 
-  // Filter and sort items based on view mode
+  // Filter and sort items based on real scan data
   const filteredFiles = useMemo(() => {
     if (!scanSummary) return [];
 
@@ -109,32 +109,39 @@ export const ExplorerTab: React.FC = () => {
 
   if (!scanSummary) {
     return (
-      <CardSpotlight className="flex flex-col items-center justify-center h-full min-h-[380px] p-12 text-center text-muted-foreground">
-        <Folder className="w-16 h-16 mb-4 text-primary/40 stroke-[1.2]" />
-        <h3 className="text-lg font-semibold text-foreground mb-1">Explorer is empty</h3>
-        <p className="text-xs max-w-sm">
-          Run a scan on any drive or directory to browse files, sizes, and metadata.
+      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
+        <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
+          <Compass className="w-8 h-8 text-slate-900" />
+        </div>
+        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
+          Storage Explorer Idle
+        </div>
+        <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
+          Uncharted Explorer
+        </h3>
+        <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
+          No files have been scouted yet. Click the <strong>ANALYZE</strong> button at the top to scout your drive and explore every file and directory.
         </p>
-      </CardSpotlight>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4 flex flex-col h-full max-w-6xl">
-      {/* Search and Filters toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
-        <div className="flex items-center space-x-3">
+    <div className="space-y-3.5 flex flex-col h-full max-w-7xl select-none font-sans text-slate-900">
+      {/* Search and Filters comic toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic">
+        <div className="flex items-center space-x-2.5 flex-wrap gap-2">
           {/* Mode Switcher */}
-          <div className="flex items-center p-0.5 bg-background border border-border/60 rounded-lg">
+          <div className="flex items-center p-1 bg-slate-100 border-2 border-slate-900 rounded-xl space-x-1">
             <button
               onClick={() => {
                 setViewMode('files');
                 setPage(1);
               }}
-              className={`flex items-center space-x-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg font-comic text-xs uppercase tracking-wide transition-all ${
                 viewMode === 'files'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-amber-400 text-slate-900 border-2 border-slate-900 shadow-comic-sm'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -145,10 +152,10 @@ export const ExplorerTab: React.FC = () => {
                 setViewMode('folders');
                 setPage(1);
               }}
-              className={`flex items-center space-x-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg font-comic text-xs uppercase tracking-wide transition-all ${
                 viewMode === 'folders'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-amber-400 text-slate-900 border-2 border-slate-900 shadow-comic-sm'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Folder className="w-3.5 h-3.5" />
@@ -156,8 +163,9 @@ export const ExplorerTab: React.FC = () => {
             </button>
           </div>
 
+          {/* Search bar */}
           <div className="relative w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               type="text"
               placeholder={`Search ${viewMode}...`}
@@ -166,7 +174,7 @@ export const ExplorerTab: React.FC = () => {
                 setSearchTerm(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-8 pr-3 py-1.5 bg-background border border-border/60 rounded-lg text-xs text-foreground focus:outline-none focus:border-primary"
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-slate-900 focus:outline-none focus:bg-amber-50"
             />
           </div>
         </div>
@@ -174,14 +182,14 @@ export const ExplorerTab: React.FC = () => {
         <div className="flex items-center space-x-3">
           {viewMode === 'files' && (
             <div className="flex items-center space-x-1.5">
-              <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+              <Filter className="w-3.5 h-3.5 text-slate-700" />
               <select
                 value={categoryFilter}
                 onChange={(e) => {
                   setCategoryFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-2.5 py-1.5 bg-background border border-border/60 rounded-lg text-xs text-foreground focus:outline-none focus:border-primary"
+                className="px-2.5 py-1.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-comic text-xs uppercase text-slate-900 focus:outline-none"
               >
                 <option value="all">All Categories</option>
                 <option value="video">Videos</option>
@@ -197,21 +205,21 @@ export const ExplorerTab: React.FC = () => {
             </div>
           )}
 
-          <span className="text-xs text-muted-foreground font-mono">
+          <span className="font-comic text-xs uppercase text-slate-700 px-2.5 py-1 rounded-lg bg-amber-100 border border-slate-900">
             {currentList.length} items
           </span>
         </div>
       </div>
 
-      {/* Explorer Table */}
-      <div className="flex-1 bg-card/40 rounded-xl border border-border/50 overflow-hidden flex flex-col">
+      {/* Explorer Comic Table */}
+      <div className="flex-1 bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic overflow-hidden flex flex-col min-h-0">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-border/50 bg-secondary/30 text-muted-foreground font-medium select-none">
+              <tr className="border-b-2 border-slate-900 bg-amber-200 text-slate-900 font-comic uppercase tracking-wide select-none">
                 <th
                   onClick={() => handleSort('name')}
-                  className="py-2.5 px-4 cursor-pointer hover:text-foreground"
+                  className="py-2.5 px-4 cursor-pointer hover:bg-amber-300 transition-colors"
                 >
                   <div className="flex items-center space-x-1">
                     <span>Name</span>
@@ -220,7 +228,7 @@ export const ExplorerTab: React.FC = () => {
                 </th>
                 <th
                   onClick={() => handleSort('size')}
-                  className="py-2.5 px-4 cursor-pointer hover:text-foreground text-right w-28"
+                  className="py-2.5 px-4 cursor-pointer hover:bg-amber-300 transition-colors text-right w-28"
                 >
                   <div className="flex items-center justify-end space-x-1">
                     <span>Size</span>
@@ -231,7 +239,7 @@ export const ExplorerTab: React.FC = () => {
                   <>
                     <th
                       onClick={() => handleSort('category')}
-                      className="py-2.5 px-4 cursor-pointer hover:text-foreground w-28"
+                      className="py-2.5 px-4 cursor-pointer hover:bg-amber-300 transition-colors w-28"
                     >
                       <div className="flex items-center space-x-1">
                         <span>Category</span>
@@ -240,7 +248,7 @@ export const ExplorerTab: React.FC = () => {
                     </th>
                     <th
                       onClick={() => handleSort('date')}
-                      className="py-2.5 px-4 cursor-pointer hover:text-foreground w-36"
+                      className="py-2.5 px-4 cursor-pointer hover:bg-amber-300 transition-colors w-36"
                     >
                       <div className="flex items-center space-x-1">
                         <span>Modified</span>
@@ -254,43 +262,43 @@ export const ExplorerTab: React.FC = () => {
                 <th className="py-2.5 px-3 text-center w-24">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/30">
+            <tbody className="divide-y-2 border-slate-900">
               {viewMode === 'files'
                 ? (paginatedList as typeof filteredFiles).map((file) => (
                     <tr
                       key={file.id}
-                      className="hover:bg-accent/40 transition-colors group"
+                      className="hover:bg-amber-50 transition-colors"
                     >
-                      <td className="py-2.5 px-4 max-w-md">
-                        <div className="flex items-center space-x-2.5 truncate">
-                          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <td className="py-2 px-4 max-w-md">
+                        <div className="flex items-center space-x-2 truncate">
+                          <FileText className="w-4 h-4 text-slate-700 shrink-0" />
                           <div className="truncate">
-                            <p className="font-medium text-foreground truncate">{file.name}</p>
-                            <p className="text-[11px] text-muted-foreground truncate font-mono">
+                            <p className="font-fredoka font-bold text-slate-900 truncate">{file.name}</p>
+                            <p className="text-[10px] text-slate-500 truncate font-mono">
                               {file.path}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-2.5 px-4 text-right font-mono font-medium text-foreground whitespace-nowrap">
+                      <td className="py-2 px-4 text-right font-comic text-slate-900 whitespace-nowrap">
                         {formatBytes(file.size_bytes, settings.unit)}
                       </td>
-                      <td className="py-2.5 px-4 whitespace-nowrap">
+                      <td className="py-2 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium border capitalize ${getCategoryBadgeClass(
+                          className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-comic uppercase border border-slate-900 ${getCategoryBadgeClass(
                             file.category
                           )}`}
                         >
                           {file.category}
                         </span>
                       </td>
-                      <td className="py-2.5 px-4 text-muted-foreground whitespace-nowrap text-[11px] font-mono">
+                      <td className="py-2 px-4 text-slate-600 whitespace-nowrap text-[11px] font-fredoka font-semibold">
                         {formatDate(file.modified_at)}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2 px-3 text-center">
                         <button
                           onClick={() => handleReveal(file.path)}
-                          className="p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                          className="p-1 rounded-lg border border-slate-900 bg-white hover:bg-amber-300 shadow-comic-sm text-slate-900 transition-colors"
                           title="Reveal in native file explorer"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -301,37 +309,37 @@ export const ExplorerTab: React.FC = () => {
                 : (paginatedList as typeof filteredFolders).map((folder) => (
                     <tr
                       key={folder.id}
-                      className="hover:bg-accent/40 transition-colors group"
+                      className="hover:bg-amber-50 transition-colors"
                     >
-                      <td className="py-2.5 px-4 max-w-md">
-                        <div className="flex items-center space-x-2.5 truncate">
-                          <Folder className="w-4 h-4 text-amber-400 shrink-0" />
+                      <td className="py-2 px-4 max-w-md">
+                        <div className="flex items-center space-x-2 truncate">
+                          <Folder className="w-4 h-4 text-amber-500 shrink-0" />
                           <div className="truncate">
-                            <p className="font-medium text-foreground truncate">{folder.name}</p>
-                            <p className="text-[11px] text-muted-foreground truncate font-mono">
+                            <p className="font-fredoka font-bold text-slate-900 truncate">{folder.name}</p>
+                            <p className="text-[10px] text-slate-500 truncate font-mono">
                               {folder.path}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-2.5 px-4 text-right font-mono font-medium text-foreground whitespace-nowrap">
+                      <td className="py-2 px-4 text-right font-comic text-slate-900 whitespace-nowrap">
                         {formatBytes(folder.size_bytes, settings.unit)}
                       </td>
-                      <td className="py-2.5 px-4 text-right font-mono text-muted-foreground">
+                      <td className="py-2 px-4 text-right font-fredoka font-bold text-slate-700">
                         {formatNumber(folder.file_count)}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <div className="flex items-center justify-center space-x-1">
+                      <td className="py-2 px-3 text-center">
+                        <div className="flex items-center justify-center space-x-1.5">
                           <button
                             onClick={() => handleInspectInTreemap(folder.path)}
-                            className="p-1.5 rounded hover:bg-accent text-primary hover:text-primary transition-colors"
-                            title="Inspect in Treemap"
+                            className="p-1 rounded-lg border border-slate-900 bg-cyan-300 hover:bg-cyan-200 shadow-comic-sm text-slate-900 transition-colors"
+                            title="Inspect in Interactive Map"
                           >
                             <Layers className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleReveal(folder.path)}
-                            className="p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                            className="p-1 rounded-lg border border-slate-900 bg-white hover:bg-amber-300 shadow-comic-sm text-slate-900 transition-colors"
                             title="Reveal in native file explorer"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -344,27 +352,27 @@ export const ExplorerTab: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination Bar */}
-        <div className="p-3 border-t border-border/50 bg-secondary/20 flex items-center justify-between text-xs text-muted-foreground">
+        {/* Comic Pagination Bar */}
+        <div className="p-3 border-t-2 border-slate-900 bg-amber-50 flex items-center justify-between text-xs font-fredoka font-bold text-slate-700">
           <span>
             Showing {(page - 1) * pageSize + 1}–
-            {Math.min(page * pageSize, currentList.length)} of {currentList.length}
+            {Math.min(page * pageSize, currentList.length)} of {currentList.length} items
           </span>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-2.5 py-1 rounded border border-border/50 disabled:opacity-40 hover:bg-accent transition-colors"
+              className="px-3 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-amber-300 font-comic uppercase shadow-comic-sm disabled:opacity-40 transition-colors"
             >
-              Previous
+              Prev
             </button>
-            <span className="font-mono text-foreground">
+            <span className="font-comic text-slate-900 px-2">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-2.5 py-1 rounded border border-border/50 disabled:opacity-40 hover:bg-accent transition-colors"
+              className="px-3 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-amber-300 font-comic uppercase shadow-comic-sm disabled:opacity-40 transition-colors"
             >
               Next
             </button>

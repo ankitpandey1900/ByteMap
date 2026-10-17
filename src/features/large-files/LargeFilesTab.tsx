@@ -8,8 +8,6 @@ import { useAppStore } from '@/lib/store';
 import { formatBytes, formatDate, getCategoryBadgeClass } from '@/lib/utils';
 import { api } from '@/lib/api';
 
-import { CardSpotlight } from '@/components/ui';
-
 export const LargeFilesTab: React.FC = () => {
   const { scanSummary, settings } = useAppStore();
   const [thresholdMB, setThresholdMB] = useState<number>(settings.large_file_threshold_mb);
@@ -47,43 +45,47 @@ export const LargeFilesTab: React.FC = () => {
 
   if (!scanSummary) {
     return (
-      <div className="space-y-4 max-w-5xl">
-        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
-          <h2 className="text-lg font-bold text-foreground">Large Files Ranking</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Identify the largest disk space consumers consuming valuable drive capacity.
-          </p>
+      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
+        <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
+          <FileText className="w-8 h-8 text-slate-900" />
         </div>
-
-        <CardSpotlight className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
-          <FileText className="w-12 h-12 mb-3 text-primary/40 stroke-[1.4]" />
-          <p className="text-sm font-semibold text-foreground">No Files Scanned Yet</p>
-          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-            Run a scan on any drive or directory to view top space-consuming files.
-          </p>
-        </CardSpotlight>
+        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
+          Large Files Idle
+        </div>
+        <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
+          No Storage Scouted Yet
+        </h3>
+        <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
+          Click <strong>ANALYZE</strong> to scout your drive and detect the top space consumers eating your disk capacity.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 max-w-5xl">
+    <div className="space-y-4 max-w-7xl select-none font-sans text-slate-900">
       {/* Top Banner and Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Large Files Ranking</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-1">
+            <FileText className="w-3.5 h-3.5" />
+            <span>Heavyweight File Ranker</span>
+          </div>
+          <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1">
+            Top Large Files Found
+          </h2>
+          <p className="text-xs font-fredoka font-semibold text-slate-600">
             Identify the largest disk space consumers consuming valuable drive capacity.
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2 text-xs">
-            <span className="text-muted-foreground">Min Size:</span>
+        <div className="flex items-center space-x-2.5 flex-wrap gap-2">
+          <div className="flex items-center space-x-2 text-xs font-fredoka font-bold">
+            <span className="text-slate-700">Min Size:</span>
             <select
               value={thresholdMB}
               onChange={(e) => setThresholdMB(Number(e.target.value))}
-              className="px-2.5 py-1.5 bg-background border border-border/60 rounded-lg font-medium text-foreground focus:outline-none focus:border-primary"
+              className="px-2.5 py-1.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-comic text-xs uppercase text-slate-900 focus:outline-none"
             >
               <option value={10}>&gt; 10 MB</option>
               <option value={50}>&gt; 50 MB</option>
@@ -96,90 +98,90 @@ export const LargeFilesTab: React.FC = () => {
 
           <button
             onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-border/60 hover:bg-accent text-xs font-medium text-foreground transition-colors"
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-slate-100 font-comic text-xs uppercase text-slate-900 shadow-comic-sm transition-all"
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
-            <span>{sortOrder === 'desc' ? 'Largest first' : 'Smallest first'}</span>
+            <span>{sortOrder === 'desc' ? 'Largest First' : 'Smallest First'}</span>
           </button>
         </div>
       </div>
 
-      {/* Summary KPI Cards with CardSpotlight */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <CardSpotlight color="rgba(59, 130, 246, 0.15)" className="p-3.5">
-          <span className="text-[11px] text-muted-foreground uppercase font-medium">
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5">
+        <div className="p-3.5 bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic">
+          <span className="font-comic text-[11px] uppercase tracking-wide text-slate-500">
             Files Above Threshold
           </span>
-          <p className="text-xl font-bold font-mono text-foreground mt-1">
+          <p className="text-2xl font-comic text-slate-900 mt-1">
             {filteredLargeFiles.length}
           </p>
-        </CardSpotlight>
+        </div>
 
-        <CardSpotlight color="rgba(16, 185, 129, 0.15)" className="p-3.5">
-          <span className="text-[11px] text-muted-foreground uppercase font-medium">
+        <div className="p-3.5 bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic">
+          <span className="font-comic text-[11px] uppercase tracking-wide text-slate-500">
             Aggregated Size
           </span>
-          <p className="text-xl font-bold font-mono text-primary mt-1">
+          <p className="text-2xl font-comic text-amber-600 mt-1">
             {formatBytes(totalLargeBytes, settings.unit)}
           </p>
-        </CardSpotlight>
+        </div>
 
-        <CardSpotlight color="rgba(6, 182, 212, 0.15)" className="p-3.5 col-span-2 md:col-span-1">
-          <span className="text-[11px] text-muted-foreground uppercase font-medium">
+        <div className="p-3.5 bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic col-span-2 md:col-span-1">
+          <span className="font-comic text-[11px] uppercase tracking-wide text-slate-500">
             Largest Single File
           </span>
-          <p className="text-xl font-bold font-mono text-cyan-400 mt-1 truncate">
+          <p className="text-2xl font-comic text-emerald-600 mt-1 truncate">
             {filteredLargeFiles[0]
               ? formatBytes(filteredLargeFiles[0].size_bytes, settings.unit)
               : '—'}
           </p>
-        </CardSpotlight>
+        </div>
       </div>
 
-      {/* Large Files List */}
-      <div className="bg-card/40 rounded-xl border border-border/50 divide-y divide-border/40 overflow-hidden">
+      {/* Large Files Comic List */}
+      <div className="bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic divide-y-2 divide-slate-900 overflow-hidden">
         {filteredLargeFiles.map((file, idx) => (
           <div
             key={file.id}
-            className="p-3.5 flex items-center justify-between hover:bg-accent/40 transition-colors group"
+            className="p-3 flex items-center justify-between hover:bg-amber-50 transition-colors"
           >
             <div className="flex items-center space-x-3 truncate mr-4">
-              <span className="text-xs font-mono text-muted-foreground w-6 shrink-0">
+              <span className="font-comic text-xs text-slate-500 w-8 shrink-0">
                 #{idx + 1}
               </span>
               <div className="truncate">
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-xs text-foreground truncate">
+                  <span className="font-fredoka font-bold text-xs text-slate-900 truncate">
                     {file.name}
                   </span>
                   <span
-                    className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-semibold border ${getCategoryBadgeClass(
+                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-comic uppercase border border-slate-900 ${getCategoryBadgeClass(
                       file.category
                     )}`}
                   >
                     {file.category}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground font-mono truncate mt-0.5">
+                <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
                   {file.path}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4 shrink-0">
+            <div className="flex items-center space-x-3 shrink-0">
               <div className="text-right">
-                <span className="font-mono font-bold text-sm text-foreground">
+                <span className="font-comic text-sm text-slate-900">
                   {formatBytes(file.size_bytes, settings.unit)}
                 </span>
-                <p className="text-[10px] text-muted-foreground font-mono">
+                <p className="text-[10px] font-fredoka font-semibold text-slate-500">
                   {formatDate(file.modified_at)}
                 </p>
               </div>
 
               <button
                 onClick={() => handleReveal(file.path)}
-                className="p-2 rounded-lg border border-border/50 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                title="Reveal file in Windows Explorer"
+                className="p-1.5 rounded-lg border border-slate-900 bg-white hover:bg-amber-200 text-slate-900 shadow-comic-sm transition-colors"
+                title="Reveal in native file explorer"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
               </button>
@@ -188,11 +190,13 @@ export const LargeFilesTab: React.FC = () => {
         ))}
 
         {filteredLargeFiles.length === 0 && (
-          <div className="p-8 text-center text-muted-foreground">
-            <FileText className="w-12 h-12 mx-auto mb-2 opacity-30" />
-            <p className="text-sm font-medium">No files found exceeding {thresholdMB} MB</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Try reducing the minimum size threshold.
+          <div className="p-8 text-center text-slate-500">
+            <FileText className="w-10 h-10 mx-auto mb-2 text-slate-400" />
+            <p className="font-comic text-sm uppercase text-slate-900">
+              No files found exceeding {thresholdMB} MB
+            </p>
+            <p className="text-xs font-fredoka font-semibold text-slate-600 mt-1">
+              Try reducing the minimum size threshold above.
             </p>
           </div>
         )}

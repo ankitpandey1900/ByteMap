@@ -70,8 +70,17 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        comic: ["'Luckiest Guy'", "Fredoka", "sans-serif"],
+        fredoka: ["Fredoka", "sans-serif"],
+        heading: ["Fredoka", "sans-serif"],
+        sans: ["'Plus Jakarta Sans'", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
         mono: ["JetBrains Mono", "Fira Code", "Consolas", "monospace"],
+      },
+      boxShadow: {
+        comic: "3px 3px 0px #0f172a",
+        "comic-lg": "4px 4px 0px #0f172a",
+        "comic-xl": "6px 6px 0px #0f172a",
+        "comic-sm": "2px 2px 0px #0f172a",
       },
       keyframes: {
         "fade-in": {

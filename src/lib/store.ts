@@ -57,7 +57,7 @@ interface AppState {
 }
 
 const defaultSettings: AppSettings = {
-  theme: 'dark',
+  theme: 'light',
   unit: 'binary',
   large_file_threshold_mb: 100,
   auto_hash_duplicates: false,

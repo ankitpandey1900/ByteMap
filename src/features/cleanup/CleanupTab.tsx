@@ -19,8 +19,6 @@ import { formatBytes } from '@/lib/utils';
 import { api, CleanupExecutionResult } from '@/lib/api';
 import { RiskLevel } from '@/types';
 
-import { CardSpotlight } from '@/components/ui';
-
 export const CleanupTab: React.FC = () => {
   const {
     scanSummary,
@@ -86,20 +84,20 @@ export const CleanupTab: React.FC = () => {
     switch (level) {
       case 'safe':
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-comic uppercase bg-emerald-400 text-slate-900 border border-slate-900 shadow-comic-sm">
             Safe
           </span>
         );
       case 'low':
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-comic uppercase bg-sky-300 text-slate-900 border border-slate-900 shadow-comic-sm">
             Low Risk
           </span>
         );
       case 'moderate':
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            Moderate Risk
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-comic uppercase bg-amber-400 text-slate-900 border border-slate-900 shadow-comic-sm">
+            Moderate
           </span>
         );
     }
@@ -108,47 +106,51 @@ export const CleanupTab: React.FC = () => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'temp_file':
-        return <Trash2 className="w-4 h-4 text-emerald-400" />;
+        return <Trash2 className="w-4 h-4 text-emerald-600" />;
       case 'old_installer':
-        return <Terminal className="w-4 h-4 text-cyan-400" />;
+        return <Terminal className="w-4 h-4 text-blue-600" />;
       case 'large_archive':
-        return <Archive className="w-4 h-4 text-amber-400" />;
+        return <Archive className="w-4 h-4 text-amber-600" />;
       case 'large_download':
-        return <Download className="w-4 h-4 text-blue-400" />;
+        return <Download className="w-4 h-4 text-purple-600" />;
       default:
-        return <FileQuestion className="w-4 h-4 text-purple-400" />;
+        return <FileQuestion className="w-4 h-4 text-slate-600" />;
     }
   };
 
   if (!scanSummary) {
     return (
-      <div className="space-y-6 max-w-5xl">
-        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
-          <h2 className="text-lg font-bold text-foreground">Safe Cleanup Intelligence</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Conservative recommendations for space recovery. Zero automated deletion; requires explicit confirmation.
-          </p>
+      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
+        <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
+          <Trash2 className="w-8 h-8 text-slate-900" />
         </div>
-
-        <CardSpotlight className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
-          <Trash2 className="w-12 h-12 mb-3 text-amber-400/50 stroke-[1.4]" />
-          <p className="text-sm font-semibold text-foreground">No Scan Data Available</p>
-          <p className="text-xs text-muted-foreground mt-1 max-w-md">
-            Execute a scan on any drive or directory to automatically identify safe cleanup opportunities like temp files, old installers, and large archives.
-          </p>
-        </CardSpotlight>
+        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
+          Cleanup Station Idle
+        </div>
+        <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
+          No Storage Scouted Yet
+        </h3>
+        <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
+          Click <strong>ANALYZE</strong> to scout your drive and detect safe reclaimable files, obsolete installers, and temp files.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Top Banner */}
-      <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-4 max-w-7xl select-none font-sans text-slate-900">
+      {/* Top Banner Card */}
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Safe Cleanup Intelligence</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Conservative recommendations for space recovery. Zero automated deletion; requires explicit confirmation.
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-1">
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Safe Cleanup Intelligence</span>
+          </div>
+          <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1">
+            Reclaim Valuable Disk Space
+          </h2>
+          <p className="text-xs font-fredoka font-semibold text-slate-600">
+            Conservative recommendations for space recovery. Zero automated deletion; files go to OS Recycle Bin.
           </p>
         </div>
 
@@ -157,9 +159,9 @@ export const CleanupTab: React.FC = () => {
             <button
               onClick={() => setShowConfirmModal(true)}
               disabled={isExecuting}
-              className="flex items-center space-x-2 px-4 py-2 bg-destructive text-destructive-foreground text-xs font-semibold rounded-lg hover:bg-destructive/90 transition-all shadow-sm"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-400 text-white font-comic text-xs uppercase tracking-wider border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-4 h-4" />
               <span>
                 Clean Selected ({selectedCleanupIds.size} files • {formatBytes(totalSelectedBytes, settings.unit)})
               </span>
@@ -167,7 +169,7 @@ export const CleanupTab: React.FC = () => {
           ) : (
             <button
               onClick={() => selectAllCleanup()}
-              className="px-3.5 py-1.5 border border-border/60 hover:bg-accent text-xs font-medium text-foreground rounded-lg transition-colors"
+              className="px-4 py-2 bg-amber-300 hover:bg-amber-400 border-2 border-slate-900 font-comic text-xs uppercase tracking-wide text-slate-900 rounded-xl shadow-comic-sm transition-all"
             >
               Select All Recommendations
             </button>
@@ -177,23 +179,25 @@ export const CleanupTab: React.FC = () => {
 
       {/* Execution Feedback Banner */}
       {lastResult && (
-        <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between text-xs animate-fade-in">
+        <div className="p-4 bg-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between text-xs font-fredoka font-bold">
           <div className="flex items-center space-x-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="w-8 h-8 rounded-xl bg-emerald-400 border-2 border-slate-900 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-slate-900" />
+            </div>
             <div>
-              <p className="font-semibold text-foreground text-sm">
-                Cleanup completed: {formatBytes(lastResult.total_freed_bytes, settings.unit)} recovered
+              <p className="font-comic text-sm text-slate-900 uppercase">
+                Cleanup completed: {formatBytes(lastResult.total_freed_bytes, settings.unit)} recovered!
               </p>
-              <p className="text-muted-foreground">
-                Successfully processed {lastResult.successful_count} files
+              <p className="text-slate-700">
+                Processed {lastResult.successful_count} files
                 {lastResult.failed_count > 0 && ` (${lastResult.failed_count} failed)`}
-                {settings.prefer_trash ? ' • Moved safely to Recycle Bin' : ' • Permanently deleted'}
+                {settings.prefer_trash ? ' • Moved safely to Recycle Bin' : ' • Deleted'}
               </p>
             </div>
           </div>
           <button
             onClick={() => setLastResult(null)}
-            className="text-muted-foreground hover:text-foreground text-xs"
+            className="px-2.5 py-1 rounded-lg border border-slate-900 bg-white font-comic text-[10px] uppercase shadow-comic-sm"
           >
             Dismiss
           </button>
@@ -206,10 +210,10 @@ export const CleanupTab: React.FC = () => {
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap capitalize ${
+            className={`px-3 py-1.5 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
               activeFilter === f
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-card/40 border border-border/40 text-muted-foreground hover:text-foreground'
+                ? 'bg-amber-400 text-slate-900 shadow-comic translate-y-[-1px]'
+                : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
             }`}
           >
             {f === 'all' ? 'All Candidates' : f.replace('_', ' ')}
@@ -219,7 +223,7 @@ export const CleanupTab: React.FC = () => {
         {selectedCleanupIds.size > 0 && (
           <button
             onClick={clearCleanupSelection}
-            className="text-xs text-muted-foreground hover:text-foreground underline ml-auto shrink-0"
+            className="text-xs font-comic uppercase text-slate-700 hover:text-rose-600 underline ml-auto shrink-0"
           >
             Clear selection ({selectedCleanupIds.size})
           </button>
@@ -227,59 +231,59 @@ export const CleanupTab: React.FC = () => {
       </div>
 
       {/* Candidates List */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {filteredCandidates.map((candidate) => {
           const isSelected = selectedCleanupIds.has(candidate.id);
           return (
             <div
               key={candidate.id}
               onClick={() => toggleCleanupSelection(candidate.id)}
-              className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+              className={`p-3.5 rounded-2xl border-2 border-slate-900 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 ${
                 isSelected
-                  ? 'bg-amber-500/5 border-amber-500/40 shadow-sm'
-                  : 'bg-card/40 border-border/50 hover:border-border hover:bg-card/70'
+                  ? 'bg-amber-100 shadow-comic'
+                  : 'bg-white shadow-comic-sm hover:bg-slate-50'
               }`}
             >
               <div className="flex items-start space-x-3 truncate">
                 <button
                   type="button"
-                  className="mt-0.5 text-muted-foreground hover:text-foreground shrink-0"
+                  className="mt-0.5 text-slate-900 shrink-0"
                 >
                   {isSelected ? (
-                    <CheckSquare className="w-4 h-4 text-amber-500" />
+                    <CheckSquare className="w-5 h-5 text-amber-600 fill-amber-300" />
                   ) : (
-                    <Square className="w-4 h-4" />
+                    <Square className="w-5 h-5 text-slate-500" />
                   )}
                 </button>
 
                 <div className="truncate">
                   <div className="flex items-center space-x-2">
                     {getTypeIcon(candidate.type)}
-                    <h4 className="font-semibold text-xs text-foreground truncate">
+                    <h4 className="font-comic text-xs uppercase tracking-wide text-slate-900 truncate">
                       {candidate.title}
                     </h4>
                     {getRiskBadge(candidate.risk_level)}
                   </div>
 
-                  <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">
+                  <p className="text-[11px] font-fredoka font-semibold text-slate-600 mt-1 line-clamp-1">
                     {candidate.description}
                   </p>
-                  <p className="text-[10px] text-muted-foreground font-mono truncate mt-0.5">
+                  <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
                     {candidate.file.path}
                   </p>
-                  <p className="text-[10px] text-amber-400/90 mt-1 flex items-center">
+                  <p className="text-[10px] font-fredoka font-bold text-amber-700 mt-1 flex items-center">
                     <Info className="w-3 h-3 mr-1 shrink-0" />
                     {candidate.risk_explanation}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4 shrink-0 pl-7 md:pl-0">
+              <div className="flex items-center space-x-4 shrink-0 pl-8 md:pl-0">
                 <div className="text-right">
-                  <span className="font-mono font-bold text-sm text-foreground">
+                  <span className="font-comic text-sm text-slate-900">
                     {formatBytes(candidate.file.size_bytes, settings.unit)}
                   </span>
-                  <p className="text-[10px] text-muted-foreground capitalize">
+                  <p className="text-[10px] font-fredoka font-bold text-slate-500 capitalize">
                     {settings.prefer_trash ? 'Recycle Bin' : 'Permanent'}
                   </p>
                 </div>
@@ -289,7 +293,7 @@ export const CleanupTab: React.FC = () => {
                     e.stopPropagation();
                     handleReveal(candidate.file.path);
                   }}
-                  className="p-1.5 rounded-lg border border-border/50 hover:bg-accent text-muted-foreground hover:text-foreground"
+                  className="p-1.5 rounded-lg border border-slate-900 bg-white hover:bg-amber-200 text-slate-900 shadow-comic-sm transition-colors"
                   title="Reveal in native file explorer"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -300,13 +304,13 @@ export const CleanupTab: React.FC = () => {
         })}
 
         {filteredCandidates.length === 0 && (
-          <div className="p-10 text-center text-muted-foreground bg-card/40 rounded-xl border border-border/40">
-            <ShieldCheck className="w-12 h-12 mx-auto mb-2 text-emerald-400 opacity-60" />
-            <h4 className="text-sm font-semibold text-foreground">
+          <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border-2 border-slate-900 shadow-comic">
+            <ShieldCheck className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+            <h4 className="font-comic text-sm uppercase text-slate-900">
               No cleanup candidates in this category
             </h4>
-            <p className="text-xs text-muted-foreground mt-1">
-              Your storage root does not contain obvious temporary files or obsolete installers.
+            <p className="text-xs font-fredoka font-semibold text-slate-600 mt-1">
+              Your scanned storage does not contain obsolete temporary files or leftover archives.
             </p>
           </div>
         )}
@@ -314,58 +318,59 @@ export const CleanupTab: React.FC = () => {
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-popover border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-fade-in">
-            <div className="flex items-center space-x-3 text-destructive">
-              <AlertTriangle className="w-6 h-6 shrink-0" />
-              <h3 className="text-base font-bold text-foreground">
-                Confirm Safe Cleanup
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none">
+          <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-comic-xl font-sans text-slate-900">
+            <div className="flex items-center space-x-3 text-red-600">
+              <div className="w-10 h-10 rounded-xl bg-red-100 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <span className="font-comic text-[10px] uppercase text-red-600">Safety Check</span>
+                <h3 className="font-comic text-base uppercase text-slate-900">
+                  Confirm Safe Cleanup
+                </h3>
+              </div>
             </div>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs font-fredoka font-semibold text-slate-700 leading-relaxed">
               You are about to process{' '}
-              <span className="font-bold text-foreground">
-                {selectedCandidates.length} files
-              </span>{' '}
+              <strong className="text-slate-900">{selectedCandidates.length} files</strong>{' '}
               recovering{' '}
-              <span className="font-mono font-bold text-foreground">
+              <strong className="font-comic text-sm text-slate-900">
                 {formatBytes(totalSelectedBytes, settings.unit)}
-              </span>{' '}
-              of disk space.
+              </strong>{' '}
+              of disk storage.
             </p>
 
-            <div className="p-3 bg-secondary/50 rounded-lg text-xs space-y-1">
-              <div className="flex justify-between text-muted-foreground">
-                <span>Method:</span>
-                <span className="font-medium text-foreground">
-                  {settings.prefer_trash
-                    ? 'Move to OS Recycle Bin (Recoverable)'
-                    : 'Permanent Deletion'}
+            <div className="p-3 bg-amber-50 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold space-y-1.5">
+              <div className="flex justify-between text-slate-700">
+                <span>Destination:</span>
+                <span className="text-slate-900 font-comic uppercase">
+                  {settings.prefer_trash ? 'OS Recycle Bin (Safe)' : 'Permanent Delete'}
                 </span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="flex justify-between text-slate-700">
                 <span>Target validation:</span>
-                <span className="font-medium text-emerald-400">Strict Path Checked</span>
+                <span className="text-emerald-700 font-comic uppercase">Strict Path Verified</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-3 pt-2">
+            <div className="flex items-center justify-end space-x-3 pt-2 border-t-2 border-slate-900">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 rounded-lg border border-border hover:bg-accent text-xs font-medium transition-colors text-foreground"
+                className="px-4 py-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-slate-200 font-comic text-xs uppercase shadow-comic-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleExecute}
                 disabled={isExecuting}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-destructive text-destructive-foreground text-xs font-semibold hover:bg-destructive/90 transition-colors"
+                className="flex items-center space-x-1.5 px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-comic text-xs uppercase border-2 border-slate-900 shadow-comic"
               >
                 {isExecuting ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Processing...</span>
+                    <span>Cleaning...</span>
                   </>
                 ) : (
                   <>

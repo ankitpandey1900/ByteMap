@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Settings,
-  Moon,
-  Sun,
   Shield,
   FileDown,
   Check,
@@ -76,94 +74,62 @@ export const SettingsTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl pb-10">
+    <div className="space-y-4 max-w-5xl select-none font-sans text-slate-900 pb-10">
       {/* Top Banner */}
-      <div className="flex items-center justify-between pb-4 border-b border-border/50">
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Application Preferences</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Configure display units, safety policies, scan rules, and export data.
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-1">
+            <Settings className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Preferences</span>
+          </div>
+          <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1">
+            Configuration & Rules
+          </h2>
+          <p className="text-xs font-fredoka font-semibold text-slate-600">
+            Configure storage unit standards, safety policies, exclusion rules, and data export.
           </p>
         </div>
 
         <button
           onClick={handleSave}
-          className="flex items-center space-x-1.5 px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-sm"
+          className="flex items-center space-x-1.5 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wider text-slate-900 border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
         >
           {savedSuccess ? (
             <>
-              <Check className="w-3.5 h-3.5" />
-              <span>Preferences Saved</span>
+              <Check className="w-4 h-4" />
+              <span>Preferences Saved!</span>
             </>
           ) : (
             <>
-              <Save className="w-3.5 h-3.5" />
-              <span>Save Changes</span>
+              <Save className="w-4 h-4" />
+              <span>Save Preferences</span>
             </>
           )}
         </button>
       </div>
 
-      {/* General & Theme Settings */}
-      <div className="p-5 bg-card/60 backdrop-blur border border-border/50 rounded-xl space-y-4">
-        <h3 className="font-semibold text-sm text-foreground flex items-center space-x-2">
-          <Settings className="w-4 h-4 text-primary" />
-          <span>Appearance & Units</span>
+      {/* Storage Units */}
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
+        <h3 className="font-comic text-sm uppercase text-slate-900 flex items-center space-x-2">
+          <span>Storage Unit Calculation</span>
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          {/* Theme Mode */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">Theme Mode</label>
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => updateSettings({ theme: 'dark' })}
-                className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
-                  settings.theme === 'dark'
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'border-border/60 hover:bg-accent text-muted-foreground'
-                }`}
-              >
-                <Moon className="w-3.5 h-3.5" />
-                <span>Dark Mode</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => updateSettings({ theme: 'light' })}
-                className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
-                  settings.theme === 'light'
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'border-border/60 hover:bg-accent text-muted-foreground'
-                }`}
-              >
-                <Sun className="w-3.5 h-3.5" />
-                <span>Light Mode</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Unit calculation */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">
-              Storage Unit Standards
-            </label>
-            <select
-              value={settings.unit}
-              onChange={(e) => updateSettings({ unit: e.target.value as 'binary' | 'decimal' })}
-              className="w-full px-3 py-2 bg-background border border-border/60 rounded-lg text-xs text-foreground focus:outline-none focus:border-primary"
-            >
-              <option value="binary">Binary Base 2 (1024 B = 1 KiB, GiB)</option>
-              <option value="decimal">Decimal Base 10 (1000 B = 1 KB, GB)</option>
-            </select>
-          </div>
+        <div className="space-y-1.5">
+          <select
+            value={settings.unit}
+            onChange={(e) => updateSettings({ unit: e.target.value as 'binary' | 'decimal' })}
+            className="w-full max-w-md px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl font-comic text-xs uppercase text-slate-900 focus:outline-none"
+          >
+            <option value="binary">Binary Base 2 (1024 B = 1 KiB, MiB, GiB) - OS Standard</option>
+            <option value="decimal">Decimal Base 10 (1000 B = 1 KB, MB, GB) - Drive Label</option>
+          </select>
         </div>
       </div>
 
       {/* Safety & Cleanup Policy */}
-      <div className="p-5 bg-card/60 backdrop-blur border border-border/50 rounded-xl space-y-4">
-        <h3 className="font-semibold text-sm text-foreground flex items-center space-x-2">
-          <Shield className="w-4 h-4 text-emerald-400" />
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
+        <h3 className="font-comic text-sm uppercase text-slate-900 flex items-center space-x-2">
+          <Shield className="w-4 h-4 text-emerald-600" />
           <span>Safety & Deletion Protocols</span>
         </h3>
 
@@ -174,14 +140,14 @@ export const SettingsTab: React.FC = () => {
               type="checkbox"
               checked={settings.prefer_trash}
               onChange={(e) => updateSettings({ prefer_trash: e.target.checked })}
-              className="mt-0.5 rounded border-border text-primary focus:ring-primary"
+              className="mt-0.5 w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
             />
             <div>
-              <p className="text-xs font-medium text-foreground">
-                Move cleanup items to OS Recycle Bin / Trash (Recommended)
+              <p className="font-comic text-xs uppercase text-slate-900">
+                Move cleanup items to OS Recycle Bin (Recommended)
               </p>
-              <p className="text-[11px] text-muted-foreground">
-                When enabled, cleaned files are moved to the system Recycle Bin so they can be easily restored if needed.
+              <p className="text-[11px] font-fredoka font-semibold text-slate-600">
+                Files are safely moved to the Windows Recycle Bin so they can be recovered if needed.
               </p>
             </div>
           </label>
@@ -192,13 +158,13 @@ export const SettingsTab: React.FC = () => {
               type="checkbox"
               checked={settings.show_system_files}
               onChange={(e) => updateSettings({ show_system_files: e.target.checked })}
-              className="mt-0.5 rounded border-border text-primary focus:ring-primary"
+              className="mt-0.5 w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
             />
             <div>
-              <p className="text-xs font-medium text-foreground">
+              <p className="font-comic text-xs uppercase text-slate-900">
                 Include Hidden and System files in exploration views
               </p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] font-fredoka font-semibold text-slate-600">
                 System and hidden files are protected from automated cleanup regardless of this setting.
               </p>
             </div>
@@ -207,28 +173,28 @@ export const SettingsTab: React.FC = () => {
       </div>
 
       {/* Exclusion Rules */}
-      <div className="p-5 bg-card/60 backdrop-blur border border-border/50 rounded-xl space-y-4">
-        <h3 className="font-semibold text-sm text-foreground flex items-center space-x-2">
-          <FolderMinus className="w-4 h-4 text-amber-400" />
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
+        <h3 className="font-comic text-sm uppercase text-slate-900 flex items-center space-x-2">
+          <FolderMinus className="w-4 h-4 text-amber-500" />
           <span>Default Scan Exclusions</span>
         </h3>
 
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs font-fredoka font-semibold text-slate-600">
           Files and directories matching these name patterns will be skipped during scanning.
         </p>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 max-w-lg">
           <input
             type="text"
-            placeholder="e.g. .cache or $Recycle.Bin..."
+            placeholder="e.g. .cache or node_modules..."
             value={newExcludePattern}
             onChange={(e) => setNewExcludePattern(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddExclude()}
-            className="flex-1 px-3 py-1.5 bg-background border border-border/60 rounded-lg text-xs text-foreground focus:outline-none focus:border-primary"
+            className="flex-1 px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-mono text-slate-900 focus:outline-none"
           />
           <button
             onClick={handleAddExclude}
-            className="px-3.5 py-1.5 bg-secondary hover:bg-accent text-xs font-medium text-foreground rounded-lg transition-colors"
+            className="px-4 py-2 bg-amber-300 hover:bg-amber-400 font-comic text-xs uppercase text-slate-900 border-2 border-slate-900 rounded-xl shadow-comic-sm transition-all"
           >
             Add Pattern
           </button>
@@ -238,12 +204,12 @@ export const SettingsTab: React.FC = () => {
           {(settings.default_excludes || []).map((pat) => (
             <span
               key={pat}
-              className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-secondary text-xs font-mono text-foreground border border-border/50"
+              className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-100 text-xs font-mono font-bold text-slate-900 border-2 border-slate-900 shadow-comic-sm"
             >
               <span>{pat}</span>
               <button
                 onClick={() => handleRemoveExclude(pat)}
-                className="text-muted-foreground hover:text-destructive"
+                className="text-slate-500 hover:text-rose-600 font-bold ml-1"
               >
                 ×
               </button>
@@ -253,21 +219,21 @@ export const SettingsTab: React.FC = () => {
       </div>
 
       {/* Data Export & Privacy Notice */}
-      <div className="p-5 bg-card/60 backdrop-blur border border-border/50 rounded-xl space-y-4">
-        <h3 className="font-semibold text-sm text-foreground flex items-center space-x-2">
-          <FileDown className="w-4 h-4 text-cyan-400" />
-          <span>Report Export & Strict Local Privacy</span>
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
+        <h3 className="font-comic text-sm uppercase text-slate-900 flex items-center space-x-2">
+          <FileDown className="w-4 h-4 text-blue-600" />
+          <span>Report Export & Volatile Memory Privacy</span>
         </h3>
 
-        <div className="p-3 bg-secondary/30 rounded-lg border border-border/40 text-xs text-muted-foreground space-y-1.5">
-          <div className="flex items-center space-x-2 text-foreground font-semibold">
-            <Shield className="w-4 h-4 text-emerald-400" />
-            <span>Strict No-Database & Zero-Telemetry Architecture</span>
+        <div className="p-3 bg-amber-50 rounded-xl border-2 border-slate-900 text-xs text-slate-700 font-fredoka font-semibold space-y-1">
+          <div className="flex items-center space-x-2 font-comic text-slate-900 uppercase">
+            <Shield className="w-4 h-4 text-emerald-600" />
+            <span>Strict Zero-Database Architecture</span>
           </div>
           <p>
             ByteMap stores all scan data exclusively in volatile system RAM while running. On shutdown,
-            all scanned file catalogs and paths are cleared. No local databases, no hidden background
-            indexes, and zero external telemetry network requests exist.
+            all scanned files and paths are wiped. No local SQLite databases, no hidden background indexes,
+            and zero external telemetry network requests exist.
           </p>
         </div>
 
@@ -275,18 +241,18 @@ export const SettingsTab: React.FC = () => {
           <button
             onClick={handleExportJSON}
             disabled={!scanSummary}
-            className="flex items-center space-x-2 px-3.5 py-2 border border-border/60 hover:bg-accent rounded-lg text-xs font-medium text-foreground disabled:opacity-40 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 border-2 border-slate-900 bg-white hover:bg-amber-200 font-comic text-xs uppercase text-slate-900 rounded-xl shadow-comic-sm disabled:opacity-40 transition-all"
           >
-            <FileDown className="w-4 h-4 text-primary" />
+            <FileDown className="w-4 h-4 text-slate-900" />
             <span>Export Report (JSON)</span>
           </button>
           <button
             onClick={handleExportCSV}
             disabled={!scanSummary}
-            className="flex items-center space-x-2 px-3.5 py-2 border border-border/60 hover:bg-accent rounded-lg text-xs font-medium text-foreground disabled:opacity-40 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 border-2 border-slate-900 bg-white hover:bg-amber-200 font-comic text-xs uppercase text-slate-900 rounded-xl shadow-comic-sm disabled:opacity-40 transition-all"
           >
-            <FileDown className="w-4 h-4 text-emerald-400" />
-            <span>Export Files Table (CSV)</span>
+            <FileDown className="w-4 h-4 text-slate-900" />
+            <span>Export Table (CSV)</span>
           </button>
         </div>
       </div>

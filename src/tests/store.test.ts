@@ -11,7 +11,7 @@ describe('useAppStore ephemeral state store', () => {
   it('initializes with default tab and settings', () => {
     const state = useAppStore.getState();
     expect(state.activeTab).toBe('overview');
-    expect(state.settings.theme).toBe('dark');
+    expect(state.settings.theme).toBe('light');
     expect(state.settings.unit).toBe('binary');
     expect(state.settings.prefer_trash).toBe(true);
   });
