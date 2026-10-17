@@ -126,6 +126,35 @@ const COMIC_COLORS: Record<string, string> = {
   other: '#64748b',    // Slate
 };
 
+const COMIC_FOLDER_PALETTE = [
+  '#38bdf8', // Vibrant Sky Blue
+  '#ec4899', // Pop Pink
+  '#22c55e', // Mint Green
+  '#f59e0b', // Warm Gold
+  '#a855f7', // Vibrant Purple
+  '#06b6d4', // Cyan
+  '#f97316', // Orange
+  '#f43f5e', // Rose
+  '#84cc16', // Lime
+  '#6366f1', // Indigo
+];
+
+function getCategoryFromNameOrExt(name: string, category?: string): string {
+  if (category && COMIC_COLORS[category.toLowerCase()]) {
+    return category.toLowerCase();
+  }
+  const n = name.toLowerCase();
+  if (n.includes('dev') || n.includes('project') || n.includes('code') || n.includes('src') || n.includes('git')) return 'dev';
+  if (n.includes('media') || n.includes('video') || n.includes('movie') || n.includes('stream')) return 'video';
+  if (n.includes('doc') || n.includes('paper') || n.includes('note') || n.includes('text') || n.includes('pdf')) return 'document';
+  if (n.includes('download')) return 'download';
+  if (n.includes('image') || n.includes('photo') || n.includes('pic') || n.includes('asset')) return 'image';
+  if (n.includes('audio') || n.includes('music') || n.includes('sound') || n.includes('song')) return 'audio';
+  if (n.includes('archive') || n.includes('zip') || n.includes('backup') || n.includes('tar')) return 'archive';
+  if (n.includes('app') || n.includes('program') || n.includes('bin') || n.includes('build') || n.includes('dist')) return 'app';
+  return '';
+}
+
 export const DigitalKingdomView: React.FC = () => {
   const {
     drives,
@@ -229,9 +258,25 @@ export const DigitalKingdomView: React.FC = () => {
       }
     }
 
+    // Fallback for drilldown path if no direct child
+    if (items.length === 0 && treemapCurrentPath) {
+      for (const file of scanSummary.largest_files) {
+        const normFile = file.path.toLowerCase();
+        if (normFile.startsWith(normCurrent)) {
+          items.push({
+            id: file.id,
+            name: file.name,
+            path: file.path,
+            size: file.size_bytes,
+            isDir: false,
+            category: file.category,
+          });
+        }
+      }
+    }
+
     // Fallback if at root path and no direct child parsed
-    const normRoot = (scanSummary.root_path || '').toLowerCase().replace(/\\+$/, '').replace(/\/+$/, '');
-    if (items.length === 0 && normCurrent === normRoot) {
+    if (items.length === 0) {
       for (const folder of scanSummary.largest_folders.slice(0, 15)) {
         items.push({
           id: folder.path,
@@ -470,9 +515,29 @@ export const DigitalKingdomView: React.FC = () => {
                   <span className="text-sm">🗺️</span>
                   <span>Interactive Map</span>
                 </div>
-                <span className="text-xs font-fredoka font-bold text-slate-500">
-                  Home &gt; {currentPath.length > 25 ? '...' + currentPath.slice(-25) : currentPath}
-                </span>
+                <div className="flex items-center space-x-1.5 text-xs font-fredoka font-bold text-slate-500">
+                  <button
+                    onClick={() => setTreemapCurrentPath('')}
+                    className="hover:text-amber-600 hover:underline uppercase transition-colors"
+                  >
+                    Home
+                  </button>
+                  {treemapCurrentPath && (
+                    <>
+                      <span>&gt;</span>
+                      <span className="text-slate-800">
+                        {currentPath.length > 25 ? '...' + currentPath.slice(-25) : currentPath}
+                      </span>
+                      <button
+                        onClick={() => setTreemapCurrentPath('')}
+                        className="ml-1 px-1.5 py-0.5 rounded bg-slate-200 hover:bg-rose-200 text-[10px] text-slate-700 font-comic uppercase border border-slate-900"
+                        title="Back to Kingdom Root"
+                      >
+                        Back
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
               <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1 drop-shadow-sm">
                 YOUR DIGITAL KINGDOM
@@ -508,7 +573,10 @@ export const DigitalKingdomView: React.FC = () => {
                 preserveAspectRatio="none"
               >
                 {rects.map((node, idx) => {
-                  const fill = COMIC_COLORS[node.category || 'media'] || '#38bdf8';
+                  const detectedCat = getCategoryFromNameOrExt(node.name, node.category);
+                  const fill = detectedCat && COMIC_COLORS[detectedCat]
+                    ? COMIC_COLORS[detectedCat]
+                    : COMIC_FOLDER_PALETTE[idx % COMIC_FOLDER_PALETTE.length];
                   const isHovered = hoveredNode?.id === node.id;
                   const isHugeFile = idx === 0 && node.size > 50 * 1024 * 1024; // Only badge the largest genuine file
 
