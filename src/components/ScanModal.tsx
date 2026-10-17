@@ -99,7 +99,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none">
-      <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-comic-xl space-y-4 text-slate-900 font-sans relative">
+      <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-comic-xl space-y-4 text-slate-900 font-sans relative max-h-[92vh] overflow-y-auto">
         {/* Top Header Badge */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
           <div className="flex items-center space-x-3">

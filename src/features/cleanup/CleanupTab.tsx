@@ -319,7 +319,7 @@ export const CleanupTab: React.FC = () => {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none">
-          <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-comic-xl font-sans text-slate-900">
+          <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-comic-xl font-sans text-slate-900 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center space-x-3 text-red-600">
               <div className="w-10 h-10 rounded-xl bg-red-100 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm">
                 <AlertTriangle className="w-6 h-6 text-red-600" />

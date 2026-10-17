@@ -295,9 +295,9 @@ export const DigitalKingdomView: React.FC = () => {
   }, [scanProgress, scanSummary]);
 
   return (
-    <div className="flex flex-col h-full space-y-3.5 select-none font-sans text-slate-900">
+    <div className="flex flex-col min-h-full space-y-3.5 pb-6 select-none font-sans text-slate-900">
       {/* 3-Column Comic Pop-Art Dashboard Layout */}
-      <div className="grid grid-cols-12 gap-3.5 flex-1 min-h-0">
+      <div className="grid grid-cols-12 gap-3.5 w-full">
         {/* =========================================
             LEFT COLUMN (Drives, Scout, File Types, Extensions)
            ========================================= */}
@@ -336,8 +336,9 @@ export const DigitalKingdomView: React.FC = () => {
             </p>
 
             {/* Scout Mascot with Magnifying Glass */}
-            <div className="mt-3">
+            <div className="mt-2.5">
               <ScoutMascot
+                className="w-16 h-16"
                 isScanning={scanProgress.status === 'scanning'}
                 statusText={
                   scanProgress.status === 'scanning'
@@ -412,8 +413,8 @@ export const DigitalKingdomView: React.FC = () => {
                 </div>
               </>
             ) : (
-              <div className="h-40 flex flex-col items-center justify-center text-center p-3 text-slate-500">
-                <span className="text-2xl mb-1">📊</span>
+              <div className="h-28 sm:h-32 flex flex-col items-center justify-center text-center p-2 text-slate-500">
+                <span className="text-xl mb-0.5">📊</span>
                 <p className="font-fredoka font-bold text-xs text-slate-700">No categories scanned yet</p>
                 <p className="text-[10px] text-slate-500 mt-0.5">Click Analyze to categorize storage</p>
               </div>
@@ -499,7 +500,7 @@ export const DigitalKingdomView: React.FC = () => {
           </div>
 
           {/* Squarified SVG Comic Treemap */}
-          <div className="relative flex-1 rounded-xl border-2 border-slate-900 overflow-hidden bg-sky-50 min-h-[460px]">
+          <div className="relative flex-1 rounded-xl border-2 border-slate-900 overflow-hidden bg-sky-50 min-h-[250px] sm:min-h-[300px] md:min-h-[340px]">
             {rects.length > 0 ? (
               <svg
                 viewBox="0 0 1000 700"
@@ -619,14 +620,14 @@ export const DigitalKingdomView: React.FC = () => {
               </svg>
             ) : (
               /* Genuine Adventure Empty State */
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-gradient-to-b from-amber-50 to-orange-50">
-                <div className="w-16 h-16 rounded-2xl bg-amber-300 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-3">
-                  <Compass className="w-9 h-9 text-slate-900" />
+              <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6 text-center bg-gradient-to-b from-amber-50 to-orange-50">
+                <div className="w-14 h-14 rounded-2xl bg-amber-300 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-2.5">
+                  <Compass className="w-8 h-8 text-slate-900" />
                 </div>
-                <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide">
+                <h3 className="font-comic text-lg sm:text-xl text-slate-900 uppercase tracking-wide">
                   Uncharted Digital Kingdom!
                 </h3>
-                <p className="font-fredoka text-xs text-slate-600 max-w-sm mt-1 mb-4 font-semibold">
+                <p className="font-fredoka text-xs text-slate-600 max-w-sm mt-1 mb-3 font-semibold">
                   Select a drive or directory and click the <strong>ANALYZE</strong> button at the top to scout your storage and reveal the interactive map.
                 </p>
                 <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900">
@@ -823,27 +824,41 @@ export const DigitalKingdomView: React.FC = () => {
       </div>
 
       {/* =========================================
-          BOTTOM FOOTER BAR
+          BOTTOM RESPONSIVE FOOTER DOCK
          ========================================= */}
-      <footer className="py-1 px-4 flex items-center justify-center space-x-4 text-xs font-fredoka font-bold text-slate-600 border-t border-slate-300">
-        <button
-          onClick={() => setActiveTab('settings')}
-          className="hover:text-blue-600 transition-colors"
-        >
-          • Unit Preferences ({settings.unit.toUpperCase()})
-        </button>
-        <button
-          onClick={() => setActiveTab('settings')}
-          className="hover:text-blue-600 transition-colors"
-        >
-          • Exclusion Rules ({settings.default_excludes.length} active)
-        </button>
-        <button
-          onClick={handleExportJSON}
-          className="hover:text-blue-600 transition-colors"
-        >
-          • Data Export Engine (JSON/CSV)
-        </button>
+      <footer className="mt-4 py-2.5 px-4 flex flex-wrap items-center justify-between gap-3 text-xs font-fredoka font-bold text-slate-700 border-2.5 border-slate-900 bg-white rounded-2xl shadow-comic shrink-0">
+        <div className="flex items-center space-x-2 flex-wrap gap-2">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 text-slate-800 shadow-comic-sm transition-all text-xs"
+            title="Configure Binary (GiB) vs Decimal (GB)"
+          >
+            <span>⚙️ Unit:</span>
+            <span className="font-comic text-slate-900">{settings.unit.toUpperCase()}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 text-slate-800 shadow-comic-sm transition-all text-xs"
+            title="View or edit active exclusion rules"
+          >
+            <span>🛡️ Exclusions:</span>
+            <span className="font-comic text-slate-900">{settings.default_excludes.length} Active</span>
+          </button>
+        </div>
+
+        <div className="flex items-center space-x-2 flex-wrap gap-2">
+          <button
+            onClick={handleExportJSON}
+            disabled={!scanSummary}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 text-slate-900 font-comic uppercase text-xs shadow-comic-sm transition-all disabled:opacity-40"
+            title="Export scan results as JSON"
+          >
+            <span>📥 Export JSON</span>
+          </button>
+          <span className="text-xs text-slate-500 font-comic uppercase px-1">
+            ByteMap v1.0 • Volatile RAM Only
+          </span>
+        </div>
       </footer>
     </div>
   );

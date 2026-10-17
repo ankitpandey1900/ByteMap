@@ -85,7 +85,7 @@ export const App: React.FC = () => {
       <ComicHeader onOpenScanModal={() => setIsScanModalOpen(true)} />
 
       {/* Main Content Body */}
-      <main className="flex-1 overflow-y-auto p-3.5 bg-slate-100 min-h-0">
+      <main className="flex-1 overflow-y-auto p-2 sm:p-2.5 md:p-3 bg-slate-100 min-h-0 flex flex-col">
         {renderActiveTab()}
       </main>
 

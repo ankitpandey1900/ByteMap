@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-gradient-to-b from-sky-400 via-sky-300 to-blue-500 flex flex-col p-2 md:p-4 select-none">
+    <div className="relative w-screen h-screen overflow-hidden bg-gradient-to-b from-sky-400 via-sky-300 to-blue-500 flex flex-col p-1.5 sm:p-2 md:p-2.5 select-none">
       {/* Background Mountains & Clouds SVG */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Sun burst rays */}

@@ -353,7 +353,7 @@ export const ExplorerTab: React.FC = () => {
         </div>
 
         {/* Comic Pagination Bar */}
-        <div className="p-3 border-t-2 border-slate-900 bg-amber-50 flex items-center justify-between text-xs font-fredoka font-bold text-slate-700">
+        <div className="p-3 border-t-2 border-slate-900 bg-amber-50 flex items-center justify-between flex-wrap gap-2 text-xs font-fredoka font-bold text-slate-700">
           <span>
             Showing {(page - 1) * pageSize + 1}–
             {Math.min(page * pageSize, currentList.length)} of {currentList.length} items
