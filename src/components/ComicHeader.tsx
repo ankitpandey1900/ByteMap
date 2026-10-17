@@ -28,20 +28,13 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
           className="flex items-center space-x-2.5 cursor-pointer group"
           title="Return to Digital Kingdom Overview"
         >
-          {/* Compass Icon Badge */}
-          <div className="w-10 h-10 rounded-full bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm group-hover:rotate-12 transition-transform">
-            <svg
-              className="w-6 h-6 text-slate-900 drop-shadow-sm"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" fill="#fef08a" />
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="#dc2626" />
-            </svg>
+          {/* Mascot Logo Badge */}
+          <div className="w-10 h-10 rounded-full bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm group-hover:rotate-6 group-hover:scale-105 transition-transform overflow-hidden p-0.5">
+            <img
+              src="/logo.png"
+              alt="ByteMap Explorer Mascot"
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
 
           {/* 3D Comic Text Logo */}

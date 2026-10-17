@@ -52,7 +52,7 @@ export const api = {
       const res = await fetch('/api/drives');
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           return data;
         }
       }
@@ -60,42 +60,7 @@ export const api = {
       // ignore
     }
 
-    // Accurate system hardware baseline fallback
-    return [
-      {
-        id: 'drive-c',
-        name: 'Local Disk (C:)',
-        mount_point: 'C:\\',
-        total_bytes: 300007026688,
-        available_bytes: 32078159872,
-        used_bytes: 267928866816,
-        filesystem: 'NTFS',
-        is_removable: false,
-        is_read_only: false,
-      },
-      {
-        id: 'drive-d',
-        name: 'Data Storage (D:)',
-        mount_point: 'D:\\',
-        total_bytes: 104856547328,
-        available_bytes: 50267156480,
-        used_bytes: 54589390848,
-        filesystem: 'NTFS',
-        is_removable: false,
-        is_read_only: false,
-      },
-      {
-        id: 'drive-e',
-        name: 'Storage (E:)',
-        mount_point: 'E:\\',
-        total_bytes: 104857595904,
-        available_bytes: 51512143872,
-        used_bytes: 53345452032,
-        filesystem: 'NTFS',
-        is_removable: false,
-        is_read_only: false,
-      },
-    ];
+    return [];
   },
 
   // Native folder picker dialog
@@ -114,8 +79,12 @@ export const api = {
         console.error('Directory picker error:', err);
       }
     }
-    // Web browser fallback
-    return 'D:\\Projects';
+    // Web browser fallback: prompt user for folder or drive path
+    if (typeof window !== 'undefined' && window.prompt) {
+      const customPath = window.prompt('Enter directory or drive path to analyze:', 'D:\\');
+      return customPath ? customPath.trim() : null;
+    }
+    return null;
   },
 
   // Real Rust traversal scan (or real Node filesystem scan in preview mode)
@@ -233,7 +202,7 @@ export const api = {
     await new Promise((r) => setTimeout(r, 500));
     const freed = targets.reduce((acc, t) => acc + (t.expected_size || 0), 0);
     return {
-      total_freed_bytes: freed || 1.2 * 1024 * 1024 * 1024,
+      total_freed_bytes: freed,
       successful_count: targets.length,
       failed_count: 0,
       results: targets.map((t) => ({
@@ -252,7 +221,7 @@ export const api = {
     console.log('Reveal in explorer (web preview):', path);
   },
 
-  // Load user settings from OS config directory
+  // Load user settings from OS config directory (or localStorage in web preview)
   async loadSettings(): Promise<AppSettings> {
     if (isTauri) {
       try {
@@ -260,6 +229,14 @@ export const api = {
       } catch {
         // Fallback to defaults
       }
+    }
+    try {
+      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('bytemap_settings') : null;
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch {
+      // ignore
     }
     return {
       theme: 'light',
@@ -281,6 +258,13 @@ export const api = {
   async saveSettings(settings: AppSettings): Promise<void> {
     if (isTauri) {
       return await invoke<void>('save_settings', { settings });
+    }
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('bytemap_settings', JSON.stringify(settings));
+      }
+    } catch {
+      // ignore
     }
   },
 

@@ -398,9 +398,18 @@ export const DigitalKingdomView: React.FC = () => {
 
           {/* 2. FILE TYPE BREAKDOWN CARD */}
           <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3.5 shadow-comic flex-1 flex flex-col justify-between">
-            {/* Yellow Header Pill */}
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 w-fit mb-1">
-              <span>File Type Breakdown</span>
+            {/* Yellow Header Pill & Navigation */}
+            <div className="flex items-center justify-between mb-1">
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 w-fit">
+                <span>File Type Breakdown</span>
+              </div>
+              <button
+                onClick={() => setActiveTab('file-types')}
+                className="px-2 py-0.5 rounded-lg border border-slate-900 bg-slate-50 hover:bg-amber-300 font-comic text-[10px] uppercase text-slate-800 transition-colors shadow-comic-sm"
+                title="Open full category analytics"
+              >
+                Analytics &gt;
+              </button>
             </div>
 
             {categoriesData.length > 0 ? (

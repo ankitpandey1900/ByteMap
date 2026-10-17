@@ -84,28 +84,9 @@
   background: hsl(var(--muted-foreground) / 0.45);
 }
 
-/* Modern sleek utility classes */
-.glass-panel {
-  background: hsl(var(--card) / 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid hsl(var(--border) / 0.6);
-}
-
 .mono-num {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
-}
-
-.bg-dot-pattern {
-  background-image: radial-gradient(hsl(var(--muted-foreground) / 0.15) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-.bg-grid-pattern {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, hsl(var(--border) / 0.35) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(var(--border) / 0.35) 1px, transparent 1px);
 }
 
 /* Comic / Pop-Art Adventure Style */
