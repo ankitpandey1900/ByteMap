@@ -6,7 +6,7 @@ use tauri::{AppHandle, Emitter, State};
 use crate::cleanup::{CleanupExecutionSummary, CleanupExecutor};
 use crate::drives::DriveDiscovery;
 use crate::duplicates::DuplicateDetector;
-use crate::errors::{AppError, AppResult};
+use crate::errors::AppError;
 use crate::models::{
     AppSettings, DriveInfo, DuplicateGroup, ScanOptions, ScanProgress, ScanStatus, ScanSummary,
 };

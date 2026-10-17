@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
@@ -7,9 +7,8 @@ use walkdir::WalkDir;
 
 use crate::errors::{AppError, AppResult};
 use crate::models::{
-    CategorySummary, CleanupCandidate, CleanupType, DuplicateGroup, ExtensionSummary, FileCategory,
-    RiskLevel, ScanError, ScanOptions, ScanProgress, ScanStatus, ScanSummary, ScannedFile,
-    ScannedFolder,
+    CategorySummary, CleanupCandidate, CleanupType, ExtensionSummary, FileCategory, RiskLevel,
+    ScanError, ScanOptions, ScanProgress, ScanStatus, ScanSummary, ScannedFile, ScannedFolder,
 };
 use crate::scanner::categorize::categorize_extension;
 use crate::scanner::exclusions::{is_file_hidden, ExclusionFilter};

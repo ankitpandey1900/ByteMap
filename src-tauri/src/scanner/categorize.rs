@@ -5,7 +5,7 @@ pub fn categorize_extension(ext: &str) -> FileCategory {
     match ext_lower.as_str() {
         // Videos
         "mp4" | "mkv" | "mov" | "avi" | "wmv" | "flv" | "webm" | "m4v" | "mpg" | "mpeg" | "3gp"
-        | "ts" | "vob" => FileCategory::Video,
+        | "m2ts" | "mts" | "vob" => FileCategory::Video,
 
         // Images
         "jpg" | "jpeg" | "png" | "gif" | "bmp" | "webp" | "svg" | "tiff" | "tif" | "ico"
@@ -58,6 +58,7 @@ mod tests {
         assert_eq!(categorize_extension("zip"), FileCategory::Archive);
         assert_eq!(categorize_extension("7z"), FileCategory::Archive);
         assert_eq!(categorize_extension("rs"), FileCategory::Dev);
+        assert_eq!(categorize_extension("ts"), FileCategory::Dev);
         assert_eq!(categorize_extension("tsx"), FileCategory::Dev);
         assert_eq!(categorize_extension("exe"), FileCategory::App);
         assert_eq!(categorize_extension("msi"), FileCategory::App);

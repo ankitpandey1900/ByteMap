@@ -1,4 +1,4 @@
-use crate::errors::{AppError, AppResult};
+use crate::errors::AppError;
 use crate::security::PathValidator;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
