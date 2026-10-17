@@ -1,0 +1,54 @@
+name: ByteMap CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-frontend:
+    name: Frontend Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Vitest Unit Tests
+        run: pnpm test
+
+      - name: Run Production TypeScript Build
+        run: pnpm build
+
+  test-rust:
+    name: Rust Backend Tests & Clippy
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Rustfmt Check
+        run: cargo fmt --all --check
+        working-directory: ./src-tauri
+
+      - name: Run Cargo Tests
+        run: cargo test
+        working-directory: ./src-tauri
