@@ -1,5 +1,5 @@
-use std::path::Path;
 use crate::models::ScanOptions;
+use std::path::Path;
 
 pub struct ExclusionFilter {
     exclude_hidden: bool,
@@ -10,7 +10,11 @@ impl ExclusionFilter {
     pub fn new(options: &ScanOptions) -> Self {
         Self {
             exclude_hidden: options.exclude_hidden,
-            exclude_patterns: options.exclude_patterns.iter().map(|p| p.to_lowercase()).collect(),
+            exclude_patterns: options
+                .exclude_patterns
+                .iter()
+                .map(|p| p.to_lowercase())
+                .collect(),
         }
     }
 

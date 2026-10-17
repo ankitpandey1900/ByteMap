@@ -1,5 +1,5 @@
-use sysinfo::Disks;
 use crate::models::DriveInfo;
+use sysinfo::Disks;
 
 pub struct DriveDiscovery;
 

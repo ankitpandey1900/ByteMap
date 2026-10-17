@@ -1,10 +1,10 @@
+use crate::duplicates::hasher::ContentHasher;
+use crate::errors::{AppError, AppResult};
+use crate::models::{DuplicateGroup, ScannedFile};
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use crate::errors::{AppError, AppResult};
-use crate::models::{DuplicateGroup, ScannedFile};
-use crate::duplicates::hasher::ContentHasher;
 
 pub struct DuplicateDetector;
 

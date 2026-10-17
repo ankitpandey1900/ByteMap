@@ -1,5 +1,5 @@
-use std::path::{Path, PathBuf};
 use crate::errors::{AppError, AppResult};
+use std::path::{Path, PathBuf};
 
 pub struct PathValidator;
 
@@ -8,12 +8,17 @@ impl PathValidator {
     pub fn validate_scan_root(path_str: &str) -> AppResult<PathBuf> {
         let trimmed = path_str.trim();
         if trimmed.is_empty() {
-            return Err(AppError::InvalidPath("Scan path cannot be empty".to_string()));
+            return Err(AppError::InvalidPath(
+                "Scan path cannot be empty".to_string(),
+            ));
         }
 
         let path = Path::new(trimmed);
         if !path.exists() {
-            return Err(AppError::PathNotFound(format!("Path does not exist: {}", trimmed)));
+            return Err(AppError::PathNotFound(format!(
+                "Path does not exist: {}",
+                trimmed
+            )));
         }
 
         let canonical = path.canonicalize().map_err(|e| {
@@ -21,7 +26,10 @@ impl PathValidator {
         })?;
 
         if !canonical.is_dir() {
-            return Err(AppError::InvalidPath(format!("Path is not a directory: {}", trimmed)));
+            return Err(AppError::InvalidPath(format!(
+                "Path is not a directory: {}",
+                trimmed
+            )));
         }
 
         Ok(canonical)
@@ -30,7 +38,7 @@ impl PathValidator {
     /// Verifies if a path is considered a critical system path that must be protected.
     pub fn is_protected_system_path(path: &Path) -> bool {
         let path_str = path.to_string_lossy().to_lowercase();
-        
+
         // Windows protected directories
         let protected_windows = [
             "c:\\windows",
@@ -50,7 +58,8 @@ impl PathValidator {
 
         // Unix protected directories
         let protected_unix = [
-            "/bin", "/sbin", "/usr", "/etc", "/var", "/dev", "/proc", "/sys", "/boot", "/root", "/lib", "/lib64"
+            "/bin", "/sbin", "/usr", "/etc", "/var", "/dev", "/proc", "/sys", "/boot", "/root",
+            "/lib", "/lib64",
         ];
 
         for protected in &protected_unix {
@@ -96,7 +105,9 @@ impl PathValidator {
             ))
         })?;
 
-        let canonical_root = authorized_root.canonicalize().unwrap_or_else(|_| authorized_root.to_path_buf());
+        let canonical_root = authorized_root
+            .canonicalize()
+            .unwrap_or_else(|_| authorized_root.to_path_buf());
 
         // Ensure canonical target begins with canonical root (prevent directory traversal)
         if !canonical_target.starts_with(&canonical_root) {
@@ -115,9 +126,7 @@ impl PathValidator {
             )));
         }
 
-        let metadata = std::fs::metadata(&canonical_target).map_err(|e| {
-            AppError::Io(e)
-        })?;
+        let metadata = std::fs::metadata(&canonical_target).map_err(|e| AppError::Io(e))?;
 
         if !metadata.is_file() {
             return Err(AppError::InvalidPath(format!(
@@ -147,16 +156,30 @@ mod tests {
 
     #[test]
     fn test_is_protected_system_path() {
-        assert!(PathValidator::is_protected_system_path(Path::new("C:\\Windows")));
-        assert!(PathValidator::is_protected_system_path(Path::new("C:\\Windows\\System32")));
-        assert!(PathValidator::is_protected_system_path(Path::new("C:\\Program Files\\App")));
-        assert!(PathValidator::is_protected_system_path(Path::new("/bin/sh")));
-        assert!(PathValidator::is_protected_system_path(Path::new("/usr/bin")));
+        assert!(PathValidator::is_protected_system_path(Path::new(
+            "C:\\Windows"
+        )));
+        assert!(PathValidator::is_protected_system_path(Path::new(
+            "C:\\Windows\\System32"
+        )));
+        assert!(PathValidator::is_protected_system_path(Path::new(
+            "C:\\Program Files\\App"
+        )));
+        assert!(PathValidator::is_protected_system_path(Path::new(
+            "/bin/sh"
+        )));
+        assert!(PathValidator::is_protected_system_path(Path::new(
+            "/usr/bin"
+        )));
         assert!(PathValidator::is_protected_system_path(Path::new("C:\\")));
 
         // Normal user folders should not be protected
-        assert!(!PathValidator::is_protected_system_path(Path::new("D:\\Projects\\Data")));
-        assert!(!PathValidator::is_protected_system_path(Path::new("C:\\Users\\User\\Downloads")));
+        assert!(!PathValidator::is_protected_system_path(Path::new(
+            "D:\\Projects\\Data"
+        )));
+        assert!(!PathValidator::is_protected_system_path(Path::new(
+            "C:\\Users\\User\\Downloads"
+        )));
     }
 
     #[test]

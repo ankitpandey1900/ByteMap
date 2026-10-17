@@ -7,7 +7,9 @@ use crate::cleanup::{CleanupExecutionSummary, CleanupExecutor};
 use crate::drives::DriveDiscovery;
 use crate::duplicates::DuplicateDetector;
 use crate::errors::{AppError, AppResult};
-use crate::models::{AppSettings, DriveInfo, DuplicateGroup, ScanOptions, ScanProgress, ScanStatus, ScanSummary};
+use crate::models::{
+    AppSettings, DriveInfo, DuplicateGroup, ScanOptions, ScanProgress, ScanStatus, ScanSummary,
+};
 use crate::scanner::Scanner;
 use crate::security::PathValidator;
 
@@ -68,39 +70,48 @@ pub async fn start_scan(
         Ok(summary) => {
             let mut lock = state.current_summary.lock().unwrap();
             *lock = Some(summary.clone());
-            let _ = app.emit("scan_progress", &ScanProgress {
-                status: ScanStatus::Completed,
-                scanned_files: summary.total_files,
-                scanned_directories: summary.total_directories,
-                scanned_bytes: summary.total_bytes,
-                current_path: "Scan completed successfully".to_string(),
-                elapsed_ms: summary.scan_duration_ms,
-                error_count: summary.error_count,
-            });
+            let _ = app.emit(
+                "scan_progress",
+                &ScanProgress {
+                    status: ScanStatus::Completed,
+                    scanned_files: summary.total_files,
+                    scanned_directories: summary.total_directories,
+                    scanned_bytes: summary.total_bytes,
+                    current_path: "Scan completed successfully".to_string(),
+                    elapsed_ms: summary.scan_duration_ms,
+                    error_count: summary.error_count,
+                },
+            );
             Ok(summary)
         }
         Err(AppError::Cancelled) => {
-            let _ = app.emit("scan_progress", &ScanProgress {
-                status: ScanStatus::Cancelled,
-                scanned_files: 0,
-                scanned_directories: 0,
-                scanned_bytes: 0,
-                current_path: "Scan cancelled by user".to_string(),
-                elapsed_ms: 0,
-                error_count: 0,
-            });
+            let _ = app.emit(
+                "scan_progress",
+                &ScanProgress {
+                    status: ScanStatus::Cancelled,
+                    scanned_files: 0,
+                    scanned_directories: 0,
+                    scanned_bytes: 0,
+                    current_path: "Scan cancelled by user".to_string(),
+                    elapsed_ms: 0,
+                    error_count: 0,
+                },
+            );
             Err(AppError::Cancelled)
         }
         Err(err) => {
-            let _ = app.emit("scan_progress", &ScanProgress {
-                status: ScanStatus::Failed,
-                scanned_files: 0,
-                scanned_directories: 0,
-                scanned_bytes: 0,
-                current_path: format!("Scan failed: {}", err),
-                elapsed_ms: 0,
-                error_count: 1,
-            });
+            let _ = app.emit(
+                "scan_progress",
+                &ScanProgress {
+                    status: ScanStatus::Failed,
+                    scanned_files: 0,
+                    scanned_directories: 0,
+                    scanned_bytes: 0,
+                    current_path: format!("Scan failed: {}", err),
+                    elapsed_ms: 0,
+                    error_count: 1,
+                },
+            );
             Err(err)
         }
     }
@@ -274,6 +285,8 @@ pub fn save_settings(settings: AppSettings) -> Result<(), AppError> {
         std::fs::write(path, json).map_err(AppError::Io)?;
         Ok(())
     } else {
-        Err(AppError::General("Could not determine user config directory".to_string()))
+        Err(AppError::General(
+            "Could not determine user config directory".to_string(),
+        ))
     }
 }

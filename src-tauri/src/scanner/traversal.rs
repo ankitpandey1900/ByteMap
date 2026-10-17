@@ -7,9 +7,9 @@ use walkdir::WalkDir;
 
 use crate::errors::{AppError, AppResult};
 use crate::models::{
-    CategorySummary, CleanupCandidate, CleanupType, DuplicateGroup, ExtensionSummary,
-    FileCategory, RiskLevel, ScanError, ScanOptions, ScanProgress, ScanStatus, ScanSummary,
-    ScannedFile, ScannedFolder,
+    CategorySummary, CleanupCandidate, CleanupType, DuplicateGroup, ExtensionSummary, FileCategory,
+    RiskLevel, ScanError, ScanOptions, ScanProgress, ScanStatus, ScanSummary, ScannedFile,
+    ScannedFolder,
 };
 use crate::scanner::categorize::categorize_extension;
 use crate::scanner::exclusions::{is_file_hidden, ExclusionFilter};
@@ -295,7 +295,10 @@ impl Scanner {
                 || f.name.ends_with(".old");
 
             let is_installer = f.extension == "iso" || f.extension == "dmg" || f.extension == "msi";
-            let is_large_archive = (f.extension == "zip" || f.extension == "tar" || f.extension == "gz" || f.extension == "7z")
+            let is_large_archive = (f.extension == "zip"
+                || f.extension == "tar"
+                || f.extension == "gz"
+                || f.extension == "7z")
                 && f.size_bytes > one_hundred_mb;
 
             let is_download = path_lower.contains("downloads") && f.size_bytes > 50 * 1024 * 1024;
@@ -312,7 +315,10 @@ impl Scanner {
                     suggested_action: "trash".to_string(),
                 });
             } else if is_installer {
-                let is_old = f.modified_at.map(|m| now_ms.saturating_sub(m) > thirty_days_ms).unwrap_or(false);
+                let is_old = f
+                    .modified_at
+                    .map(|m| now_ms.saturating_sub(m) > thirty_days_ms)
+                    .unwrap_or(false);
                 if is_old || f.size_bytes > one_hundred_mb {
                     candidates.push(CleanupCandidate {
                         id: format!("clean_inst_{}", f.id),
@@ -330,9 +336,11 @@ impl Scanner {
                     id: format!("clean_arch_{}", f.id),
                     r#type: CleanupType::LargeArchive,
                     title: format!("Large archive: {}", f.name),
-                    description: "Large compressed archive consuming substantial disk space.".to_string(),
+                    description: "Large compressed archive consuming substantial disk space."
+                        .to_string(),
                     risk_level: RiskLevel::Moderate,
-                    risk_explanation: "Ensure contents are extracted or backed up before deletion.".to_string(),
+                    risk_explanation: "Ensure contents are extracted or backed up before deletion."
+                        .to_string(),
                     file: f.clone(),
                     suggested_action: "trash".to_string(),
                 });
@@ -343,7 +351,8 @@ impl Scanner {
                     title: format!("Large download: {}", f.name),
                     description: "Large file in Downloads folder.".to_string(),
                     risk_level: RiskLevel::Low,
-                    risk_explanation: "Check whether you still need this downloaded asset.".to_string(),
+                    risk_explanation: "Check whether you still need this downloaded asset."
+                        .to_string(),
                     file: f.clone(),
                     suggested_action: "trash".to_string(),
                 });
