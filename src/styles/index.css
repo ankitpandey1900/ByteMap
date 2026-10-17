@@ -32,6 +32,16 @@
     --sidebar-accent-foreground: 222.2 47.4% 11.2%;
     --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 221.2 83.2% 53.3%;
+
+    /* Comic color palette */
+    --comic-yellow: #facc15;
+    --comic-amber: #f59e0b;
+    --comic-sky: #38bdf8;
+    --comic-red: #ef4444;
+    --comic-pink: #ec4899;
+    --comic-green: #22c55e;
+    --comic-purple: #a855f7;
+    --comic-ink: #0f172a;
   }
 
   .dark {
@@ -89,11 +99,16 @@
   font-feature-settings: "tnum";
 }
 
-/* Comic / Pop-Art Adventure Style */
+/* =============================================
+   COMIC / POP-ART ADVENTURE STYLE SYSTEM
+   ============================================= */
+
+/* Bold Comic Text Shadow */
 .comic-text-shadow {
   text-shadow: 2px 2px 0px #0f172a, -1px -1px 0px #0f172a, 1px -1px 0px #0f172a, -1px 1px 0px #0f172a, 2px 0px 0px #0f172a, 0px 2px 0px #0f172a;
 }
 
+/* Halftone Dot Patterns */
 .bg-comic-dots {
   background-image: radial-gradient(rgba(15, 23, 42, 0.12) 1.5px, transparent 1.5px);
   background-size: 8px 8px;
@@ -104,6 +119,7 @@
   background-size: 8px 8px;
 }
 
+/* Retro diagonal screentone stripes */
 .bg-comic-stripes {
   background-image: repeating-linear-gradient(
     45deg,
@@ -114,45 +130,207 @@
   );
 }
 
-.comic-border {
-  border: 2px solid #0f172a;
-  box-shadow: 3px 3px 0px #0f172a;
+/* Cross-hatch comic texture */
+.bg-comic-crosshatch {
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 6px,
+      rgba(15, 23, 42, 0.04) 6px,
+      rgba(15, 23, 42, 0.04) 7px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 6px,
+      rgba(15, 23, 42, 0.04) 6px,
+      rgba(15, 23, 42, 0.04) 7px
+    );
 }
 
-.comic-border-lg {
-  border: 2.5px solid #0f172a;
-  box-shadow: 4px 4px 0px #0f172a;
+
+
+/* =============================================
+   CARTOON ANIMATIONS & KEYFRAMES
+   ============================================= */
+
+/* Wiggle shake animation */
+@keyframes comic-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-3deg); }
+  30% { transform: rotate(2.5deg); }
+  45% { transform: rotate(-2deg); }
+  60% { transform: rotate(1.5deg); }
+  75% { transform: rotate(-1deg); }
 }
 
-.comic-border-hover:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #0f172a;
+/* Pop-in scale with spring bounce */
+@keyframes comic-pop-in {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  80% { transform: scale(0.96); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.comic-border-hover:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #0f172a;
+/* Cartoon bounce */
+@keyframes comic-bounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+  50% { transform: translateY(2px); }
+  70% { transform: translateY(-3px); }
 }
 
-.comic-card {
-  background-color: #ffffff;
-  border-radius: 1rem;
-  border: 2.5px solid #0f172a;
-  box-shadow: 3px 3px 0px #0f172a;
+/* Floating idle animation */
+@keyframes comic-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-4px) rotate(0.5deg); }
+  66% { transform: translateY(-2px) rotate(-0.5deg); }
 }
 
-.comic-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.5rem;
-  background-color: #facc15;
-  border: 2px solid #0f172a;
-  box-shadow: 2px 2px 0px #0f172a;
-  font-family: 'Luckiest Guy', 'Fredoka', sans-serif;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  color: #0f172a;
+/* Starburst pulse */
+@keyframes comic-starburst {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.05) rotate(2deg); }
+  50% { transform: scale(0.97) rotate(-1deg); }
+  75% { transform: scale(1.03) rotate(1deg); }
 }
+
+/* Slide in from left */
+@keyframes comic-slide-left {
+  0% { transform: translateX(-20px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Slide in from bottom */
+@keyframes comic-slide-up {
+  0% { transform: translateY(16px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Jelly wobble on hover */
+@keyframes comic-jelly {
+  0% { transform: scale(1, 1); }
+  25% { transform: scale(0.95, 1.05); }
+  50% { transform: scale(1.05, 0.95); }
+  75% { transform: scale(0.98, 1.02); }
+  100% { transform: scale(1, 1); }
+}
+
+/* Heartbeat pulsing */
+@keyframes comic-heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.08); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.05); }
+  56% { transform: scale(1); }
+}
+
+/* Spinning compass for loading states */
+@keyframes comic-spin-wobble {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(95deg); }
+  50% { transform: rotate(180deg); }
+  75% { transform: rotate(275deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Scan line moving effect */
+@keyframes comic-scanline {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Scout scanner magnifying glass animation */
+@keyframes comic-magnifier-scan {
+  0% { transform: rotate(0deg) translate(0, 0); }
+  25% { transform: rotate(-15deg) translate(-4px, -2px); }
+  50% { transform: rotate(14deg) translate(6px, 2px); }
+  75% { transform: rotate(-7deg) translate(-2px, -3px); }
+  100% { transform: rotate(0deg) translate(0, 0); }
+}
+
+/* Scout scan beam cone */
+@keyframes comic-scan-beam {
+  0%, 100% { opacity: 0.25; transform: scale(0.92); }
+  50% { opacity: 0.75; transform: scale(1.1); }
+}
+
+/* Utility animation classes */
+.animate-comic-wiggle { animation: comic-wiggle 0.6s ease-in-out; }
+.animate-comic-pop { animation: comic-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-comic-bounce { animation: comic-bounce 0.5s ease; }
+.animate-comic-float { animation: comic-float 3s ease-in-out infinite; }
+.animate-comic-starburst { animation: comic-starburst 2s ease-in-out infinite; }
+.animate-comic-slide-left { animation: comic-slide-left 0.3s ease-out; }
+.animate-comic-slide-up { animation: comic-slide-up 0.3s ease-out; }
+.animate-comic-jelly { animation: comic-jelly 0.4s ease; }
+.animate-comic-heartbeat { animation: comic-heartbeat 1.2s ease-in-out infinite; }
+.animate-comic-spin-wobble { animation: comic-spin-wobble 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
+
+/* Hover-triggered cartoon animations */
+.comic-hover-wiggle:hover { animation: comic-wiggle 0.6s ease-in-out; }
+.comic-hover-jelly:hover { animation: comic-jelly 0.4s ease; }
+.comic-hover-pop:hover { animation: comic-pop-in 0.3s ease forwards; }
+.comic-hover-bounce:hover { animation: comic-bounce 0.5s ease; }
+
+
+
+/* =============================================
+   COMIC ACTION EFFECTS
+   ============================================= */
+
+/* Flat comic halftone background — authentic print texture, NOT pastel gradients */
+.comic-starburst-bg {
+  background-color: #fef9c3;
+  background-image: radial-gradient(rgba(15, 23, 42, 0.08) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+}
+
+/* Retro comic speed lines overlay */
+.comic-speed-lines {
+  background: repeating-conic-gradient(
+    transparent 0deg,
+    transparent 8deg,
+    rgba(15, 23, 42, 0.03) 8deg,
+    rgba(15, 23, 42, 0.03) 10deg
+  );
+}
+
+/* Progress bar with comic candy-stripe animation */
+@keyframes comic-candy-stripe {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+.comic-progress-stripe {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: comic-candy-stripe 0.8s linear infinite;
+}
+
+/* =============================================
+   COMIC CARD GLOW & HOVER STATES
+   ============================================= */
+
+/* Cards that lift with a colored glow on hover */
+.comic-card-hover {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+}
+
+.comic-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 4px 6px 0px #0f172a, 0 0 0 3px rgba(250, 204, 21, 0.4);
+}
+
+

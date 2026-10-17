@@ -59,50 +59,94 @@ export function formatDate(timestamp?: number): string {
   }
 }
 
-export function getCategoryColor(category: FileCategory): string {
-  switch (category) {
+export function getCategoryColor(category: FileCategory | string): string {
+  switch (category?.toLowerCase()) {
     case 'video':
-      return '#3b82f6'; // Blue
-    case 'image':
-      return '#ec4899'; // Pink
-    case 'audio':
-      return '#8b5cf6'; // Violet
-    case 'document':
-      return '#10b981'; // Emerald
-    case 'archive':
-      return '#f59e0b'; // Amber
+    case 'media':
+      return '#3b82f6'; // Comic Royal Blue
     case 'app':
-      return '#06b6d4'; // Cyan
+    case 'applications':
+    case 'system':
+      return '#ef4444'; // Comic Crimson Red
+    case 'image':
+    case 'images':
+      return '#ec4899'; // Comic Hot Pink
+    case 'document':
+    case 'documents':
+      return '#10b981'; // Comic Emerald Green
+    case 'audio':
+    case 'music':
+      return '#8b5cf6'; // Comic Electric Violet
+    case 'archive':
+    case 'archives':
+    case 'zip':
+      return '#f59e0b'; // Comic Warm Amber Gold
     case 'dev':
-      return '#6366f1'; // Indigo
+    case 'code':
+      return '#06b6d4'; // Comic Cyan
     case 'game':
-      return '#f97316'; // Orange
+    case 'games':
+      return '#f97316'; // Comic Tangerine
     case 'other':
     default:
-      return '#64748b'; // Slate
+      return '#64748b'; // Comic Slate Charcoal
   }
 }
 
-export function getCategoryBadgeClass(category: FileCategory): string {
-  switch (category) {
+export function getCategoryEmoji(category: FileCategory | string): string {
+  switch (category?.toLowerCase()) {
     case 'video':
-      return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-    case 'image':
-      return 'bg-pink-500/10 text-pink-400 border-pink-500/20';
-    case 'audio':
-      return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
-    case 'document':
-      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-    case 'archive':
-      return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+    case 'media':
+      return '🎬';
     case 'app':
-      return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+    case 'applications':
+    case 'system':
+      return '⚙️';
+    case 'image':
+    case 'images':
+      return '🖼️';
+    case 'document':
+    case 'documents':
+      return '📄';
+    case 'audio':
+    case 'music':
+      return '🎵';
+    case 'archive':
+    case 'archives':
+    case 'zip':
+      return '📦';
     case 'dev':
-      return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+    case 'code':
+      return '💻';
     case 'game':
-      return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+    case 'games':
+      return '🎮';
     case 'other':
     default:
-      return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+      return '📁';
+  }
+}
+
+export function getCategoryBadgeClass(category: FileCategory | string): string {
+  switch (category?.toLowerCase()) {
+    case 'video':
+      return 'bg-blue-100 text-blue-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'image':
+      return 'bg-pink-100 text-pink-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'audio':
+      return 'bg-purple-100 text-purple-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'document':
+      return 'bg-emerald-100 text-emerald-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'archive':
+      return 'bg-amber-100 text-amber-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'app':
+      return 'bg-red-100 text-red-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'dev':
+      return 'bg-cyan-100 text-cyan-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'game':
+      return 'bg-orange-100 text-orange-900 border-2 border-slate-900 shadow-comic-sm';
+    case 'other':
+    default:
+      return 'bg-slate-100 text-slate-800 border-2 border-slate-900 shadow-comic-sm';
   }
 }

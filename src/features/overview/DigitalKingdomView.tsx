@@ -1,16 +1,23 @@
 import React, { useState, useMemo } from 'react';
 import {
-  HardDrive,
-  FileText,
-  Film,
-  Image,
-  Archive,
   ExternalLink,
-  Trash2,
-  ShieldCheck,
   ArrowRight,
-  Compass,
 } from 'lucide-react';
+import {
+  ComicKingdomIcon,
+  ComicDrivesIcon,
+  ComicLargeFilesIcon,
+  ComicDuplicatesIcon,
+  ComicZapIcon,
+  ComicPieChartIcon,
+  ComicVideoIcon,
+  ComicAppIcon,
+  ComicDocIcon,
+  ComicImageIcon,
+  ComicArchiveIcon,
+  ComicTrashIcon,
+  ComicShieldIcon,
+} from '@/components/icons/ComicIcons';
 import {
   PieChart,
   Pie,
@@ -19,8 +26,8 @@ import {
   Tooltip,
 } from 'recharts';
 import { useAppStore } from '@/lib/store';
-import { formatBytes, formatNumber, getCategoryColor } from '@/lib/utils';
-import { ScoutMascot } from '@/components/ScoutMascot';
+import { formatBytes, formatNumber, getCategoryColor, getCategoryEmoji } from '@/lib/utils';
+import { ScoutMascot, ScoutAvatar } from '@/components/ScoutMascot';
 import { api } from '@/lib/api';
 import { FileCategory } from '@/types';
 
@@ -109,53 +116,61 @@ function squarify(
   return result;
 }
 
-// Comic color palette for Treemap categories
-const COMIC_COLORS: Record<string, string> = {
-  document: '#38bdf8', // Vibrant Sky Blue
-  documents: '#38bdf8',
-  media: '#f97316',    // Warm Orange
-  video: '#f97316',
-  app: '#ef4444',      // Comic Red
-  applications: '#ef4444',
-  download: '#22c55e', // Mint Green
-  downloads: '#22c55e',
-  dev: '#ec4899',      // Pop Pink
-  image: '#eab308',    // Warm Amber
-  audio: '#a855f7',    // Vibrant Purple
-  archive: '#f59e0b',  // Gold
-  other: '#64748b',    // Slate
-};
-
-const COMIC_FOLDER_PALETTE = [
-  '#38bdf8', // Vibrant Sky Blue
-  '#ec4899', // Pop Pink
-  '#22c55e', // Mint Green
-  '#f59e0b', // Warm Gold
-  '#a855f7', // Vibrant Purple
-  '#06b6d4', // Cyan
-  '#f97316', // Orange
-  '#f43f5e', // Rose
-  '#84cc16', // Lime
-  '#6366f1', // Indigo
-];
-
 function getCategoryFromNameOrExt(name: string, category?: string): string {
-  if (category && COMIC_COLORS[category.toLowerCase()]) {
-    return category.toLowerCase();
-  }
+  if (category) return category.toLowerCase();
   const n = name.toLowerCase();
   if (n.includes('dev') || n.includes('project') || n.includes('code') || n.includes('src') || n.includes('git')) return 'dev';
-  if (n.includes('media') || n.includes('video') || n.includes('movie') || n.includes('stream')) return 'video';
+  if (n.includes('media') || n.includes('video') || n.includes('movie') || n.includes('stream') || n.includes('cricket') || n.includes('record')) return 'video';
   if (n.includes('doc') || n.includes('paper') || n.includes('note') || n.includes('text') || n.includes('pdf')) return 'document';
   if (n.includes('download')) return 'download';
   if (n.includes('image') || n.includes('photo') || n.includes('pic') || n.includes('asset')) return 'image';
   if (n.includes('audio') || n.includes('music') || n.includes('sound') || n.includes('song')) return 'audio';
-  if (n.includes('archive') || n.includes('zip') || n.includes('backup') || n.includes('tar')) return 'archive';
-  if (n.includes('app') || n.includes('program') || n.includes('bin') || n.includes('build') || n.includes('dist')) return 'app';
+  if (n.includes('archive') || n.includes('zip') || n.includes('backup') || n.includes('tar') || n.includes('rar') || n.includes('7z')) return 'archive';
+  if (n.includes('app') || n.includes('program') || n.includes('bin') || n.includes('build') || n.includes('dist') || n.includes('driver')) return 'app';
   return '';
 }
 
-export const DigitalKingdomView: React.FC = () => {
+function inferFolderCategory(
+  folderPath: string,
+  folderName: string,
+  largestFiles?: { path: string; category: FileCategory; size_bytes: number }[]
+): FileCategory {
+  const normPrefix = folderPath.toLowerCase().replace(/\\+$/, '').replace(/\/+$/, '');
+  const categoryWeights: Record<string, number> = {};
+
+  if (largestFiles && largestFiles.length > 0) {
+    for (const file of largestFiles) {
+      const filePath = file.path.toLowerCase();
+      if (filePath.startsWith(normPrefix)) {
+        categoryWeights[file.category] = (categoryWeights[file.category] || 0) + file.size_bytes;
+      }
+    }
+  }
+
+  let maxBytes = 0;
+  let dominantCat: FileCategory | undefined;
+  for (const [cat, bytes] of Object.entries(categoryWeights)) {
+    if (bytes > maxBytes) {
+      maxBytes = bytes;
+      dominantCat = cat as FileCategory;
+    }
+  }
+
+  if (dominantCat) return dominantCat;
+
+  const nameCat = getCategoryFromNameOrExt(folderName);
+  if (nameCat) return nameCat as FileCategory;
+
+  return 'other';
+}
+
+export interface DigitalKingdomViewProps {
+  onOpenScanModal?: () => void;
+}
+
+export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
+  onOpenScanModal,
+}) => {
   const {
     drives,
     selectedDrive,
@@ -184,27 +199,28 @@ export const DigitalKingdomView: React.FC = () => {
     0
   ) || 0;
 
-  // Real Category distribution for donut chart
+  // Real Category distribution for donut chart - SINGLE SOURCE OF TRUTH
   const categoriesData = useMemo(() => {
     if (scanSummary && scanSummary.categories.length > 0) {
       return scanSummary.categories.slice(0, 7).map((c) => ({
         name: c.category.toUpperCase(),
         value: c.total_bytes,
         percentage: c.percentage,
-        color: COMIC_COLORS[c.category.toLowerCase()] || getCategoryColor(c.category),
+        color: getCategoryColor(c.category),
+        emoji: getCategoryEmoji(c.category),
       }));
     }
     return [];
   }, [scanSummary]);
 
-  // Real Top Extensions list
+  // Real Top Extensions list - Matching category colors
   const topExtensions = useMemo(() => {
     if (scanSummary && scanSummary.extensions.length > 0) {
       const total = scanSummary.total_bytes || 1;
       return scanSummary.extensions.slice(0, 4).map((ext) => ({
         ext: ext.extension,
         percent: Math.max(1, Math.round((ext.total_bytes / total) * 100)),
-        color: COMIC_COLORS[ext.category.toLowerCase()] || '#f59e0b',
+        color: getCategoryColor(ext.category),
       }));
     }
     return [];
@@ -224,8 +240,8 @@ export const DigitalKingdomView: React.FC = () => {
       const normFolder = folder.path.toLowerCase().replace(/\\+$/, '').replace(/\/+$/, '');
       if (normFolder === normCurrent) continue;
       if (normFolder.startsWith(normCurrent)) {
-        const sub = normFolder.slice(normCurrent.length).replace(/^[\\/]/, '');
-        const directSub = sub.split(/[\\/]/)[0];
+        const sub = normFolder.slice(normCurrent.length).replace(/^[\\\/]/, '');
+        const directSub = sub.split(/[\\\/]/)[0];
         if (directSub && !items.some((it) => it.name.toLowerCase() === directSub.toLowerCase())) {
           items.push({
             id: folder.path,
@@ -234,6 +250,7 @@ export const DigitalKingdomView: React.FC = () => {
             size: folder.size_bytes,
             isDir: true,
             fileCount: folder.file_count,
+            category: inferFolderCategory(folder.path, directSub, scanSummary.largest_files),
           });
         }
       }
@@ -243,8 +260,8 @@ export const DigitalKingdomView: React.FC = () => {
     for (const file of scanSummary.largest_files) {
       const normFile = file.path.toLowerCase();
       if (normFile.startsWith(normCurrent)) {
-        const sub = normFile.slice(normCurrent.length).replace(/^[\\/]/, '');
-        const segments = sub.split(/[\\/]/);
+        const sub = normFile.slice(normCurrent.length).replace(/^[\\\/]/, '');
+        const segments = sub.split(/[\\\/]/);
         if (segments.length <= 1) {
           items.push({
             id: file.id,
@@ -285,6 +302,7 @@ export const DigitalKingdomView: React.FC = () => {
           size: folder.size_bytes,
           isDir: true,
           fileCount: folder.file_count,
+          category: inferFolderCategory(folder.path, folder.name, scanSummary.largest_files),
         });
       }
     }
@@ -348,15 +366,18 @@ export const DigitalKingdomView: React.FC = () => {
            ========================================= */}
         <div className="col-span-12 lg:col-span-3 flex flex-col space-y-3">
           {/* 1. DRIVE OVERVIEW CARD */}
-          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3.5 shadow-comic relative flex flex-col justify-between">
+          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3.5 shadow-comic relative flex flex-col justify-between comic-card-hover overflow-hidden">
+            {/* Subtle crosshatch texture */}
+            <div className="absolute inset-0 bg-comic-crosshatch pointer-events-none rounded-2xl" />
+
             {/* Yellow Header Pill */}
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 w-fit mb-2">
-              <HardDrive className="w-3.5 h-3.5 stroke-[2.5]" />
+            <div className="relative inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 w-fit mb-2">
+              <ComicDrivesIcon className="w-4 h-4" />
               <span>Drive Overview</span>
             </div>
 
             {/* Drive Name & Real Capacity */}
-            <div className="flex items-baseline justify-between mt-0.5">
+            <div className="relative flex items-baseline justify-between mt-0.5">
               <span className="font-comic text-lg text-slate-900 uppercase tracking-wide">
                 {activeDrive ? activeDrive.name : (drives.length > 0 ? drives[0].name : 'C: DRIVE')}
               </span>
@@ -367,21 +388,33 @@ export const DigitalKingdomView: React.FC = () => {
               </span>
             </div>
 
-            {/* Solid Comic Progress Bar */}
-            <div className="w-full h-3.5 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden my-2">
+            {/* Comic Progress Bar with candy stripe when near full */}
+            <div className="relative w-full h-4 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden my-2">
               <div
-                className="h-full rounded-full bg-emerald-400 border-r-2 border-slate-900 transition-all duration-500"
+                className={`h-full rounded-full border-r-2 border-slate-900 transition-all duration-700 ${
+                  usedPercent > 90
+                    ? 'bg-gradient-to-r from-rose-400 to-rose-500 comic-progress-stripe'
+                    : usedPercent > 75
+                    ? 'bg-gradient-to-r from-amber-300 to-amber-500'
+                    : 'bg-gradient-to-r from-emerald-300 to-emerald-500'
+                }`}
                 style={{ width: `${Math.max(usedPercent > 0 ? 5 : 0, usedPercent)}%` }}
               />
+              {/* Percent label inside bar */}
+              {usedPercent > 15 && (
+                <span className="absolute inset-0 flex items-center justify-center text-[9px] font-comic font-bold text-slate-900/80">
+                  {usedPercent}%
+                </span>
+              )}
             </div>
 
             {/* Scanning Speed / Telemetry */}
-            <p className="text-[10px] font-fredoka font-bold text-slate-600">
+            <p className="relative text-[10px] font-fredoka font-bold text-slate-600">
               Files Scanned: {scanProgress.scanned_files > 0 ? formatNumber(scanProgress.scanned_files) : (scanSummary ? formatNumber(scanSummary.total_files) : '0')} | Speed: {scanSpeed > 0 ? `${formatNumber(scanSpeed)} files/sec` : 'Idle'}
             </p>
 
             {/* Scout Mascot with Magnifying Glass */}
-            <div className="mt-2.5">
+            <div className="relative mt-2.5">
               <ScoutMascot
                 className="w-16 h-16"
                 isScanning={scanProgress.status === 'scanning'}
@@ -397,15 +430,18 @@ export const DigitalKingdomView: React.FC = () => {
           </div>
 
           {/* 2. FILE TYPE BREAKDOWN CARD */}
-          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3.5 shadow-comic flex-1 flex flex-col justify-between">
+          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3.5 shadow-comic flex-1 flex flex-col justify-between comic-card-hover overflow-hidden relative">
+            <div className="absolute inset-0 bg-comic-dots opacity-[0.06] pointer-events-none rounded-2xl" />
+
             {/* Yellow Header Pill & Navigation */}
-            <div className="flex items-center justify-between mb-1">
+            <div className="relative flex items-center justify-between mb-1">
               <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 w-fit">
+                <ComicPieChartIcon className="w-4 h-4" />
                 <span>File Type Breakdown</span>
               </div>
               <button
                 onClick={() => setActiveTab('file-types')}
-                className="px-2 py-0.5 rounded-lg border border-slate-900 bg-slate-50 hover:bg-amber-300 font-comic text-[10px] uppercase text-slate-800 transition-colors shadow-comic-sm"
+                className="px-2 py-0.5 rounded-lg border border-slate-900 bg-slate-50 hover:bg-amber-300 font-comic text-[10px] uppercase text-slate-800 transition-all shadow-comic-sm hover:-translate-y-0.5 hover:shadow-comic"
                 title="Open full category analytics"
               >
                 Analytics &gt;
@@ -414,8 +450,8 @@ export const DigitalKingdomView: React.FC = () => {
 
             {categoriesData.length > 0 ? (
               <>
-                {/* Recharts Donut with Comic Halftone Vibe */}
-                <div className="h-36 w-full relative my-1">
+                {/* Recharts Donut with Center Hole Info */}
+                <div className="relative h-36 w-full my-1 flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -424,8 +460,8 @@ export const DigitalKingdomView: React.FC = () => {
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        innerRadius={32}
-                        outerRadius={56}
+                        innerRadius={34}
+                        outerRadius={58}
                         stroke="#0f172a"
                         strokeWidth={2.5}
                         paddingAngle={3}
@@ -435,32 +471,54 @@ export const DigitalKingdomView: React.FC = () => {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(val: number) => [formatBytes(val, settings.unit), 'Space']}
+                        formatter={(val: number, name: string) => [
+                          `${formatBytes(val, settings.unit)} (${
+                            categoriesData.find((c) => c.name === name)?.percentage.toFixed(1) || '0'
+                          }%)`,
+                          name,
+                        ]}
                         contentStyle={{
                           backgroundColor: '#fef08a',
                           borderColor: '#0f172a',
-                          borderWidth: '2px',
-                          borderRadius: '10px',
+                          borderWidth: '2.5px',
+                          borderRadius: '12px',
                           color: '#0f172a',
                           fontWeight: 'bold',
                           fontSize: '11px',
                           boxShadow: '3px 3px 0px #0f172a',
+                          fontFamily: "'Fredoka', sans-serif",
                         }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
+                  {/* Center hole comic summary badge */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[11px] font-comic uppercase text-slate-900 leading-none">
+                      {formatNumber(scanSummary?.total_files || 0)}
+                    </span>
+                    <span className="text-[8px] font-fredoka font-bold text-slate-500 uppercase leading-none mt-0.5">
+                      Files
+                    </span>
+                  </div>
                 </div>
 
-                {/* Category Labels Grid */}
-                <div className="grid grid-cols-2 gap-1.5 text-[11px] font-fredoka font-bold">
+                {/* Category Labels Grid with Matching Badges & Emojis */}
+                <div className="relative grid grid-cols-2 gap-1.5 text-[11px] font-fredoka font-bold">
                   {categoriesData.slice(0, 6).map((c) => (
-                    <div key={c.name} className="flex items-center space-x-1.5 truncate">
+                    <div
+                      key={c.name}
+                      className="flex items-center space-x-1.5 p-1 rounded-lg border-1.5 border-slate-900 bg-slate-50 hover:bg-amber-100 transition-colors shadow-comic-sm truncate group cursor-default"
+                    >
                       <span
-                        className="w-2.5 h-2.5 rounded-sm border border-slate-900 shrink-0"
+                        className="w-3.5 h-3.5 rounded-md border border-slate-900 shrink-0 group-hover:scale-110 transition-transform shadow-[1px_1px_0px_#0f172a]"
                         style={{ backgroundColor: c.color }}
                       />
-                      <span className="truncate text-slate-700 capitalize">
-                        {c.name.toLowerCase()} {c.percentage.toFixed(0)}%
+                      <span className="text-xs shrink-0">{c.emoji}</span>
+                      <span className="truncate text-slate-800 capitalize group-hover:text-slate-900">
+                        {c.name.toLowerCase()}
+                      </span>
+                      <span className="text-[10px] font-comic text-slate-700 ml-auto shrink-0">
+                        {c.percentage.toFixed(0)}%
                       </span>
                     </div>
                   ))}
@@ -468,7 +526,7 @@ export const DigitalKingdomView: React.FC = () => {
               </>
             ) : (
               <div className="h-28 sm:h-32 flex flex-col items-center justify-center text-center p-2 text-slate-500">
-                <span className="text-xl mb-0.5">📊</span>
+                <span className="text-2xl mb-1 animate-comic-float">📊</span>
                 <p className="font-fredoka font-bold text-xs text-slate-700">No categories scanned yet</p>
                 <p className="text-[10px] text-slate-500 mt-0.5">Click Analyze to categorize storage</p>
               </div>
@@ -476,23 +534,24 @@ export const DigitalKingdomView: React.FC = () => {
           </div>
 
           {/* 3. TOP EXTENSIONS BADGE CARD */}
-          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic">
-            <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase tracking-wide text-slate-900 mb-2">
+          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic comic-card-hover">
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase tracking-wide text-slate-900 mb-2">
+              <ComicZapIcon className="w-3.5 h-3.5" />
               <span>Top Extensions</span>
             </div>
 
             {topExtensions.length > 0 ? (
-              <div className="space-y-1.5 text-xs font-fredoka font-bold">
+              <div className="space-y-2 text-xs font-fredoka font-bold">
                 {topExtensions.map((item, idx) => (
-                  <div key={item.ext} className="flex items-center justify-between">
+                  <div key={item.ext} className="flex items-center justify-between group">
                     <div className="flex items-center space-x-2">
-                      <span className="text-slate-500 w-3">{idx + 1}.</span>
-                      <span className="font-mono text-slate-800">{item.ext}</span>
+                      <span className="text-slate-500 w-3 font-comic">{idx + 1}.</span>
+                      <span className="font-mono text-slate-800 group-hover:text-slate-900 transition-colors">{item.ext}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-12 h-2 rounded-full border border-slate-900 overflow-hidden bg-slate-200">
+                      <div className="w-14 h-2.5 rounded-full border-2 border-slate-900 overflow-hidden bg-slate-200">
                         <div
-                          className="h-full rounded-full"
+                          className="h-full rounded-full transition-all duration-500"
                           style={{ backgroundColor: item.color, width: `${Math.min(100, item.percent * 3)}%` }}
                         />
                       </div>
@@ -514,14 +573,17 @@ export const DigitalKingdomView: React.FC = () => {
         {/* =========================================
             CENTER COLUMN (Your Digital Kingdom - Treemap)
            ========================================= */}
-        <div className="col-span-12 lg:col-span-6 flex flex-col bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic overflow-hidden p-4">
+        <div className="col-span-12 lg:col-span-6 flex flex-col bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic overflow-hidden p-4 relative">
+          {/* Subtle background texture */}
+          <div className="absolute inset-0 bg-comic-crosshatch pointer-events-none rounded-2xl" />
+
           {/* Treemap Top Bar with Title & Breadcrumbs */}
-          <div className="flex items-start justify-between pb-3 border-b-2 border-slate-900 mb-3">
+          <div className="relative flex items-start justify-between pb-3 border-b-2 border-slate-900 mb-3">
             <div>
               <div className="flex items-center space-x-2">
                 {/* Yellow Badge */}
                 <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
-                  <span className="text-sm">🗺️</span>
+                  <ComicKingdomIcon className="w-4 h-4" />
                   <span>Interactive Map</span>
                 </div>
                 <div className="flex items-center space-x-1.5 text-xs font-fredoka font-bold text-slate-500">
@@ -539,7 +601,7 @@ export const DigitalKingdomView: React.FC = () => {
                       </span>
                       <button
                         onClick={() => setTreemapCurrentPath('')}
-                        className="ml-1 px-1.5 py-0.5 rounded bg-slate-200 hover:bg-rose-200 text-[10px] text-slate-700 font-comic uppercase border border-slate-900"
+                        className="ml-1 px-1.5 py-0.5 rounded bg-slate-200 hover:bg-rose-200 text-[10px] text-slate-700 font-comic uppercase border border-slate-900 transition-colors hover:-translate-y-0.5"
                         title="Back to Kingdom Root"
                       >
                         Back
@@ -551,22 +613,47 @@ export const DigitalKingdomView: React.FC = () => {
               <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1 drop-shadow-sm">
                 YOUR DIGITAL KINGDOM
               </h2>
-              <p className="text-[11px] font-fredoka text-slate-500 font-semibold -mt-0.5">
-                Central Storage Visualization (Treemap)
-              </p>
+              {/* Visual Comic Category Legend Banner */}
+              <div className="flex items-center gap-1.5 flex-wrap text-[10px] font-fredoka font-bold mt-1">
+                <span className="text-slate-500 font-comic uppercase">Map Legend:</span>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-blue-100 border border-slate-900 text-blue-900 shadow-[1px_1px_0px_#0f172a]">
+                  <ComicVideoIcon className="w-3.5 h-3.5" />
+                  <span>Video</span>
+                </span>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-red-100 border border-slate-900 text-red-900 shadow-[1px_1px_0px_#0f172a]">
+                  <ComicAppIcon className="w-3.5 h-3.5" />
+                  <span>Apps</span>
+                </span>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-pink-100 border border-slate-900 text-pink-900 shadow-[1px_1px_0px_#0f172a]">
+                  <ComicImageIcon className="w-3.5 h-3.5" />
+                  <span>Images</span>
+                </span>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-emerald-100 border border-slate-900 text-emerald-900 shadow-[1px_1px_0px_#0f172a]">
+                  <ComicDocIcon className="w-3.5 h-3.5" />
+                  <span>Docs</span>
+                </span>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-amber-100 border border-slate-900 text-amber-900 shadow-[1px_1px_0px_#0f172a]">
+                  <ComicArchiveIcon className="w-3.5 h-3.5" />
+                  <span>Archives</span>
+                </span>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-900 text-slate-800 shadow-[1px_1px_0px_#0f172a]">
+                  <ComicLargeFilesIcon className="w-3.5 h-3.5" />
+                  <span>Other</span>
+                </span>
+              </div>
             </div>
 
             {/* Size & Filter Action Pills */}
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setMinThresholdMB(minThresholdMB === 10 ? 100 : 10)}
-                className="px-2.5 py-1 rounded-lg bg-white border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase hover:bg-slate-100 transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-white border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase hover:bg-amber-100 hover:-translate-y-0.5 hover:shadow-comic transition-all"
               >
                 Size
               </button>
               <button
                 onClick={() => setActiveTab('explore')}
-                className="px-2.5 py-1 rounded-lg bg-white border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase hover:bg-slate-100 transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-white border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase hover:bg-amber-100 hover:-translate-y-0.5 hover:shadow-comic transition-all"
               >
                 Filter
               </button>
@@ -582,10 +669,9 @@ export const DigitalKingdomView: React.FC = () => {
                 preserveAspectRatio="none"
               >
                 {rects.map((node, idx) => {
-                  const detectedCat = getCategoryFromNameOrExt(node.name, node.category);
-                  const fill = detectedCat && COMIC_COLORS[detectedCat]
-                    ? COMIC_COLORS[detectedCat]
-                    : COMIC_FOLDER_PALETTE[idx % COMIC_FOLDER_PALETTE.length];
+                  const cat = (node.category || getCategoryFromNameOrExt(node.name) || 'other') as FileCategory;
+                  const fill = getCategoryColor(cat);
+                  const catEmoji = getCategoryEmoji(cat);
                   const isHovered = hoveredNode?.id === node.id;
                   const isHugeFile = idx === 0 && node.size > 50 * 1024 * 1024; // Only badge the largest genuine file
 
@@ -599,7 +685,7 @@ export const DigitalKingdomView: React.FC = () => {
                       }}
                       onMouseEnter={() => setHoveredNode(node)}
                       onMouseLeave={() => setHoveredNode(null)}
-                      className="cursor-pointer transition-all"
+                      className="cursor-pointer"
                     >
                       {/* Treemap Cell with thick comic borders */}
                       <rect
@@ -607,11 +693,14 @@ export const DigitalKingdomView: React.FC = () => {
                         y={node.y + 2}
                         width={Math.max(0, node.w - 4)}
                         height={Math.max(0, node.h - 4)}
-                        rx={6}
+                        rx={8}
                         fill={fill}
                         stroke="#0f172a"
                         strokeWidth={isHovered ? 4 : 2.5}
-                        className="transition-all duration-150"
+                        style={{
+                          transition: 'stroke-width 0.15s ease, transform 0.15s ease',
+                          filter: isHovered ? 'brightness(1.1)' : 'none',
+                        }}
                       />
 
                       {/* Halftone / Comic dots texture on block */}
@@ -620,68 +709,126 @@ export const DigitalKingdomView: React.FC = () => {
                         y={node.y + 2}
                         width={Math.max(0, node.w - 4)}
                         height={Math.max(0, node.h - 4)}
-                        rx={6}
+                        rx={8}
                         fill="url(#comic-dots-pattern)"
                         pointerEvents="none"
                       />
 
+                      {/* Glossy highlight on top of block */}
+                      {node.h > 30 && (
+                        <rect
+                          x={node.x + 4}
+                          y={node.y + 4}
+                          width={Math.max(0, node.w - 8)}
+                          height={Math.max(0, Math.min(node.h * 0.3, 20))}
+                          rx={6}
+                          fill="url(#comic-gloss-gradient)"
+                          pointerEvents="none"
+                        />
+                      )}
+
+                      {/* Category Pill Tag at top of cell */}
+                      {node.w > 75 && node.h > 55 && (
+                        <g pointerEvents="none">
+                          <rect
+                            x={node.x + 8}
+                            y={node.y + 8}
+                            width={Math.min(node.w - 16, 80)}
+                            height={18}
+                            rx={5}
+                            fill="#ffffff"
+                            stroke="#0f172a"
+                            strokeWidth={1.5}
+                            filter="drop-shadow(1px 1px 0px #0f172a)"
+                          />
+                          <text
+                            x={node.x + 12}
+                            y={node.y + 21}
+                            fontFamily="'Fredoka', sans-serif"
+                            fontWeight="800"
+                            fontSize={9}
+                            fill="#0f172a"
+                            className="uppercase"
+                          >
+                            {catEmoji} {cat.toUpperCase()}
+                          </text>
+                        </g>
+                      )}
+
                       {/* Folder / Document Icon and Label */}
                       {node.w > 65 && node.h > 45 && (
                         <g pointerEvents="none">
-                          <rect
-                            x={node.x + node.w / 2 - 14}
-                            y={node.y + node.h / 2 - (isHugeFile ? 26 : 14)}
-                            width={28}
-                            height={22}
-                            rx={4}
-                            fill="#ffffff"
-                            stroke="#0f172a"
-                            strokeWidth={2}
-                          />
+                          {/* Folder/file icon emoji */}
                           <text
                             x={node.x + node.w / 2}
-                            y={node.y + node.h / 2 + (isHugeFile ? -2 : 16)}
+                            y={node.y + node.h / 2 - (isHugeFile ? 10 : 4)}
+                            textAnchor="middle"
+                            fontSize={node.w > 120 ? 18 : 14}
+                            dominantBaseline="middle"
+                          >
+                            {catEmoji}
+                          </text>
+                          {/* Label */}
+                          <text
+                            x={node.x + node.w / 2}
+                            y={node.y + node.h / 2 + (isHugeFile ? 6 : 16)}
                             textAnchor="middle"
                             fontFamily="'Fredoka', sans-serif"
                             fontWeight="800"
                             fontSize={node.w < 100 ? 11 : 14}
                             fill="#0f172a"
-                            className="uppercase drop-shadow-[1px_1px_0px_#ffffff]"
+                            className="uppercase"
+                            style={{ textShadow: '1px 1px 0px #ffffff' }}
                           >
-                            {node.name.length > Math.floor(node.w / 10)
-                              ? node.name.slice(0, Math.floor(node.w / 10)) + '…'
+                            {node.name.length > Math.floor(node.w / 9)
+                              ? node.name.slice(0, Math.floor(node.w / 9)) + '…'
                               : node.name}
                           </text>
+                          {/* Size label */}
+                          {node.w > 90 && node.h > 70 && (
+                            <text
+                              x={node.x + node.w / 2}
+                              y={node.y + node.h / 2 + (isHugeFile ? 20 : 32)}
+                              textAnchor="middle"
+                              fontFamily="'Fredoka', sans-serif"
+                              fontWeight="600"
+                              fontSize={10}
+                              fill="#0f172a"
+                              opacity={0.8}
+                            >
+                              {formatBytes(node.size, settings.unit)}
+                            </text>
+                          )}
                         </g>
                       )}
 
-                      {/* "HUGE FILE!" Tilted Yellow Comic Burst Badge */}
+                      {/* "HUGE STORAGE!" Tilted Yellow Comic Burst Badge */}
                       {isHugeFile && node.w > 130 && node.h > 90 && (
                         <g
                           pointerEvents="none"
-                          transform={`translate(${node.x + node.w / 2 - 50}, ${node.y + node.h / 2 + 8}) rotate(-4)`}
+                          transform={`translate(${node.x + node.w / 2 - 55}, ${node.y + node.h / 2 + 22}) rotate(-4)`}
                         >
                           <rect
                             x="0"
                             y="0"
-                            width="100"
-                            height="28"
+                            width="110"
+                            height="26"
                             rx="6"
                             fill="#facc15"
                             stroke="#0f172a"
-                            strokeWidth="2.5"
+                            strokeWidth="2"
                             filter="drop-shadow(2px 2px 0px #0f172a)"
                           />
                           <text
-                            x="50"
-                            y="19"
+                            x="55"
+                            y="17"
                             textAnchor="middle"
                             fontFamily="'Luckiest Guy', cursive"
-                            fontSize="13"
+                            fontSize="12"
                             fill="#0f172a"
                             letterSpacing="0.5"
                           >
-                            HUGE FILE!
+                            ⚡ HUGE STORAGE!
                           </text>
                         </g>
                       )}
@@ -693,40 +840,98 @@ export const DigitalKingdomView: React.FC = () => {
                   <pattern id="comic-dots-pattern" width="8" height="8" patternUnits="userSpaceOnUse">
                     <circle cx="2" cy="2" r="1" fill="#ffffff" fillOpacity="0.25" />
                   </pattern>
+                  <linearGradient id="comic-gloss-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                  </linearGradient>
                 </defs>
               </svg>
             ) : (
-              /* Genuine Adventure Empty State */
-              <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6 text-center bg-gradient-to-b from-amber-50 to-orange-50">
-                <div className="w-14 h-14 rounded-2xl bg-amber-300 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-2.5">
-                  <Compass className="w-8 h-8 text-slate-900" />
+              /* Genuine Adventure Empty State with Scout Mascot */
+              <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6 text-center bg-amber-50 bg-comic-dots">
+                {/* Yellow Block with Scout Scanner Guy */}
+                <div className="w-20 h-20 rounded-2xl bg-amber-300 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-3 p-1.5 overflow-hidden relative">
+                  <ScoutAvatar
+                    className="w-full h-full"
+                    isScanning={scanProgress.status === 'scanning'}
+                  />
+                  {scanProgress.status === 'scanning' && (
+                    <div className="absolute inset-0 border-2 border-emerald-400 rounded-2xl animate-pulse pointer-events-none" />
+                  )}
                 </div>
+
                 <h3 className="font-comic text-lg sm:text-xl text-slate-900 uppercase tracking-wide">
-                  Uncharted Digital Kingdom!
+                  {scanProgress.status === 'scanning'
+                    ? 'Scouting In Progress!'
+                    : 'Uncharted Digital Kingdom!'}
                 </h3>
+
                 <p className="font-fredoka text-xs text-slate-600 max-w-sm mt-1 mb-3 font-semibold">
-                  Select a drive or directory and click the <strong>ANALYZE</strong> button at the top to scout your storage and reveal the interactive map.
+                  {scanProgress.status === 'scanning'
+                    ? `Scout is actively analyzing files: ${formatNumber(scanProgress.scanned_files)} scanned (${formatBytes(scanProgress.scanned_bytes, settings.unit)})`
+                    : 'Select a drive or directory and click the ANALYZE button at the top to scout your storage and reveal the interactive map.'}
                 </p>
-                <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900">
-                  <span>🗺️ Ready to Scout</span>
-                </div>
+
+                {scanProgress.status === 'scanning' ? (
+                  <div className="w-64 max-w-full space-y-1.5">
+                    <div className="w-full h-4 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden relative">
+                      <div className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 w-full comic-progress-stripe" />
+                    </div>
+                    <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-emerald-400 border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase text-slate-900">
+                      <span className="animate-spin">🧭</span>
+                      <span>Scouting Files...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => (onOpenScanModal ? onOpenScanModal() : setActiveTab('drives'))}
+                    className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 border-2 border-slate-900 shadow-comic hover:shadow-comic-glow-amber font-comic text-xs uppercase text-slate-900 transition-all hover:-translate-y-0.5 cursor-pointer"
+                  >
+                    <span>🗺️ Ready to Scout • Click to Scan</span>
+                  </button>
+                )}
               </div>
             )}
 
-            {/* Hover Tooltip Overlay */}
+            {/* Hover Tooltip Overlay — Speech bubble style */}
             {hoveredNode && (
               <div
-                className="absolute pointer-events-none z-20 px-3 py-1.5 rounded-xl bg-amber-300 border-2 border-slate-900 shadow-comic font-fredoka font-bold text-slate-900 text-xs"
+                className="absolute pointer-events-none z-20 px-3.5 py-2.5 rounded-xl bg-yellow-100 border-2.5 border-slate-900 shadow-comic font-fredoka font-bold text-slate-900 text-xs animate-comic-pop"
                 style={{
                   left: `${Math.min(75, Math.max(10, (hoveredNode.x + hoveredNode.w / 2) / 10))}%`,
                   top: `${Math.min(75, Math.max(10, (hoveredNode.y + hoveredNode.h / 2) / 7))}%`,
                 }}
               >
-                <p className="font-comic uppercase tracking-wider text-sm">{hoveredNode.name}</p>
-                <p className="text-[11px] text-slate-800">
-                  Size: {formatBytes(hoveredNode.size, settings.unit)}
+                <div className="flex items-center space-x-1.5 mb-1">
+                  <span className="text-sm">
+                    {getCategoryEmoji(hoveredNode.category || getCategoryFromNameOrExt(hoveredNode.name) || 'other')}
+                  </span>
+                  <p className="font-comic uppercase tracking-wider text-sm leading-tight">
+                    {hoveredNode.name}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2 text-[11px] text-slate-800">
+                  <span
+                    className="w-2.5 h-2.5 rounded-sm border border-slate-900 shrink-0"
+                    style={{
+                      backgroundColor: getCategoryColor(
+                        hoveredNode.category || getCategoryFromNameOrExt(hoveredNode.name) || 'other'
+                      ),
+                    }}
+                  />
+                  <span>
+                    Size: <strong>{formatBytes(hoveredNode.size, settings.unit)}</strong>
+                    {scanSummary?.total_bytes
+                      ? ` (${((hoveredNode.size / scanSummary.total_bytes) * 100).toFixed(1)}%)`
+                      : ''}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-600 mt-1 font-fredoka">
+                  {hoveredNode.isDir ? '📂 Click to open folder contents' : `Type: ${(hoveredNode.category || 'File').toUpperCase()}`}
                 </p>
-                {hoveredNode.isDir && <p className="text-[10px] text-slate-700">Click to enter folder</p>}
+                {/* Speech bubble tail */}
+                <div className="absolute -bottom-[10px] left-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[4px] border-r-transparent border-t-[12px] border-t-slate-900" />
+                <div className="absolute -bottom-[8px] left-[25px] w-0 h-0 border-l-[7px] border-l-transparent border-r-[3px] border-r-transparent border-t-[10px] border-t-yellow-100" />
               </div>
             )}
           </div>
@@ -737,12 +942,14 @@ export const DigitalKingdomView: React.FC = () => {
            ========================================= */}
         <div className="col-span-12 lg:col-span-3 flex flex-col space-y-2.5">
           {/* 1. LARGE FILES FOUND CARD */}
-          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic flex-1 flex flex-col justify-between">
-            <div>
+          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic flex-1 flex flex-col justify-between comic-card-hover overflow-hidden relative">
+            <div className="absolute inset-0 bg-comic-stripes pointer-events-none rounded-2xl" />
+
+            <div className="relative">
               {/* Header */}
               <div className="flex items-center justify-between mb-1.5">
                 <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
-                  <FileText className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <ComicLargeFilesIcon className="w-4 h-4" />
                   <span>Large Files Found</span>
                 </div>
               </div>
@@ -756,10 +963,10 @@ export const DigitalKingdomView: React.FC = () => {
                     <button
                       key={mb}
                       onClick={() => setMinThresholdMB(mb)}
-                      className={`flex-1 py-0.5 rounded-md border border-slate-900 font-comic text-[10px] uppercase transition-colors ${
+                      className={`flex-1 py-0.5 rounded-md border-2 border-slate-900 font-comic text-[10px] uppercase transition-all ${
                         isActive
-                          ? 'bg-amber-400 text-slate-900 shadow-comic-sm font-bold'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          ? 'bg-amber-400 text-slate-900 shadow-comic-sm font-bold -translate-y-0.5'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:-translate-y-0.5'
                       }`}
                     >
                       {labels[i]}
@@ -774,17 +981,14 @@ export const DigitalKingdomView: React.FC = () => {
                   {largeFilesList.map((file) => (
                     <div
                       key={file.id}
-                      className="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 border-1.5 border-slate-900 hover:bg-amber-50 transition-colors"
+                      className="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 border-2 border-slate-900 hover:bg-amber-50 hover:-translate-y-0.5 hover:shadow-comic-sm transition-all"
                     >
                       <div className="flex items-center space-x-2 truncate mr-2">
-                        <div className="w-5 h-5 rounded-md bg-amber-300 border border-slate-900 flex items-center justify-center shrink-0">
-                          {file.category === 'video' ? (
-                            <Film className="w-3 h-3 text-blue-900" />
-                          ) : file.category === 'archive' ? (
-                            <Archive className="w-3 h-3 text-amber-900" />
-                          ) : (
-                            <Image className="w-3 h-3 text-emerald-900" />
-                          )}
+                        <div
+                          className="w-6 h-6 rounded-lg border-2 border-slate-900 flex items-center justify-center shrink-0 shadow-comic-sm"
+                          style={{ backgroundColor: getCategoryColor(file.category) }}
+                        >
+                          <span className="text-xs">{getCategoryEmoji(file.category)}</span>
                         </div>
                         <div className="truncate">
                           <p className="font-fredoka font-bold text-xs text-slate-900 truncate">
@@ -798,7 +1002,7 @@ export const DigitalKingdomView: React.FC = () => {
 
                       <button
                         onClick={() => handleReveal(file.path)}
-                        className="p-1 rounded-md hover:bg-amber-200 text-slate-700 transition-colors shrink-0"
+                        className="p-1.5 rounded-lg hover:bg-amber-200 text-slate-700 transition-all shrink-0 border border-transparent hover:border-slate-900"
                         title="Reveal in native file explorer"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -808,6 +1012,7 @@ export const DigitalKingdomView: React.FC = () => {
                 </div>
               ) : (
                 <div className="py-4 text-center text-slate-500 font-fredoka text-xs">
+                  <span className="text-xl block mb-1 animate-comic-float">📂</span>
                   <p className="font-bold text-slate-700">No large files found</p>
                   <p className="text-[10px] text-slate-500 mt-0.5">Scan your drive to list top disk consumers</p>
                 </div>
@@ -816,7 +1021,7 @@ export const DigitalKingdomView: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('large-files')}
-              className="mt-2 w-full py-1 rounded-xl bg-slate-100 border-2 border-slate-900 font-comic text-xs uppercase tracking-wide hover:bg-amber-300 transition-colors flex items-center justify-center space-x-1"
+              className="relative mt-2 w-full py-1.5 rounded-xl bg-slate-100 border-2 border-slate-900 font-comic text-xs uppercase tracking-wide hover:bg-amber-300 hover:-translate-y-0.5 hover:shadow-comic transition-all flex items-center justify-center space-x-1"
             >
               <span>View All Large Files</span>
               <ArrowRight className="w-3 h-3" />
@@ -824,21 +1029,24 @@ export const DigitalKingdomView: React.FC = () => {
           </div>
 
           {/* 2. DUPLICATE ALERTS CARD */}
-          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic flex-1 flex flex-col justify-between">
-            <div>
+          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic flex-1 flex flex-col justify-between comic-card-hover overflow-hidden relative">
+            <div className="absolute inset-0 bg-comic-dots opacity-[0.05] pointer-events-none rounded-2xl" />
+
+            <div className="relative">
               {/* Header */}
               <div className="flex items-center space-x-1.5 mb-1.5">
-                <div className="w-6 h-6 rounded-lg bg-red-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm">
-                  <Trash2 className="w-3.5 h-3.5 text-slate-900" />
+                <div className="w-7 h-7 rounded-lg bg-red-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm comic-hover-wiggle">
+                  <ComicTrashIcon className="w-4 h-4" />
                 </div>
-                <div className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
+                  <ComicDuplicatesIcon className="w-4 h-4" />
                   <span>Duplicate Alerts</span>
                 </div>
               </div>
 
               {/* Real Reclaimable Banner */}
-              <div className="flex items-center space-x-2 p-1.5 rounded-xl bg-amber-100 border border-slate-900 mb-1.5">
-                <span className="text-lg">💾</span>
+              <div className="flex items-center space-x-2 p-2 rounded-xl bg-gradient-to-r from-amber-100 to-orange-100 border-2 border-slate-900 mb-1.5 shadow-comic-sm">
+                <ComicDrivesIcon className="w-6 h-6 shrink-0 animate-comic-float" />
                 <div>
                   <p className="font-comic text-xs text-slate-900 leading-tight">
                     {formatBytes(duplicateReclaimable, settings.unit)} Reclaimable!
@@ -858,7 +1066,7 @@ export const DigitalKingdomView: React.FC = () => {
                       <div
                         key={grp.hash || idx}
                         onClick={() => grp.files[1] && toggleCleanupSelection(grp.files[1].id)}
-                        className="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 border border-slate-900 cursor-pointer hover:bg-slate-100 transition-colors text-xs"
+                        className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border-2 border-slate-900 cursor-pointer hover:bg-amber-50 hover:-translate-y-0.5 hover:shadow-comic-sm transition-all text-xs"
                       >
                         <div className="flex items-center space-x-2 truncate">
                           <span className="text-sm">📄</span>
@@ -876,7 +1084,7 @@ export const DigitalKingdomView: React.FC = () => {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => {}}
-                          className="w-3.5 h-3.5 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
+                          className="w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
                         />
                       </div>
                     );
@@ -890,8 +1098,8 @@ export const DigitalKingdomView: React.FC = () => {
             </div>
 
             {/* Bottom Security Badge */}
-            <div className="mt-2 flex items-center justify-center space-x-1.5 py-1 px-2.5 rounded-xl bg-emerald-400 border-2 border-slate-900 shadow-comic-sm">
-              <ShieldCheck className="w-3.5 h-3.5 text-slate-900 stroke-[2.5]" />
+            <div className="relative mt-2 flex items-center justify-center space-x-1.5 py-1.5 px-2.5 rounded-xl bg-emerald-400 border-2 border-slate-900 shadow-comic-sm comic-hover-wiggle">
+              <ComicShieldIcon className="w-4 h-4" />
               <span className="font-comic text-[11px] uppercase text-slate-900 tracking-wide">
                 SecureBLAKE3 Verified
               </span>
@@ -903,11 +1111,14 @@ export const DigitalKingdomView: React.FC = () => {
       {/* =========================================
           BOTTOM RESPONSIVE FOOTER DOCK
          ========================================= */}
-      <footer className="mt-4 py-2.5 px-4 flex flex-wrap items-center justify-between gap-3 text-xs font-fredoka font-bold text-slate-700 border-2.5 border-slate-900 bg-white rounded-2xl shadow-comic shrink-0">
-        <div className="flex items-center space-x-2 flex-wrap gap-2">
+      <footer className="mt-4 py-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs font-fredoka font-bold text-slate-700 border-2.5 border-slate-900 bg-white rounded-2xl shadow-comic shrink-0 relative overflow-hidden">
+        {/* Stripe texture */}
+        <div className="absolute inset-0 bg-comic-stripes pointer-events-none rounded-2xl" />
+
+        <div className="relative flex items-center space-x-2 flex-wrap gap-2">
           <button
             onClick={() => setActiveTab('settings')}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 text-slate-800 shadow-comic-sm transition-all text-xs"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 text-slate-800 shadow-comic-sm transition-all text-xs hover:-translate-y-0.5"
             title="Configure Binary (GiB) vs Decimal (GB)"
           >
             <span>⚙️ Unit:</span>
@@ -915,7 +1126,7 @@ export const DigitalKingdomView: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 text-slate-800 shadow-comic-sm transition-all text-xs"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 text-slate-800 shadow-comic-sm transition-all text-xs hover:-translate-y-0.5"
             title="View or edit active exclusion rules"
           >
             <span>🛡️ Exclusions:</span>
@@ -923,17 +1134,19 @@ export const DigitalKingdomView: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex items-center space-x-2 flex-wrap gap-2">
+        <div className="relative flex items-center space-x-2 flex-wrap gap-2">
           <button
             onClick={handleExportJSON}
             disabled={!scanSummary}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 text-slate-900 font-comic uppercase text-xs shadow-comic-sm transition-all disabled:opacity-40"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 text-slate-900 font-comic uppercase text-xs shadow-comic-sm transition-all disabled:opacity-40 hover:-translate-y-0.5"
             title="Export scan results as JSON"
           >
             <span>📥 Export JSON</span>
           </button>
-          <span className="text-xs text-slate-500 font-comic uppercase px-1">
-            ByteMap v1.0 • Volatile RAM Only
+          <span className="text-xs text-slate-500 font-comic uppercase px-1 flex items-center space-x-1">
+            <span>✦</span>
+            <span>ByteMap v1.0 • Volatile RAM Only</span>
+            <span>✦</span>
           </span>
         </div>
       </footer>

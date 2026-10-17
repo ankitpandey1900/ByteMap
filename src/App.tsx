@@ -59,7 +59,7 @@ export const App: React.FC = () => {
   const renderActiveTab = () => {
     switch (activeTab) {
       case 'overview':
-        return <DigitalKingdomView />;
+        return <DigitalKingdomView onOpenScanModal={() => setIsScanModalOpen(true)} />;
       case 'drives':
         return <DrivesTab onStartScan={handleStartScanFromDrive} />;
       case 'explore':
@@ -75,7 +75,7 @@ export const App: React.FC = () => {
       case 'settings':
         return <SettingsTab />;
       default:
-        return <DigitalKingdomView />;
+        return <DigitalKingdomView onOpenScanModal={() => setIsScanModalOpen(true)} />;
     }
   };
 

@@ -97,12 +97,16 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none">
-      <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-comic-xl space-y-4 text-slate-900 font-sans relative max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none backdrop-blur-sm">
+      {/* Modal Card with pop-in animation */}
+      <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-comic-xl space-y-4 text-slate-900 font-sans relative max-h-[92vh] overflow-y-auto animate-comic-pop">
+        {/* Halftone texture on modal */}
+        <div className="absolute inset-0 bg-comic-dots opacity-[0.08] pointer-events-none rounded-2xl" />
+
         {/* Top Header Badge */}
-        <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
+        <div className="relative flex items-center justify-between pb-3 border-b-2 border-slate-900">
           <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-xl bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0 comic-hover-wiggle">
               <HardDrive className="w-6 h-6 text-slate-900" />
             </div>
             <div>
@@ -121,7 +125,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
           {!isScanning && (
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm transition-colors text-slate-900"
+              className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-400 hover:text-white border-2 border-slate-900 flex items-center justify-center shadow-comic-sm transition-all hover:rotate-90 duration-200 text-slate-900"
             >
               <X className="w-4 h-4 stroke-[3]" />
             </button>
@@ -129,7 +133,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Path Selection */}
-        <div className="space-y-1.5">
+        <div className="relative space-y-1.5">
           <label className="font-comic text-xs uppercase tracking-wide text-slate-800">
             Scan Target Directory or Drive
           </label>
@@ -140,12 +144,12 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               onChange={(e) => setScanPath(e.target.value)}
               disabled={isScanning}
               placeholder="e.g. C:\ or D:\Projects"
-              className="flex-1 px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:bg-amber-50 disabled:opacity-50"
+              className="flex-1 px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:bg-amber-50 focus:border-amber-500 disabled:opacity-50 transition-colors"
             />
             <button
               onClick={handleBrowse}
               disabled={isScanning}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-all disabled:opacity-50 text-slate-900 font-bold"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-all disabled:opacity-50 text-slate-900 font-bold hover:-translate-y-0.5 active:translate-y-0.5"
             >
               <FolderOpen className="w-4 h-4 text-slate-900" />
               <span>Browse</span>
@@ -159,9 +163,9 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
                 <button
                   key={d.id}
                   onClick={() => setScanPath(d.mount_point)}
-                  className={`px-2.5 py-1 rounded-lg border-2 border-slate-900 text-xs font-comic uppercase shadow-comic-sm transition-all ${
+                  className={`px-2.5 py-1 rounded-lg border-2 border-slate-900 text-xs font-comic uppercase shadow-comic-sm transition-all hover:-translate-y-0.5 ${
                     scanPath === d.mount_point
-                      ? 'bg-cyan-300 text-slate-900'
+                      ? 'bg-cyan-300 text-slate-900 shadow-comic'
                       : 'bg-white hover:bg-slate-100 text-slate-700'
                   }`}
                 >
@@ -174,12 +178,12 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Scan Options */}
-        <div className="space-y-2">
+        <div className="relative space-y-2">
           <span className="font-comic text-xs uppercase tracking-wide text-slate-800">
             Scanning Options
           </span>
-          <div className="space-y-2.5 bg-amber-50 p-3.5 rounded-xl border-2 border-slate-900 text-xs font-fredoka font-bold shadow-comic-sm">
-            <label className="flex items-center space-x-2.5 cursor-pointer">
+          <div className="space-y-2.5 bg-amber-50 p-3.5 rounded-xl border-2 border-slate-900 text-xs font-fredoka font-bold shadow-comic-sm bg-comic-crosshatch">
+            <label className="flex items-center space-x-2.5 cursor-pointer group">
               <input
                 type="checkbox"
                 checked={scanOptions.exclude_hidden}
@@ -187,10 +191,10 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
                 disabled={isScanning}
                 className="w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
               />
-              <span className="text-slate-800">Exclude hidden files & directories</span>
+              <span className="text-slate-800 group-hover:text-amber-900 transition-colors">Exclude hidden files & directories</span>
             </label>
 
-            <label className="flex items-center space-x-2.5 cursor-pointer">
+            <label className="flex items-center space-x-2.5 cursor-pointer group">
               <input
                 type="checkbox"
                 checked={scanOptions.follow_symlinks}
@@ -198,15 +202,15 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
                 disabled={isScanning}
                 className="w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
               />
-              <span className="text-slate-800">Follow symbolic links (Not recommended by default)</span>
+              <span className="text-slate-800 group-hover:text-amber-900 transition-colors">Follow symbolic links (Not recommended by default)</span>
             </label>
           </div>
         </div>
 
         {/* Browser Mode Badge if previewing in web browser */}
         {!api.isNative() && !isScanning && (
-          <div className="p-3 bg-cyan-50 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-slate-800 flex items-center space-x-2.5 shadow-comic-sm">
-            <div className="w-7 h-7 rounded-lg bg-cyan-300 border-2 border-slate-900 flex items-center justify-center shrink-0 text-sm shadow-comic-sm">
+          <div className="relative p-3 bg-cyan-50 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-slate-800 flex items-center space-x-2.5 shadow-comic-sm bg-comic-dots">
+            <div className="w-7 h-7 rounded-lg bg-cyan-300 border-2 border-slate-900 flex items-center justify-center shrink-0 text-sm shadow-comic-sm animate-comic-float">
               🧭
             </div>
             <div className="text-[11px] leading-tight">
@@ -218,10 +222,10 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
         {/* Live Progress Bar and Indicators if Scanning */}
         {isScanning && (
-          <div className="space-y-3 p-3.5 bg-sky-50 rounded-xl border-2 border-slate-900 text-xs">
+          <div className="relative space-y-3 p-3.5 bg-sky-50 rounded-xl border-2 border-slate-900 text-xs bg-comic-dots">
             <div className="flex items-center justify-between font-comic">
               <span className="flex items-center space-x-2 text-blue-900 text-sm uppercase">
-                <span className="animate-spin text-base">🧭</span>
+                <span className="animate-comic-spin-wobble text-base">🧭</span>
                 <span>Scouting Active...</span>
               </span>
               <span className="text-slate-900 font-bold font-mono">
@@ -235,25 +239,25 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               statusText={`Scouting: ${formatNumber(scanProgress.scanned_files)} files processed`}
             />
 
-            {/* Solid Cartoon Progress Bar with pulse */}
-            <div className="w-full h-4 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 animate-pulse w-full" />
+            {/* Solid Cartoon Progress Bar with candy stripe */}
+            <div className="w-full h-5 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden relative">
+              <div className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 w-full comic-progress-stripe" />
             </div>
 
             <div className="grid grid-cols-3 gap-2 py-1 text-center font-fredoka">
-              <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm">
+              <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm comic-card-hover">
                 <div className="text-[10px] text-slate-500 uppercase font-comic">Files</div>
                 <div className="font-bold text-slate-900 text-sm mt-0.5">
                   {formatNumber(scanProgress.scanned_files)}
                 </div>
               </div>
-              <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm">
+              <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm comic-card-hover">
                 <div className="text-[10px] text-slate-500 uppercase font-comic">Folders</div>
                 <div className="font-bold text-slate-900 text-sm mt-0.5">
                   {formatNumber(scanProgress.scanned_directories)}
                 </div>
               </div>
-              <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm">
+              <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm comic-card-hover">
                 <div className="text-[10px] text-slate-500 uppercase font-comic">Time</div>
                 <div className="font-bold text-slate-900 text-sm mt-0.5">
                   {formatDuration(scanProgress.elapsed_ms)}
@@ -269,18 +273,18 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
         {/* Error message */}
         {errorMessage && (
-          <div className="p-3 bg-red-100 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-red-900 flex items-center space-x-2">
+          <div className="relative p-3 bg-red-100 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-red-900 flex items-center space-x-2 shadow-comic-sm animate-comic-wiggle">
             <AlertTriangle className="w-4 h-4 shrink-0 text-red-700" />
             <span className="truncate">{errorMessage}</span>
           </div>
         )}
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end space-x-3 pt-2 border-t-2 border-slate-900">
+        <div className="relative flex items-center justify-end space-x-3 pt-2 border-t-2 border-slate-900">
           {isScanning ? (
             <button
               onClick={handleCancel}
-              className="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-comic text-xs uppercase tracking-wide border-2 border-slate-900 shadow-comic transition-all"
+              className="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-comic text-xs uppercase tracking-wide border-2 border-slate-900 shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
             >
               <Square className="w-3.5 h-3.5 fill-current" />
               <span>Cancel Scan</span>
@@ -295,10 +299,12 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               </button>
               <button
                 onClick={handleStartScan}
-                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl border-2.5 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wide text-slate-900 shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5 font-bold"
+                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl border-2.5 border-slate-900 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 font-comic text-xs uppercase tracking-wide text-slate-900 shadow-comic transition-all hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 active:shadow-comic-sm font-bold relative overflow-hidden group"
               >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Start Scan</span>
+                {/* Glossy shine sweep on hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none" />
+                <Play className="w-3.5 h-3.5 fill-current relative" />
+                <span className="relative">Start Scan</span>
               </button>
             </>
           )}

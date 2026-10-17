@@ -25,7 +25,7 @@ describe('ComicHeader Component', () => {
     expect(screen.getByText(/analyze/i)).toBeDefined();
     expect(screen.getByText(/kingdom/i)).toBeDefined();
     expect(screen.getByText(/drives/i)).toBeDefined();
-    expect(screen.getByText(/explore/i)).toBeDefined();
+    expect(screen.getAllByText(/explore/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/large files/i)).toBeDefined();
     expect(screen.getByText(/duplicates/i)).toBeDefined();
     expect(screen.getByText(/cleanup/i)).toBeDefined();
