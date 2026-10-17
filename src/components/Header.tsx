@@ -13,6 +13,7 @@ import {
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { formatBytes } from '@/lib/utils';
+import { ShimmerButton } from '@/components/ui';
 
 interface HeaderProps {
   onOpenScanModal: () => void;
@@ -106,15 +107,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenScanModal }) => {
           </button>
         )}
 
-        {/* Primary Start Scan Action */}
-        <button
+        {/* Primary Start Scan Action with Aceternity ShimmerButton */}
+        <ShimmerButton
           onClick={onOpenScanModal}
           disabled={isScanning}
-          className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-all shadow-sm"
+          className="shadow-primary/20 hover:shadow-primary/30"
         >
           <Play className="w-3 h-3 fill-current" />
           <span>Start Scan</span>
-        </button>
+        </ShimmerButton>
 
         {/* Theme quick toggle */}
         <button

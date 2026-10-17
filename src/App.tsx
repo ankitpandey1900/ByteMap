@@ -13,6 +13,8 @@ import { DuplicatesTab } from '@/features/duplicates/DuplicatesTab';
 import { CleanupTab } from '@/features/cleanup/CleanupTab';
 import { SettingsTab } from '@/features/settings/SettingsTab';
 
+import { BackgroundDots, Spotlight } from '@/components/ui';
+
 export const App: React.FC = () => {
   const {
     activeTab,
@@ -90,16 +92,21 @@ export const App: React.FC = () => {
       {/* Sidebar Navigation */}
       <Sidebar />
 
-      {/* Main Container */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      {/* Main Container with Aceternity BackgroundDots & Spotlight */}
+      <BackgroundDots variant="dots" className="flex-1">
+        <Spotlight
+          className="-top-40 right-10 md:right-60 md:-top-20"
+          fill="#3b82f6"
+        />
+
         {/* App Header */}
         <Header onOpenScanModal={() => setIsScanModalOpen(true)} />
 
         {/* Content Body */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 relative z-10">
           {renderActiveTab()}
         </main>
-      </div>
+      </BackgroundDots>
 
       {/* Scan Configuration & Progress Modal */}
       <ScanModal

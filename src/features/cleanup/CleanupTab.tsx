@@ -19,6 +19,8 @@ import { formatBytes } from '@/lib/utils';
 import { api, CleanupExecutionResult } from '@/lib/api';
 import { RiskLevel } from '@/types';
 
+import { CardSpotlight } from '@/components/ui';
+
 export const CleanupTab: React.FC = () => {
   const {
     scanSummary,
@@ -117,6 +119,27 @@ export const CleanupTab: React.FC = () => {
         return <FileQuestion className="w-4 h-4 text-purple-400" />;
     }
   };
+
+  if (!scanSummary) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
+          <h2 className="text-lg font-bold text-foreground">Safe Cleanup Intelligence</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Conservative recommendations for space recovery. Zero automated deletion; requires explicit confirmation.
+          </p>
+        </div>
+
+        <CardSpotlight className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+          <Trash2 className="w-12 h-12 mb-3 text-amber-400/50 stroke-[1.4]" />
+          <p className="text-sm font-semibold text-foreground">No Scan Data Available</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md">
+            Execute a scan on any drive or directory to automatically identify safe cleanup opportunities like temp files, old installers, and large archives.
+          </p>
+        </CardSpotlight>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">

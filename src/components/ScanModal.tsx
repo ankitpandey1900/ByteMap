@@ -12,6 +12,7 @@ import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { formatBytes, formatDuration, formatNumber } from '@/lib/utils';
 import { ScanOptions } from '@/types';
+import { ShimmerButton } from '@/components/ui';
 
 interface ScanModalProps {
   isOpen: boolean;
@@ -239,13 +240,13 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               >
                 Close
               </button>
-              <button
+              <ShimmerButton
                 onClick={handleStartScan}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shadow-sm"
+                className="shadow-primary/20"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 <span>Start Scan</span>
-              </button>
+              </ShimmerButton>
             </>
           )}
         </div>

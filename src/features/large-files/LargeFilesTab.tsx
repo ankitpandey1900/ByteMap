@@ -8,6 +8,8 @@ import { useAppStore } from '@/lib/store';
 import { formatBytes, formatDate, getCategoryBadgeClass } from '@/lib/utils';
 import { api } from '@/lib/api';
 
+import { CardSpotlight } from '@/components/ui';
+
 export const LargeFilesTab: React.FC = () => {
   const { scanSummary, settings } = useAppStore();
   const [thresholdMB, setThresholdMB] = useState<number>(settings.large_file_threshold_mb);
@@ -42,6 +44,27 @@ export const LargeFilesTab: React.FC = () => {
     (acc, f) => acc + f.size_bytes,
     0
   );
+
+  if (!scanSummary) {
+    return (
+      <div className="space-y-4 max-w-5xl">
+        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
+          <h2 className="text-lg font-bold text-foreground">Large Files Ranking</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Identify the largest disk space consumers consuming valuable drive capacity.
+          </p>
+        </div>
+
+        <CardSpotlight className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+          <FileText className="w-12 h-12 mb-3 text-primary/40 stroke-[1.4]" />
+          <p className="text-sm font-semibold text-foreground">No Files Scanned Yet</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+            Run a scan on any drive or directory to view top space-consuming files.
+          </p>
+        </CardSpotlight>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 max-w-5xl">
@@ -81,27 +104,27 @@ export const LargeFilesTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
+      {/* Summary KPI Cards with CardSpotlight */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="p-3.5 bg-card/40 border border-border/40 rounded-xl">
+        <CardSpotlight color="rgba(59, 130, 246, 0.15)" className="p-3.5">
           <span className="text-[11px] text-muted-foreground uppercase font-medium">
             Files Above Threshold
           </span>
           <p className="text-xl font-bold font-mono text-foreground mt-1">
             {filteredLargeFiles.length}
           </p>
-        </div>
+        </CardSpotlight>
 
-        <div className="p-3.5 bg-card/40 border border-border/40 rounded-xl">
+        <CardSpotlight color="rgba(16, 185, 129, 0.15)" className="p-3.5">
           <span className="text-[11px] text-muted-foreground uppercase font-medium">
             Aggregated Size
           </span>
           <p className="text-xl font-bold font-mono text-primary mt-1">
             {formatBytes(totalLargeBytes, settings.unit)}
           </p>
-        </div>
+        </CardSpotlight>
 
-        <div className="p-3.5 bg-card/40 border border-border/40 rounded-xl col-span-2 md:col-span-1">
+        <CardSpotlight color="rgba(6, 182, 212, 0.15)" className="p-3.5 col-span-2 md:col-span-1">
           <span className="text-[11px] text-muted-foreground uppercase font-medium">
             Largest Single File
           </span>
@@ -110,7 +133,7 @@ export const LargeFilesTab: React.FC = () => {
               ? formatBytes(filteredLargeFiles[0].size_bytes, settings.unit)
               : '—'}
           </p>
-        </div>
+        </CardSpotlight>
       </div>
 
       {/* Large Files List */}

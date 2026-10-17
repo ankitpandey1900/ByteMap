@@ -12,6 +12,8 @@ import { formatBytes } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { DriveInfo } from '@/types';
 
+import { CardSpotlight, ShimmerButton } from '@/components/ui';
+
 interface DrivesTabProps {
   onStartScan: (targetPath: string) => void;
 }
@@ -51,17 +53,17 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
           </button>
-          <button
+          <ShimmerButton
             onClick={handleSelectFolder}
-            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all shadow-sm"
+            className="shadow-primary/20"
           >
             <FolderPlus className="w-3.5 h-3.5" />
             <span>Select Folder...</span>
-          </button>
+          </ShimmerButton>
         </div>
       </div>
 
-      {/* Drives Grid */}
+      {/* Drives Grid with Aceternity CardSpotlight */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {drives.map((drive: DriveInfo) => {
           const isSelected = selectedDrive?.id === drive.id;
@@ -71,19 +73,20 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
               : 0;
 
           return (
-            <div
+            <CardSpotlight
               key={drive.id}
+              color={isSelected ? "rgba(59, 130, 246, 0.25)" : "rgba(59, 130, 246, 0.12)"}
               onClick={() => setSelectedDrive(drive)}
-              className={`p-5 rounded-xl border transition-all cursor-pointer relative overflow-hidden ${
+              className={`p-5 cursor-pointer relative overflow-hidden transition-all duration-300 ${
                 isSelected
-                  ? 'bg-primary/5 border-primary shadow-sm'
-                  : 'bg-card/60 backdrop-blur border-border/50 hover:border-border hover:bg-card/80'
+                  ? 'border-primary ring-1 ring-primary/40 shadow-md bg-primary/5'
+                  : 'hover:border-primary/40'
               }`}
             >
               {/* Drive Top Details */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+                  <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
                     <HardDrive className="w-6 h-6 stroke-[1.8]" />
                   </div>
                   <div>
@@ -151,16 +154,26 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
                   <span>Scan Drive</span>
                 </button>
               </div>
-            </div>
+            </CardSpotlight>
           );
         })}
       </div>
 
       {drives.length === 0 && (
-        <div className="p-8 text-center text-muted-foreground bg-card/40 rounded-xl border border-border/40">
-          <HardDrive className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-sm font-medium">Scanning for attached storage drives...</p>
-        </div>
+        <CardSpotlight className="p-10 text-center text-muted-foreground flex flex-col items-center justify-center">
+          <HardDrive className="w-12 h-12 mb-3 text-primary/40 stroke-[1.4]" />
+          <p className="text-sm font-semibold text-foreground">No Local Drives Detected Yet</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+            Refresh attached drives or use the folder picker to inspect any directory.
+          </p>
+          <button
+            onClick={handleRefresh}
+            className="mt-4 px-3.5 py-1.5 rounded-lg border border-border/60 hover:bg-accent text-xs font-medium text-foreground transition-colors flex items-center space-x-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry Drive Detection</span>
+          </button>
+        </CardSpotlight>
       )}
     </div>
   );

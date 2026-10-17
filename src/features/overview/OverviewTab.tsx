@@ -23,6 +23,8 @@ import { useAppStore } from '@/lib/store';
 import { formatBytes, formatDuration, formatNumber, getCategoryColor } from '@/lib/utils';
 import { TreemapView } from '@/features/treemap/TreemapView';
 
+import { CardSpotlight } from '@/components/ui';
+
 export const OverviewTab: React.FC = () => {
   const { drives, scanSummary, settings, setActiveTab, setSelectedCategory } = useAppStore();
 
@@ -50,10 +52,13 @@ export const OverviewTab: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Top Physical System Storage Banner */}
+      {/* Top Physical System Storage Banner with Aceternity CardSpotlight */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Total Physical Capacity */}
-        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl relative overflow-hidden">
+        <CardSpotlight
+          color="rgba(59, 130, 246, 0.16)"
+          className="p-4"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Detected Storage
@@ -64,7 +69,9 @@ export const OverviewTab: React.FC = () => {
             {formatBytes(totalDriveCapacity, settings.unit)}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Across {drives.length} active system {drives.length === 1 ? 'drive' : 'drives'}
+            {drives.length > 0
+              ? `Across ${drives.length} active system ${drives.length === 1 ? 'drive' : 'drives'}`
+              : 'Discovering local drives...'}
           </p>
           <div className="w-full bg-secondary h-1.5 rounded-full mt-3 overflow-hidden">
             <div
@@ -82,10 +89,13 @@ export const OverviewTab: React.FC = () => {
             <span>Used: {formatBytes(totalDriveUsed, settings.unit)}</span>
             <span>Free: {formatBytes(totalDriveAvailable, settings.unit)}</span>
           </div>
-        </div>
+        </CardSpotlight>
 
         {/* Current Scan Volume */}
-        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
+        <CardSpotlight
+          color="rgba(16, 185, 129, 0.16)"
+          className="p-4"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Scanned Volume
@@ -107,12 +117,13 @@ export const OverviewTab: React.FC = () => {
               {scanSummary ? formatNumber(scanSummary.total_directories) : 0} folders
             </span>
           </div>
-        </div>
+        </CardSpotlight>
 
         {/* Potential Cleanup Opportunities */}
-        <div
+        <CardSpotlight
+          color="rgba(245, 158, 11, 0.16)"
           onClick={() => setActiveTab('cleanup')}
-          className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl cursor-pointer hover:border-amber-500/40 transition-colors group"
+          className="p-4 cursor-pointer hover:border-amber-500/40 transition-colors group"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -132,10 +143,13 @@ export const OverviewTab: React.FC = () => {
             <span>Review cleanup candidates</span>
             <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
           </div>
-        </div>
+        </CardSpotlight>
 
-        {/* Scan Duration & Health */}
-        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
+        {/* Scan Duration & Engine Health */}
+        <CardSpotlight
+          color="rgba(6, 182, 212, 0.16)"
+          className="p-4"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Engine Performance
@@ -151,17 +165,21 @@ export const OverviewTab: React.FC = () => {
                 <AlertTriangle className="w-3 h-3 mr-1" />
                 {scanSummary.error_count} unreadable paths
               </span>
-            ) : (
+            ) : scanSummary ? (
               <span className="text-emerald-400 flex items-center">
                 <ShieldCheck className="w-3.5 h-3.5 mr-1" />
                 100% complete traversal
               </span>
+            ) : (
+              <span className="text-muted-foreground flex items-center">
+                Engine ready
+              </span>
             )}
           </div>
           <div className="text-[11px] text-muted-foreground mt-3 truncate">
-            {scanSummary ? `Completed at ${new Date(scanSummary.timestamp).toLocaleTimeString()}` : 'Idle'}
+            {scanSummary ? `Completed at ${new Date(scanSummary.timestamp).toLocaleTimeString()}` : 'Memory-only session'}
           </div>
-        </div>
+        </CardSpotlight>
       </div>
 
       {/* Main Visualizations Row: Interactive Treemap & Distribution Chart */}

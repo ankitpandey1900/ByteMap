@@ -14,6 +14,8 @@ import { useAppStore } from '@/lib/store';
 import { formatBytes, formatNumber, getCategoryColor } from '@/lib/utils';
 import { FileCategory } from '@/types';
 
+import { CardSpotlight } from '@/components/ui';
+
 export const FileTypesTab: React.FC = () => {
   const { scanSummary, settings } = useAppStore();
   const [selectedCat, setSelectedCat] = useState<string>('all');
@@ -49,6 +51,27 @@ export const FileTypesTab: React.FC = () => {
     }
   };
 
+  if (!scanSummary || categories.length === 0) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
+          <h2 className="text-lg font-bold text-foreground">File-Type Analytics</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Breakdown of scanned data across categories and file extensions.
+          </p>
+        </div>
+
+        <CardSpotlight className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+          <Layers className="w-12 h-12 mb-3 text-primary/40 stroke-[1.4]" />
+          <p className="text-sm font-semibold text-foreground">No File Types Scanned Yet</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+            Scan any drive or directory to analyze category distributions and file extension volumes.
+          </p>
+        </CardSpotlight>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Top Banner */}
@@ -59,25 +82,27 @@ export const FileTypesTab: React.FC = () => {
         </p>
       </div>
 
-      {/* Categories Grid */}
+      {/* Categories Grid with Aceternity CardSpotlight */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {categories.map((cat) => {
           const isSelected = selectedCat === cat.category;
+          const catColor = getCategoryColor(cat.category);
           return (
-            <div
+            <CardSpotlight
               key={cat.category}
+              color={`${catColor}25`}
               onClick={() => setSelectedCat(isSelected ? 'all' : cat.category)}
-              className={`p-4 rounded-xl border transition-all cursor-pointer ${
+              className={`p-4 cursor-pointer transition-all duration-300 ${
                 isSelected
-                  ? 'bg-primary/10 border-primary shadow-sm'
-                  : 'bg-card/40 border-border/50 hover:border-border hover:bg-card/70'
+                  ? 'border-primary ring-1 ring-primary/40 shadow-sm bg-primary/10'
+                  : 'hover:border-border'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <span
                     className="w-3 h-3 rounded-full shrink-0"
-                    style={{ backgroundColor: getCategoryColor(cat.category) }}
+                    style={{ backgroundColor: catColor }}
                   />
                   <h3 className="font-semibold text-sm capitalize text-foreground">
                     {cat.category}
@@ -92,9 +117,9 @@ export const FileTypesTab: React.FC = () => {
 
               <div className="w-full bg-secondary h-1.5 rounded-full mt-3 overflow-hidden">
                 <div
-                  className="h-full rounded-full"
+                  className="h-full rounded-full transition-all duration-500"
                   style={{
-                    backgroundColor: getCategoryColor(cat.category),
+                    backgroundColor: catColor,
                     width: `${Math.min(100, cat.percentage)}%`,
                   }}
                 />
@@ -104,7 +129,7 @@ export const FileTypesTab: React.FC = () => {
                 <span>{formatNumber(cat.file_count)} files</span>
                 <span className="font-medium text-foreground">{cat.percentage.toFixed(1)}%</span>
               </div>
-            </div>
+            </CardSpotlight>
           );
         })}
       </div>

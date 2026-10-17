@@ -9,6 +9,7 @@ import {
 import { useAppStore } from '@/lib/store';
 import { formatBytes, getCategoryColor } from '@/lib/utils';
 import { FileCategory } from '@/types';
+import { CardSpotlight } from '@/components/ui';
 
 interface TreemapItem {
   id: string;
@@ -199,8 +200,9 @@ export const TreemapView: React.FC = () => {
       }
     }
 
-    // Fallback if very few items found for deeply drilled paths: show top folders/files
-    if (items.length === 0) {
+    // Only if at root path and no direct children parsed, show root largest folders
+    const normRoot = (scanSummary.root_path || '').toLowerCase().replace(/\\+$/, '').replace(/\/+$/, '');
+    if (items.length === 0 && normCurrent === normRoot) {
       for (const folder of scanSummary.largest_folders.slice(0, 15)) {
         items.push({
           id: folder.id,
@@ -253,13 +255,13 @@ export const TreemapView: React.FC = () => {
 
   if (!scanSummary) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center text-muted-foreground">
-        <Folder className="w-16 h-16 mb-4 text-muted/50 stroke-[1.2]" />
-        <h3 className="text-lg font-medium text-foreground mb-1">No scan data to visualize</h3>
-        <p className="text-sm max-w-sm mb-4">
-          Select a drive or folder and click "Start Scan" to generate interactive storage treemaps.
+      <CardSpotlight className="flex flex-col items-center justify-center h-full min-h-[380px] p-8 text-center text-muted-foreground">
+        <Folder className="w-16 h-16 mb-4 text-primary/40 stroke-[1.2]" />
+        <h3 className="text-lg font-semibold text-foreground mb-1">No scan data to visualize</h3>
+        <p className="text-xs max-w-sm mb-4">
+          Select a drive or folder and click &quot;Start Scan&quot; to generate interactive storage treemaps.
         </p>
-      </div>
+      </CardSpotlight>
     );
   }
 

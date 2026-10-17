@@ -9,6 +9,8 @@ import { formatBytes } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { DuplicateGroup } from '@/types';
 
+import { CardSpotlight, ShimmerButton } from '@/components/ui';
+
 export const DuplicatesTab: React.FC = () => {
   const {
     scanSummary,
@@ -65,6 +67,27 @@ export const DuplicatesTab: React.FC = () => {
     0
   );
 
+  if (!scanSummary) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <div className="p-4 bg-card/60 backdrop-blur border border-border/50 rounded-xl">
+          <h2 className="text-lg font-bold text-foreground">Cryptographic Duplicate Detection</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Verified byte-for-byte using staged size pre-filtering and BLAKE3 cryptographic hashes.
+          </p>
+        </div>
+
+        <CardSpotlight className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+          <Copy className="w-12 h-12 mb-3 text-purple-400/50 stroke-[1.4]" />
+          <p className="text-sm font-semibold text-foreground">Scan Required for Duplicate Detection</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md">
+            All file traversal inventories live strictly in volatile memory. Start a scan on any drive or directory, then run the cryptographic duplicate detector.
+          </p>
+        </CardSpotlight>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Top Banner */}
@@ -76,10 +99,10 @@ export const DuplicatesTab: React.FC = () => {
           </p>
         </div>
 
-        <button
+        <ShimmerButton
           onClick={handleRunDuplicateSearch}
-          disabled={isHashing || !scanSummary}
-          className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-all shadow-sm"
+          disabled={isHashing}
+          className="shadow-purple-500/20"
         >
           {isHashing ? (
             <>
@@ -94,7 +117,7 @@ export const DuplicatesTab: React.FC = () => {
               <span>{duplicateGroups.length > 0 ? 'Re-scan Duplicates' : 'Find Duplicates'}</span>
             </>
           )}
-        </button>
+        </ShimmerButton>
       </div>
 
       {/* Reclaimable summary banner */}

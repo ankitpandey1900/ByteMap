@@ -11,6 +11,7 @@ import {
 import { useAppStore } from '@/lib/store';
 import { formatBytes, formatDate, formatNumber, getCategoryBadgeClass } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { CardSpotlight } from '@/components/ui';
 
 type SortColumn = 'name' | 'size' | 'category' | 'date';
 
@@ -108,13 +109,13 @@ export const ExplorerTab: React.FC = () => {
 
   if (!scanSummary) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center text-muted-foreground">
-        <Folder className="w-16 h-16 mb-4 text-muted/50 stroke-[1.2]" />
-        <h3 className="text-lg font-medium text-foreground mb-1">Explorer is empty</h3>
-        <p className="text-sm max-w-sm">
+      <CardSpotlight className="flex flex-col items-center justify-center h-full min-h-[380px] p-12 text-center text-muted-foreground">
+        <Folder className="w-16 h-16 mb-4 text-primary/40 stroke-[1.2]" />
+        <h3 className="text-lg font-semibold text-foreground mb-1">Explorer is empty</h3>
+        <p className="text-xs max-w-sm">
           Run a scan on any drive or directory to browse files, sizes, and metadata.
         </p>
-      </div>
+      </CardSpotlight>
     );
   }
 
