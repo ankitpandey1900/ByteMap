@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "ByteMap - Desktop Storage Intelligence"
 authors = ["ByteMap Team"]
 license = "MIT"
-repository = ""
+repository = "https://github.com/ankitpandey1900/ByteMap"
 edition = "2021"
 rust-version = "1.80"
 
@@ -13,10 +13,10 @@ name = "bytemap_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.7.3" }
+tauri-build = { version = "2.7.3", features = [] }
 
 [dependencies]
-tauri = { version = "2.12.4" }
+tauri = { version = "2.12.4", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 serde = { version = "1.0", features = ["derive"] }
@@ -31,3 +31,10 @@ dirs = "6.0"
 regex = "1.11"
 thiserror = "2.0"
 log = "0.4"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = 3
+strip = true

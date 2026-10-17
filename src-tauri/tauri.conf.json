@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "bytemap",
+  "productName": "ByteMap",
   "version": "1.0.0",
   "identifier": "com.bytemap.app",
   "build": {
@@ -29,12 +29,20 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "copyright": "Copyright © 2026 ByteMap Team",
+    "shortDescription": "Desktop Storage Intelligence",
+    "longDescription": "A fast, offline desktop storage intelligence tool with a vibrant comic-book visualizer.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
   }
 }
