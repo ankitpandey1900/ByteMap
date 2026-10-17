@@ -6,7 +6,6 @@ import {
   FolderOpen,
   AlertTriangle,
   HardDrive,
-  Compass,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
@@ -103,16 +102,19 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
         {/* Top Header Badge */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm">
-              <Compass className="w-6 h-6 text-slate-900" />
+            <div className="w-11 h-11 rounded-xl bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0">
+              <HardDrive className="w-6 h-6 text-slate-900" />
             </div>
             <div>
               <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-400 border border-slate-900 font-comic text-[10px] uppercase text-slate-900 mb-0.5 shadow-comic-sm">
-                Scout Mission
+                Scout Mission 🗺️
               </div>
-              <h3 className="font-comic text-lg uppercase tracking-wide text-slate-900">
-                Analyze Storage
+              <h3 className="font-comic text-lg uppercase tracking-wide text-slate-900 leading-none">
+                Configure Storage Scan
               </h3>
+              <p className="text-[11px] font-fredoka font-semibold text-slate-500 mt-1">
+                Genuine local filesystem traversal & storage analysis
+              </p>
             </div>
           </div>
 
@@ -129,7 +131,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
         {/* Path Selection */}
         <div className="space-y-1.5">
           <label className="font-comic text-xs uppercase tracking-wide text-slate-800">
-            Target Drive or Directory:
+            Scan Target Directory or Drive
           </label>
           <div className="flex items-center space-x-2">
             <input
@@ -143,7 +145,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
             <button
               onClick={handleBrowse}
               disabled={isScanning}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-all disabled:opacity-50"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-all disabled:opacity-50 text-slate-900 font-bold"
             >
               <FolderOpen className="w-4 h-4 text-slate-900" />
               <span>Browse</span>
@@ -174,9 +176,9 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
         {/* Scan Options */}
         <div className="space-y-2">
           <span className="font-comic text-xs uppercase tracking-wide text-slate-800">
-            Explorer Settings:
+            Scanning Options
           </span>
-          <div className="space-y-2 bg-amber-50 p-3 rounded-xl border-2 border-slate-900 text-xs font-fredoka font-bold">
+          <div className="space-y-2.5 bg-amber-50 p-3.5 rounded-xl border-2 border-slate-900 text-xs font-fredoka font-bold shadow-comic-sm">
             <label className="flex items-center space-x-2.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -185,7 +187,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
                 disabled={isScanning}
                 className="w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
               />
-              <span className="text-slate-800">Exclude hidden system folders & files</span>
+              <span className="text-slate-800">Exclude hidden files & directories</span>
             </label>
 
             <label className="flex items-center space-x-2.5 cursor-pointer">
@@ -196,10 +198,23 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
                 disabled={isScanning}
                 className="w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
               />
-              <span className="text-slate-800">Follow symbolic links</span>
+              <span className="text-slate-800">Follow symbolic links (Not recommended by default)</span>
             </label>
           </div>
         </div>
+
+        {/* Browser Mode Badge if previewing in web browser */}
+        {!api.isNative() && !isScanning && (
+          <div className="p-3 bg-cyan-50 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-slate-800 flex items-center space-x-2.5 shadow-comic-sm">
+            <div className="w-7 h-7 rounded-lg bg-cyan-300 border-2 border-slate-900 flex items-center justify-center shrink-0 text-sm shadow-comic-sm">
+              🧭
+            </div>
+            <div className="text-[11px] leading-tight">
+              <span className="font-comic uppercase text-cyan-950 block text-xs">Interactive Scout Preview</span>
+              Running browser test mode with live event simulation. In native desktop mode, raw multi-threaded Rust Rayon hardware traversal is executed.
+            </div>
+          </div>
+        )}
 
         {/* Live Progress Bar and Indicators if Scanning */}
         {isScanning && (
@@ -274,16 +289,16 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
             <>
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-slate-200 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-all"
+                className="px-5 py-2.5 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-slate-200 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-all text-slate-800 font-bold hover:-translate-y-0.5 active:translate-y-0.5"
               >
                 Close
               </button>
               <button
                 onClick={handleStartScan}
-                className="flex items-center space-x-2 px-5 py-2 rounded-xl border-2.5 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wide text-slate-900 shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl border-2.5 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wide text-slate-900 shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5 font-bold"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Start Scouting</span>
+                <span>Start Scan</span>
               </button>
             </>
           )}
