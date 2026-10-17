@@ -1,41 +1,52 @@
-# ByteMap Troubleshooting Guide
+# ByteMap Troubleshooting
 
-Common issues, diagnosis procedures, and platform solutions for ByteMap.
-
----
-
-## 1. Scanner Permission Denied Errors
-
-### Problem
-Certain folders (such as `C:\System Volume Information`, `AppData\Local\Temp`, or system directories) report permission errors during scanning.
-
-### Solution
-- **Expected Behavior**: ByteMap runs under standard user privileges without requiring Administrator/root access.
-- Restrictive system folders are skipped safely and counted under **Engine Performance Errors**.
-- To analyze administrative directories, launch ByteMap with elevated privileges ("Run as Administrator" on Windows or `sudo` on Linux).
+Common issues you might run into when building or running ByteMap, and how to fix them.
 
 ---
 
-## 2. Windows MSVC C++ Linker Not Found (`link.exe` / `kernel32.lib`)
+## 1. Rust Build Fails on Windows (`linker link.exe not found` or `kernel32.lib missing`)
 
-### Problem
-During compilation on Windows, Cargo reports `linker link.exe not found` or `could not open kernel32.lib`.
+### What happened:
+Tauri 2 on Windows builds against the native Windows WebView2 and Win32 C runtime. This requires Microsoft's MSVC linker and the Windows SDK import libraries.
 
-### Solution
-Tauri 2 on Windows requires the Microsoft C++ Build Tools or Windows SDK to link against the Windows runtime:
-```bash
+### How to fix it:
+Install the C++ Build Tools using winget:
+```powershell
 winget install --id Microsoft.VisualStudio.2022.BuildTools --override "--quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
 ```
-Or install Visual Studio Community 2022 with the "Desktop development with C++" workload selected.
+Or open the Visual Studio Installer and ensure **Desktop development with C++** is checked.
 
 ---
 
-## 3. High CPU Usage During Hashing
+## 2. Pnpm reports `[ERR_PNPM_IGNORED_BUILDS]` on `esbuild`
 
-### Problem
-Calculating cryptographic hashes for hundreds of gigabytes of duplicate candidates causes high CPU and disk utilization.
+### What happened:
+In modern pnpm (v10+ and v11+), build scripts in third-party packages are blocked by default for security until explicitly approved.
 
-### Solution
-- Duplicate detection is **completely optional and staged**.
-- ByteMap only calculates full cryptographic BLAKE3 hashes when candidate files have identical sizes and matching 4KB prefix hashes.
-- You can click **Cancel** in the scanning modal at any time to abort hashing immediately.
+### How to fix it:
+Run the approval command in the project root:
+```bash
+pnpm approve-builds --all
+```
+This authorizes `esbuild`'s postinstall script and updates `pnpm-lock.yaml`.
+
+---
+
+## 3. "Permission Denied" Errors During Full Drive Scans
+
+### What happened:
+When scanning root drives like `C:\`, the scanner will hit system directories that standard user accounts cannot read (such as `System Volume Information` or other users' private appdata folders).
+
+### How to fix it:
+- ByteMap is designed to handle this gracefully: it catches the `PermissionDenied` error, records the unreadable path in `scanSummary.errors`, and continues scanning the rest of the drive without crashing.
+- If you genuinely need to analyze administrative folders, right-click the ByteMap app (or your terminal) and select **Run as Administrator**.
+
+---
+
+## 4. Antivirus Warnings During Cleanup
+
+### What happened:
+Some aggressive third-party antivirus utilities trigger heuristic warnings when an application calls `trash::delete` on multiple files in rapid succession.
+
+### How to fix it:
+ByteMap uses the standard Windows `IFileOperation` Win32 shell API under the hood to send files to the Recycle Bin. If your antivirus displays a warning, you can safely allow ByteMap.

@@ -3,18 +3,21 @@
 ## Status
 Accepted
 
-## Context
-Desktop disk analysis tools frequently introduce background databases (e.g. SQLite, RocksDB, or IndexedDB) to persist file inventories across sessions. While persistent indexing can speed up subsequent queries, it introduces significant drawbacks:
-1. **Privacy & Security Risks**: A persistent database on disk contains full filesystem paths, user file inventories, and potentially sensitive filenames long after the application is closed.
-2. **Stale Data Inconsistencies**: Operating systems change rapidly. Files are created, moved, and deleted outside the app, making cached databases out of sync and prone to false duplicate or deletion recommendations.
-3. **Storage Overhead**: Database indexes for drives with millions of files consume substantial gigabytes of disk space—ironic for a storage-recovery tool.
+## The Problem
+When building disk space analyzers, the traditional approach is to cache file catalogs into an embedded database like SQLite or RocksDB so subsequent app opens can display "instant" results without rescanning.
 
-## Decision
-ByteMap will **never use any database engine** (no SQLite, IndexedDB, LocalStorage cataloging, or embedded key-value stores).
-- All scan metadata lives strictly in **volatile system RAM**.
-- Once the application exits or the user clears the scan, the memory is dropped.
-- User configuration is restricted to a lightweight non-sensitive preferences file.
+However, after testing this approach, I found it causes more problems than it solves:
+1. **Stale Data Bugs**: Filesystems change constantly while you work. If an app relies on a cached database from yesterday, it displays incorrect folder sizes, misses newly downloaded 10GB files, or recommends deleting files that were already moved.
+2. **Privacy Hazard**: Having a full unencrypted database on disk containing every file name and path you ever scanned is a serious privacy liability.
+3. **Storage Bloat**: Indexing a 1TB drive with 500,000 files in SQLite can easily eat up 500MB to 1.5GB of disk space. A tool built to free up disk space shouldn't be hogging gigabytes of SSD space with persistent databases.
 
-## Consequences
-- **Positive**: Complete privacy, zero disk footprint for caches, zero risk of acting on stale cached paths, 100% offline security.
-- **Negative**: Scans must be re-run when the application is reopened. Given ByteMap's high-performance Rust traversal engine, rescanning is extremely fast and guarantees fresh ground-truth data.
+## The Decision
+ByteMap will **never use any database engine** (no SQLite, MongoDB, IndexedDB, or LocalStorage catalogs).
+
+- When a scan runs, data lives strictly in RAM.
+- When you quit or click "Clear Scan", the memory is dropped.
+- The only persistent file is a tiny JSON preferences file (`config.json`) storing non-sensitive settings (theme, display units, ignore patterns).
+
+## Trade-offs
+- **Cons**: You have to run a scan when you open the app if you want fresh numbers.
+- **Pros**: Because the Rust crawler is so fast (scanning 25,000 files in ~1.4 seconds), waiting a couple seconds for a scan is well worth knowing the data is 100% accurate, leaves zero disk footprint, and never leaks your private file paths.

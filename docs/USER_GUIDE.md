@@ -1,58 +1,89 @@
 # ByteMap User Guide
 
-Welcome to **ByteMap**, your professional desktop storage intelligence application. This guide will walk you through analyzing drives, inspecting large files, identifying duplicates, and safely recovering storage.
+A practical walkthrough of how to use ByteMap to analyze and clean up your local storage.
 
 ---
 
-## 1. Selecting a Storage Target
+## 1. Choosing What to Scan
 
-1. **Drive Cards**: On the **Drives** tab, ByteMap lists all detected physical storage drives, their mount points, filesystem format, and available storage. Click **Scan Drive** on any card to scan that partition.
-2. **Custom Folder Selection**: Click **Select Folder...** or use the **Browse...** button in the top navigation bar to select any specific directory (e.g. `D:\Projects` or `C:\Users\YourName\Downloads`).
+When you open ByteMap, it checks your operating system for connected drives:
 
----
-
-## 2. Running & Cancelling a Scan
-
-1. Click **Start Scan** in the top bar or within the configuration dialog.
-2. The **Configure Storage Scan** modal appears. You can optionally exclude hidden files or supply custom ignore patterns (such as `node_modules` or `.cache`).
-3. During scanning, real-time metrics display file count, directory count, elapsed duration, and the current path being processed.
-4. If you wish to abort at any time, click **Cancel Scan**. Traversal will stop immediately without corrupting application state.
+- **Full Drive Scan**: In the **Drives** tab, you'll see cards for all internal and external partitions (`C:\`, `D:\`, etc.) with their capacity, used space, and filesystem format (NTFS, FAT32, etc.). Click **Scan Drive** on any card.
+- **Specific Folder Scan**: If you only want to inspect a particular directory (like your `Downloads` folder, `node_modules`, or game library), click **Select Folder...** in the Drives tab or click **Browse...** in the top bar.
 
 ---
 
-## 3. Navigating the Interactive Storage Treemap
+## 2. Starting and Cancelling a Scan
 
-1. In the **Overview** dashboard, the central panel displays the **Storage Treemap**.
-2. Rectangle area corresponds directly to file and directory size. Colors reflect category types (Blue for Video, Emerald for Documents, Pink for Images, Indigo for Code, etc.).
-3. **Drill Down**: Click any directory rectangle to zoom into its contents.
-4. **Breadcrumbs**: Use the top path breadcrumbs to navigate back up to ancestor directories.
-5. **Filters**: Adjust the **Min Size** dropdown (e.g., `> 100 MB`) or enter a filename search term in the toolbar to isolate specific items.
+Clicking **Start Scan** opens the scan options modal:
+- **Exclude hidden files**: Skip hidden files and dotfolders (e.g. `.git`).
+- **Ignore patterns**: By default, ByteMap skips system folders like `$RECYCLE.BIN` and `System Volume Information`. You can add custom patterns in the **Settings** tab.
 
----
-
-## 4. Analyzing Large Files & Duplicates
-
-- **Large Files View**: Quickly ranks the biggest files consuming storage space. Set a threshold (e.g. `> 500 MB`) to locate disk-hogging video archives, disk images, or database dumps.
-- **Duplicate Analysis**: Switch to the **Duplicates** tab and click **Find Duplicates**. ByteMap runs a cryptographic BLAKE3 verification to identify exact byte-for-byte duplicates. Click **Mark for cleanup** to queue redundant copies.
+While the scan is running:
+- The modal shows real-time stats: files processed, folders found, data size, and elapsed time.
+- If you change your mind, click **Cancel Scan**. The Rust worker thread stops immediately and clears its buffer.
 
 ---
 
-## 5. Safe Cleanup Workflow
+## 3. Using the Storage Treemap
 
-1. Navigate to the **Cleanup** tab.
-2. Review recommendations categorized by:
-   - **Temporary Files**: Cache, `.tmp`, and scratch files.
-   - **Old Installers**: Obsolete `.msi`, `.iso`, and setup packages.
-   - **Large Archives**: Heavy `.zip` and `.tar` files.
-   - **Duplicates**: Exact matching copies.
-3. Every recommendation provides a **Risk Level** (Safe, Low, Moderate) and explanation.
-4. Select the items you wish to clean, then click **Clean Selected**.
-5. A confirmation modal will display the exact number of files and total reclaimable space. Confirming will move items to your operating system's **Recycle Bin / Trash**, allowing restoration if needed.
+Once a scan finishes, the **Overview** tab displays the interactive treemap:
+
+- **What the rectangles mean**: Each rectangle represents a folder or file. The size of the rectangle is proportional to how much disk space it occupies.
+- **Colors**: Colors correspond to file categories:
+  - **Blue**: Videos (`.mp4`, `.mkv`, etc.)
+  - **Pink**: Images (`.png`, `.jpg`, etc.)
+  - **Purple**: Audio (`.mp3`, `.flac`, etc.)
+  - **Emerald**: Documents (`.pdf`, `.docx`, etc.)
+  - **Amber**: Archives (`.zip`, `.7z`, etc.)
+  - **Indigo**: Code and development (`.rs`, `.ts`, `.json`, etc.)
+  - **Dark Slate**: Folders
+- **Drill down**: Click any folder rectangle to zoom in and see its contents.
+- **Breadcrumbs**: Use the top path breadcrumbs to navigate back up to parent folders.
+- **Filters**: Use the toolbar to filter out small files (e.g., show only items `> 100 MB`) or type a keyword to highlight matching files.
 
 ---
 
-## 6. Exporting Reports
+## 4. Finding Large Files
 
-Under **Settings**, click:
-- **Export Report (JSON)**: To save a machine-readable summary of the current scan.
-- **Export Files Table (CSV)**: To open file rankings in Microsoft Excel or Google Sheets.
+Navigate to the **Large Files** tab to see your heaviest disk consumers ranked from largest to smallest:
+- Use the **Min Size** selector to filter by `> 10 MB`, `> 50 MB`, `> 100 MB`, `> 500 MB`, or `> 1 GB`.
+- Click the external link icon on any row to reveal the file in Windows Explorer or macOS Finder.
+
+---
+
+## 5. Detecting Duplicates
+
+1. Go to the **Duplicates** tab.
+2. Click **Find Duplicates**.
+3. ByteMap groups candidate files by exact size, checks their 4KB header prefix, and computes a full BLAKE3 cryptographic hash on matches.
+4. Each duplicate group shows:
+   - The original file candidate (marked with a star).
+   - All duplicate copies, their file paths, and individual sizes.
+   - Total space you can reclaim if you remove the redundant copies.
+5. Click **Mark for cleanup** on any copy you want to queue for removal.
+
+---
+
+## 6. Safe Cleanup & Recovery
+
+ByteMap never deletes files automatically. To clean up:
+1. Open the **Cleanup** tab.
+2. Review items flagged under categories like *Temporary Files*, *Obsolete Installers*, *Large Archives*, and *Duplicates*.
+3. Each item has a risk indicator (`Safe`, `Low`, or `Moderate`) explaining why it was flagged.
+4. Check the items you want to remove and click **Clean Selected**.
+5. A confirmation dialog shows the exact number of files and total gigabytes that will be freed.
+
+### How to Recover a File If You Make a Mistake
+By default, ByteMap uses the `trash` crate to move deleted items to your operating system's **Recycle Bin** (Windows) or **Trash** (macOS/Linux). If you accidentally deleted something:
+- Open your system Recycle Bin / Trash on the desktop.
+- Right-click the file and click **Restore**.
+
+---
+
+## 7. Exporting Scan Reports
+
+If you want to save your scan data:
+- Go to the **Settings** tab.
+- Click **Export Report (JSON)** to download a complete machine-readable report.
+- Click **Export Files Table (CSV)** to download a spreadsheet you can open in Excel.

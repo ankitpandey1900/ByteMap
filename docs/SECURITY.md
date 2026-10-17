@@ -1,59 +1,76 @@
-# ByteMap Security Architecture & Policy
+# ByteMap Security Details
 
-Security is a foundational architectural requirement for ByteMap. This document describes the threat model, filesystem authorization boundaries, Content Security Policy (CSP), and safe deletion protections.
+Here is how security and safe file handling are implemented in ByteMap.
 
 ---
 
-## 1. Content Security Policy (CSP)
+## Content Security Policy (CSP)
 
-ByteMap runs in Tauri 2 with a strict CSP defined in `tauri.conf.json`:
+ByteMap runs in a Tauri webview window. In `tauri.conf.json`, I configured a strict CSP:
 
 ```text
-default-src 'self'; img-src 'self' data: asset:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ipc: http://ipc.localhost
+default-src 'self';
+img-src 'self' data: asset:;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+font-src 'self' https://fonts.gstatic.com;
+connect-src 'self' ipc: http://ipc.localhost
 ```
 
-- **Remote Scripts**: Completely prohibited. All application logic is compiled and bundled into the local distribution bundle.
-- **Arbitrary Shell Execution**: Disabled. Tauri process and shell plugins are not enabled for the frontend.
-- **External Web Requests**: Local scan routines make zero outbound network requests.
+What this means in practice:
+- **No external scripts**: The webview cannot load JavaScript from CDNs or external servers. All React and JS code is built locally into `dist/`.
+- **No remote web debugging**: The production build disables remote debugging endpoints.
+- **Tauri Plugin Restrictions**: Shell execution is disabled. The frontend cannot execute terminal commands, batch scripts, or power shell processes.
 
 ---
 
-## 2. Filesystem Boundary & Path Validation
+## Filesystem Boundaries & Path Validation
 
-Frontend input is never trusted as a security boundary. All paths passed to backend commands undergo strict verification via `PathValidator`:
+A common vulnerability in desktop utilities is path traversal: if the frontend sends `../../Windows/System32`, an unchecked backend might happily delete system files.
 
-### Canonicalization & Traversal Prevention
+ByteMap never trusts the frontend to supply safe paths. Every path sent from the UI passes through `PathValidator` in Rust:
+
+### 1. Canonicalization
+Paths are normalized and canonicalized via `std::fs::canonicalize()`. This resolves symlinks, relative segments (`..`, `.`), and case differences on Windows.
+
+### 2. Root Boundary Check
+When you initiate a scan on `D:\Projects`, that folder becomes the `authorized_root`. Any cleanup target must satisfy:
+
 ```rust
-let canonical_target = path.canonicalize()?;
 if !canonical_target.starts_with(&canonical_root) {
-    return Err(AppError::InvalidPath("Security violation: path traversal outside root"));
+    return Err(AppError::InvalidPath("Target sits outside authorized scan root"));
 }
 ```
 
-### Critical Protected System Locations
-ByteMap strictly prohibits modifying or recommending deletions in critical operating system locations:
-- `C:\Windows` and all subdirectories
+If a target path falls outside the selected folder, the backend immediately rejects the request.
+
+### 3. Protected System Directories
+Even if someone intentionally selects `C:\` as their scan root, ByteMap hard-blocks destructive operations against critical operating system directories:
+- `C:\Windows` and all subfolders
 - `C:\Program Files` and `C:\Program Files (x86)`
 - `C:\Recovery`, `C:\Boot`, `C:\System Volume Information`
 - `/bin`, `/sbin`, `/usr`, `/etc`, `/sys`, `/proc`, `/root`
-- Root drives directly (`C:\` or `/`)
+- Drive roots directly (`C:\` or `/`)
 
-### Pre-Execution Target Revalidation
-Before moving any file to the Recycle Bin or executing deletion:
-1. File existence and canonical path are re-checked.
-2. File metadata (length in bytes) is compared to the scan snapshot. If the file has changed size or been replaced by a different file, the operation is aborted with `AppError::TargetChanged`.
+### 4. Target Revalidation Before Destruction (TOCTOU Defense)
+There is always a time gap between when a scan runs and when a user clicks "Clean Selected". Files might have been edited, replaced with symlinks, or swapped by another program.
 
----
-
-## 3. Safe Deletion & Recycle Bin Priority
-
-1. **Zero Silent Deletion**: The application never automatically deletes any file.
-2. **Explicit User Selection**: The user must explicitly select files in the Cleanup view.
-3. **Two-Step Confirmation**: A modal dialog presents the exact file count, paths, and total reclaimable bytes before any action is executed.
-4. **OS Recycle Bin**: Deletions default to the native OS Recycle Bin (`trash::delete`), allowing users to easily inspect and restore files if necessary.
+Immediately before moving a file to the trash or unlinking it, `PathValidator::validate_cleanup_target`:
+1. Verifies the file still exists and is a regular file (not a directory or special device).
+2. Verifies the file's current byte size on disk matches the size recorded during the scan snapshot. If the size changed, ByteMap aborts with `AppError::TargetChanged` to protect against deleting modified data.
 
 ---
 
-## 4. Vulnerability Disclosure
+## Safe Native File Reveal
 
-If you discover a security vulnerability in ByteMap, please submit a responsible disclosure report to `security@bytemap.local` or open a private advisory on GitHub.
+When you click "Reveal in Explorer", ByteMap doesn't launch the file. It launches the operating system's native file manager with the item selected:
+- **Windows**: `explorer.exe /select,"<path>"`
+- **macOS**: `open -R "<path>"`
+- **Linux**: `xdg-open "<parent_dir>"`
+
+ByteMap will **never execute** `.exe`, `.bat`, `.ps1`, `.sh`, or document files found during scans.
+
+---
+
+## Responsible Disclosure
+
+If you spot a bug or security issue with path traversal, deletion validation, or IPC contracts, please file an issue or email me directly at `ankitpandey1900@gmail.com`.

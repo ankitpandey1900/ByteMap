@@ -1,34 +1,43 @@
-# ByteMap Privacy Policy & Local-First Principles
+# Privacy in ByteMap
 
-ByteMap is built on an uncompromising commitment to local-first data privacy and user sovereignty.
+I built ByteMap to analyze local storage without acting like spyware. Here is exactly what the app does and doesn't touch.
 
 ---
 
 ## 1. What ByteMap Reads
 
-- **File Metadata**: ByteMap reads file names, sizes, extensions, modification timestamps, and directory structures within user-selected scan roots.
-- **Drive Metadata**: ByteMap queries operating system storage APIs (`sysinfo`) to retrieve partition names, filesystem formats, total capacity, and available bytes.
-- **Cryptographic Hashing**: When the user explicitly requests duplicate analysis, ByteMap reads file content in streaming 64KB blocks solely to compute BLAKE3 hashes. File contents are discarded immediately after hashing.
+- **File Metadata**: During a scan, ByteMap reads file names, paths, sizes, extensions, and last-modified dates inside the folders you explicitly tell it to scan.
+- **Drive Capacity**: It queries OS disk metrics (`sysinfo`) to show drive size, free space, and partition formats.
+- **File Contents (Duplicates Only)**: If and only if you run the Duplicate Finder, ByteMap reads candidate file contents in 64KB chunks to calculate BLAKE3 cryptographic hashes. The file contents are discarded from memory immediately after hashing.
 
 ---
 
-## 2. What ByteMap Stores
+## 2. Where Scan Data Lives
 
-- **Volatile RAM Only**: Active scan results, folder aggregates, duplicate catalogs, and cleanup candidate lists are stored **exclusively in volatile application RAM**.
-- **On Exit**: When ByteMap terminates or when the user clicks "Clear Scan", all scan inventories, file paths, and metadata are immediately wiped.
-- **Preferences**: A minimal, human-readable configuration file is stored at `%APPDATA%\ByteMap\config.json`. This stores only non-sensitive preferences (selected theme, display units, and default exclusion patterns). It contains **zero file names or personal paths**.
+- **100% In-Memory**: All scan results, folder sizes, and duplicate catalogs exist only in RAM while ByteMap is running.
+- **Wiped on Exit**: When you close the app or click the "Clear Scan" button in the header, that RAM is freed. Nothing is written to an internal database or cache file.
+- **Config File**: The only file ByteMap writes to your drive is `%APPDATA%\ByteMap\config.json`. It only contains your UI settings:
+  ```json
+  {
+    "theme": "dark",
+    "unit": "binary",
+    "large_file_threshold_mb": 100,
+    "prefer_trash": true,
+    "default_excludes": ["$RECYCLE.BIN", "System Volume Information", ".git", "node_modules"]
+  }
+  ```
+  It **never** stores filenames, file paths, or personal scan history.
 
 ---
 
-## 3. What ByteMap NEVER Transmits
+## 3. What ByteMap Never Does
 
-- **Zero Telemetry**: No usage metrics, error telemetry, or tracking SDKs are included.
-- **Zero Cloud Uploads**: Scan data, file lists, and duplicate records never leave your local machine.
-- **Zero Network Calls During Local Scans**: The local scanning engine operates 100% offline.
+- **No Analytics / Telemetry**: There is no Google Analytics, PostHog, Sentry, or custom tracking pixel.
+- **No Cloud Uploads**: Your file inventories never leave your machine.
+- **No Network Requests During Scans**: The scanning and duplicate detection engines run 100% offline.
 
 ---
 
-## 4. User-Initiated Data Export
+## 4. Exporting Your Data
 
-- Exporting scan data is completely manual and explicit.
-- Users can choose to export reports in **JSON** or **CSV** formats to a directory chosen via the operating system's native save dialog.
+If you want to save a record of your scan, you have to initiate it manually via **Settings -> Export Report (JSON)** or **Export Files Table (CSV)**. You choose the destination file path.
