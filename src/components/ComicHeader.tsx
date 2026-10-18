@@ -11,6 +11,7 @@ import {
   ComicSettingsIcon,
   ComicZapIcon,
 } from '@/components/icons/ComicIcons';
+import { api } from '@/lib/api';
 
 interface ComicHeaderProps {
   onOpenScanModal: () => void;
@@ -82,8 +83,24 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
           })}
         </nav>
 
-        {/* Right: Big Action Button — Solid Comic Action Style */}
-        <div>
+        {/* Right: Author Portfolio Button + Big Analyze Action Button */}
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={() => api.openExternalUrl('https://ankitpandey19.vercel.app/')}
+            className="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-amber-100 text-slate-900 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all cursor-pointer group"
+            title="Made by Ankit Pandey — Visit Portfolio (https://ankitpandey19.vercel.app/)"
+          >
+            <div className="w-5 h-5 rounded-full overflow-hidden border border-slate-900 shrink-0 shadow-xs">
+              <img
+                src="/ankit.jpg"
+                alt="Ankit Pandey"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="font-comic font-bold text-[11px]">By Ankit</span>
+          </button>
+
           <button
             onClick={onOpenScanModal}
             className="flex items-center space-x-2 px-5 py-2 rounded-xl border-2.5 border-slate-900 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bangers text-sm uppercase tracking-widest shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all duration-150 relative overflow-hidden group"

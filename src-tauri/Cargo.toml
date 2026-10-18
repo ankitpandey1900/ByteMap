@@ -1,10 +1,11 @@
 [package]
 name = "bytemap"
-version = "1.0.1"
+version = "1.0.2"
 description = "ByteMap - Desktop Storage Intelligence"
-authors = ["ByteMap Team"]
+authors = ["Ankit Pandey <ankit1pandey11@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/ankitpandey1900/ByteMap"
+homepage = "https://ankitpandey19.vercel.app/"
 edition = "2021"
 rust-version = "1.80"
 

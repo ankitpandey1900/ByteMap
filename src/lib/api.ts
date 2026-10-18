@@ -216,6 +216,22 @@ export const api = {
     console.log('Reveal in explorer (web preview):', path);
   },
 
+  // Open external URL in system browser
+  async openExternalUrl(url: string): Promise<void> {
+    if (isTauri) {
+      try {
+        const { openUrl } = await import('@tauri-apps/plugin-opener');
+        await openUrl(url);
+        return;
+      } catch (err) {
+        console.error('Failed to open URL via plugin-opener:', err);
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  },
+
   // Load user settings from OS config directory (or localStorage in web preview)
   async loadSettings(): Promise<AppSettings> {
     if (isTauri) {

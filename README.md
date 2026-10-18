@@ -107,6 +107,17 @@ pnpm tauri build
 
 ---
 
+## Author
+
+**Ankit Pandey**
+> *"I build products. Life? Still in debugging mode."*
+
+- Portfolio: [https://ankitpandey19.vercel.app/](https://ankitpandey19.vercel.app/)
+- GitHub: [@ankitpandey1900](https://github.com/ankitpandey1900)
+- Email: [ankit1pandey11@gmail.com](mailto:ankit1pandey11@gmail.com)
+
+---
+
 ## License
 
 MIT

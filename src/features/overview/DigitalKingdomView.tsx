@@ -1117,11 +1117,22 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
           >
             <span>📥 Export JSON</span>
           </button>
-          <span className="text-xs text-slate-500 font-comic uppercase px-1 flex items-center space-x-1">
-            <span>✦</span>
-            <span>ByteMap v1.0 • Volatile RAM Only</span>
-            <span>✦</span>
-          </span>
+          <button
+            type="button"
+            onClick={() => api.openExternalUrl('https://ankitpandey19.vercel.app/')}
+            className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 text-slate-900 font-comic uppercase text-xs shadow-comic-sm transition-all hover:-translate-y-0.5 cursor-pointer group"
+            title="Visit Ankit Pandey's Portfolio (https://ankitpandey19.vercel.app/)"
+          >
+            <div className="w-5 h-5 rounded-full overflow-hidden border border-slate-900 shrink-0 shadow-xs">
+              <img
+                src="/ankit.jpg"
+                alt="Ankit Pandey"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span>Made by Ankit Pandey</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </button>
         </div>
       </footer>
     </div>

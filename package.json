@@ -1,7 +1,9 @@
 {
   "name": "bytemap",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
+  "author": "Ankit Pandey <ankit1pandey11@gmail.com>",
+  "homepage": "https://ankitpandey19.vercel.app/",
   "type": "module",
   "scripts": {
     "dev": "vite",

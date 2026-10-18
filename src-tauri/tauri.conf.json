@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "ByteMap",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "identifier": "com.bytemap.app",
   "build": {
     "frontendDist": "../dist",
@@ -37,7 +37,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "copyright": "Copyright © 2026 ByteMap Team",
+    "copyright": "Copyright © 2026 Ankit Pandey",
     "shortDescription": "Desktop Storage Intelligence",
     "longDescription": "A fast, offline desktop storage intelligence tool with a vibrant comic-book visualizer.",
     "icon": [
