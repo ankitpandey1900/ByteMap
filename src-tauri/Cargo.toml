@@ -5,7 +5,7 @@ description = "ByteMap - Desktop Storage Intelligence"
 authors = ["Ankit Pandey <ankit1pandey11@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/ankitpandey1900/ByteMap"
-homepage = "https://ankitpandey19.vercel.app/"
+homepage = "https://bytemap.alltracker.online/"
 edition = "2021"
 rust-version = "1.80"
 

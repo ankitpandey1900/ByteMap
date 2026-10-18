@@ -2,6 +2,8 @@
 
 A fast, private desktop app to see where your disk space actually went. Built with Tauri 2, Rust, React, and Tailwind.
 
+🌐 **Website & Downloads**: [https://bytemap.alltracker.online/](https://bytemap.alltracker.online/)
+
 Most disk analyzers either feel like Windows 98 software or Electron bloatware that writes gigabytes of SQLite caches to your SSD. ByteMap is built differently: it traverses your filesystem with native Rust threads, keeps all scan results in memory, renders an interactive squarified treemap, and wipes everything the moment you close the window. Zero database, zero telemetry, 100% offline.
 
 ---
@@ -112,6 +114,7 @@ pnpm tauri build
 **Ankit Pandey**
 > *"I build products. Life? Still in debugging mode."*
 
+- Website: [https://bytemap.alltracker.online/](https://bytemap.alltracker.online/)
 - Portfolio: [https://ankitpandey19.vercel.app/](https://ankitpandey19.vercel.app/)
 - GitHub: [@ankitpandey1900](https://github.com/ankitpandey1900)
 - Email: [ankit1pandey11@gmail.com](mailto:ankit1pandey11@gmail.com)

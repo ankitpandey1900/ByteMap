@@ -26,7 +26,7 @@ export const Navbar: React.FC = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between relative z-10">
           {/* Logo & Brand */}
-          <a href="#" className="flex items-center space-x-3 group">
+          <a href="https://bytemap.alltracker.online/" className="flex items-center space-x-3 group">
             <div className="w-11 h-11 rounded-full bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 overflow-hidden p-0.5">
               <img
                 src="/logo.png"

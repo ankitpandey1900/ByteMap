@@ -300,11 +300,19 @@ export const SettingsTab: React.FC = () => {
             <div className="mt-3 flex items-center space-x-2 flex-wrap gap-2 justify-center sm:justify-start">
               <button
                 type="button"
+                onClick={() => api.openExternalUrl('https://bytemap.alltracker.online/')}
+                className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 border-2 border-slate-900 font-comic font-bold text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer group"
+              >
+                <Globe className="w-4 h-4 text-slate-900 group-hover:rotate-12 transition-transform" />
+                <span>Website (bytemap.alltracker.online)</span>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-900" />
+              </button>
+              <button
+                type="button"
                 onClick={() => api.openExternalUrl('https://ankitpandey19.vercel.app/')}
                 className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-900 border-2 border-slate-900 font-comic font-bold text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer group"
               >
-                <Globe className="w-4 h-4 text-slate-900 group-hover:rotate-12 transition-transform" />
-                <span>Visit Portfolio (ankitpandey19.vercel.app)</span>
+                <span>Portfolio</span>
                 <ExternalLink className="w-3.5 h-3.5 text-slate-900" />
               </button>
               <button

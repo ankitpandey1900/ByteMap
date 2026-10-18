@@ -7,8 +7,8 @@ export const Footer: React.FC = () => {
     <footer className="bg-white border-t-3 border-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative select-none">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Brand */}
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-amber-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm overflow-hidden p-0.5">
+        <a href="https://bytemap.alltracker.online/" className="flex items-center space-x-3 group">
+          <div className="w-10 h-10 rounded-full bg-amber-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm overflow-hidden p-0.5 group-hover:scale-105 transition-transform">
             <img
               src="/logo.png"
               alt="ByteMap Mascot"
@@ -23,7 +23,7 @@ export const Footer: React.FC = () => {
               Desktop Storage Intelligence • v1.0.2
             </span>
           </div>
-        </div>
+        </a>
 
         {/* Creator Attribution Button */}
         <div className="flex items-center space-x-3">
