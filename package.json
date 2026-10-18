@@ -11,6 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "website:dev": "pnpm --dir website dev",
+    "website:build": "pnpm --dir website build",
     "tauri": "tauri"
   },
   "dependencies": {

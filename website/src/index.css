@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --comic-yellow: #facc15;
+    --comic-amber: #f59e0b;
+    --comic-sky: #38bdf8;
+    --comic-red: #ef4444;
+    --comic-pink: #ec4899;
+    --comic-green: #22c55e;
+    --comic-purple: #a855f7;
+    --comic-ink: #0f172a;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 9999px;
+  border: 2px solid #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Bold Comic Text Shadow (For Light/Colored Text on Darker Backdrops) */
+.comic-text-shadow {
+  text-shadow: 2px 2px 0px #0f172a;
+}
+
+.comic-text-shadow-lg {
+  text-shadow: 3px 3px 0px #0f172a;
+}
+
+/* Halftone Dot Patterns */
+.bg-comic-dots {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.12) 1.5px, transparent 1.5px);
+  background-size: 8px 8px;
+}
+
+.bg-comic-dots-dense {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.18) 1.5px, transparent 1.5px);
+  background-size: 6px 6px;
+}
+
+/* Retro diagonal screentone stripes */
+.bg-comic-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(15, 23, 42, 0.05) 10px,
+    rgba(15, 23, 42, 0.05) 20px
+  );
+}
+
+.bg-comic-stripes-amber {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(245, 158, 11, 0.15) 10px,
+    rgba(245, 158, 11, 0.15) 20px
+  );
+}
+
+/* Cross-hatch comic texture */
+.bg-comic-crosshatch {
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 6px,
+      rgba(15, 23, 42, 0.04) 6px,
+      rgba(15, 23, 42, 0.04) 7px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 6px,
+      rgba(15, 23, 42, 0.04) 6px,
+      rgba(15, 23, 42, 0.04) 7px
+    );
+}
+
+/* Wiggle shake animation */
+@keyframes comic-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-3deg); }
+  30% { transform: rotate(2.5deg); }
+  45% { transform: rotate(-2deg); }
+  60% { transform: rotate(1.5deg); }
+  75% { transform: rotate(-1deg); }
+}
+
+@keyframes comic-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-5px) rotate(0.5deg); }
+  66% { transform: translateY(-2px) rotate(-0.5deg); }
+}
+
+.animate-comic-float {
+  animation: comic-float 4s ease-in-out infinite;
+}
+
+.comic-hover-wiggle:hover {
+  animation: comic-wiggle 0.5s ease-in-out;
+}
