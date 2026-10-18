@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { ComicWallpaper } from '@/components/ComicWallpaper';
 import { ComicHeader } from '@/components/ComicHeader';
 import { ScanModal } from '@/components/ScanModal';
+import { ComicUpdateModal } from '@/components/ComicUpdateModal';
 import { DigitalKingdomView } from '@/features/overview/DigitalKingdomView';
 import { DrivesTab } from '@/features/drives/DrivesTab';
 import { ExplorerTab } from '@/features/explorer/ExplorerTab';
@@ -94,6 +95,9 @@ export const App: React.FC = () => {
         isOpen={isScanModalOpen}
         onClose={() => setIsScanModalOpen(false)}
       />
+
+      {/* Comic Auto-Update Notification Modal */}
+      <ComicUpdateModal />
     </ComicWallpaper>
   );
 };

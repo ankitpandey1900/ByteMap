@@ -23,7 +23,15 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: asset:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ipc: http://ipc.localhost"
+      "csp": "default-src 'self'; img-src 'self' data: asset:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ipc: http://ipc.localhost https://github.com https://objects.githubusercontent.com"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDBDQUMwMkFBNDZCNjM0OUIKUldTYk5MWkdxZ0tzREdyNTcrZkw1Wk91K3o1WVdPR2RQbmorc3hxS2phNUNad00yTU9kNTVwS2YK",
+      "endpoints": [
+        "https://github.com/ankitpandey1900/ByteMap/releases/latest/download/latest.json"
+      ]
     }
   },
   "bundle": {
