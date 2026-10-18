@@ -30,9 +30,9 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
   ];
 
   return (
-    <header className="px-4 py-2.5 border-b-2.5 border-slate-900 bg-gradient-to-r from-sky-300 via-sky-200 to-cyan-300 select-none shadow-sm relative overflow-hidden">
+    <header className="px-4 py-2.5 border-b-3 border-slate-900 bg-sky-400 select-none shadow-comic-sm relative overflow-hidden">
       {/* Subtle halftone dot background texture */}
-      <div className="absolute inset-0 bg-comic-dots opacity-40 pointer-events-none" />
+      <div className="absolute inset-0 bg-comic-dots opacity-25 pointer-events-none" />
 
       <div className="relative z-10 flex items-center justify-between flex-wrap gap-2">
         {/* Left: Mascot Badge + Comic 3D "BYTEMAP" Logo */}
@@ -41,8 +41,8 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
           className="flex items-center space-x-2.5 cursor-pointer group"
           title="Return to Digital Kingdom Overview"
         >
-          {/* Mascot Logo Badge with comic glow on hover */}
-          <div className="w-11 h-11 rounded-full bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm group-hover:shadow-comic-glow-amber group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 overflow-hidden p-0.5">
+          {/* Mascot Logo Badge with solid comic ink shadow on hover */}
+          <div className="w-11 h-11 rounded-full bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm group-hover:shadow-[4px_4px_0px_#0f172a] group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 overflow-hidden p-0.5">
             <img
               src="/logo.png"
               alt="ByteMap Explorer Mascot"
@@ -50,12 +50,12 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
             />
           </div>
 
-          {/* 3D Comic Text Logo with stacked outline effect */}
+          {/* 3D Comic Text Logo with Bangers display font */}
           <div className="flex flex-col">
-            <h1 className="font-comic text-2xl tracking-wider text-white uppercase comic-text-shadow leading-none">
+            <h1 className="font-bangers text-3xl tracking-wider text-white uppercase comic-text-shadow leading-none">
               BYTEMAP
             </h1>
-            <span className="text-[9px] font-fredoka font-bold text-sky-900/70 tracking-widest uppercase leading-none mt-0.5">
+            <span className="text-[10px] font-comicNeue font-bold text-slate-900 tracking-widest uppercase leading-none mt-0.5">
               Storage Explorer
             </span>
           </div>
@@ -82,16 +82,14 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
           })}
         </nav>
 
-        {/* Right: Big Action Button — Glossy Cartoon Style */}
+        {/* Right: Big Action Button — Solid Comic Action Style */}
         <div>
           <button
             onClick={onOpenScanModal}
-            className="flex items-center space-x-2 px-5 py-2 rounded-xl border-2.5 border-slate-900 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-slate-900 font-comic text-xs uppercase tracking-wider shadow-comic hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 active:shadow-comic-sm transition-all duration-150 relative overflow-hidden group"
+            className="flex items-center space-x-2 px-5 py-2 rounded-xl border-2.5 border-slate-900 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bangers text-sm uppercase tracking-widest shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all duration-150 relative overflow-hidden group"
           >
-            {/* Glossy shine sweep */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none" />
             <ComicZapIcon className="w-4 h-4 relative animate-comic-starburst" />
-            <span className="relative font-bold">Analyze</span>
+            <span className="relative">Analyze</span>
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   HardDrive,
   Play,
@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBytes } from '@/lib/utils';
+import { ComicStorageBar } from '@/components/ComicStorageBar';
+import { ComicFolderPickerModal } from '@/components/ComicFolderPickerModal';
 import { api } from '@/lib/api';
 import { DriveInfo } from '@/types';
 
@@ -18,22 +20,24 @@ interface DrivesTabProps {
 export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
   const { drives, setDrives, selectedDrive, setSelectedDrive, settings, setScanPath } =
     useAppStore();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   const handleRefresh = async () => {
     const list = await api.getDrives();
     setDrives(list);
   };
 
-  const handleSelectFolder = async () => {
-    const path = await api.selectDirectory();
-    if (path) {
-      setScanPath(path);
-      onStartScan(path);
-    }
+  const handleSelectFolder = () => {
+    setIsPickerOpen(true);
+  };
+
+  const handleFolderSelected = (path: string) => {
+    setScanPath(path);
+    onStartScan(path);
   };
 
   return (
-    <div className="space-y-4 max-w-7xl select-none font-sans text-slate-900">
+    <div className="space-y-4 w-full select-none font-sans text-slate-900">
       {/* Header bar card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3 relative overflow-hidden">
         {/* Crosshatch texture */}
@@ -61,10 +65,8 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
           </button>
           <button
             onClick={handleSelectFolder}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl border-2.5 border-slate-900 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 font-comic text-xs uppercase tracking-wide text-slate-900 shadow-comic hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 active:shadow-comic-sm transition-all relative overflow-hidden group"
+            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl border-2.5 border-slate-900 bg-amber-400 hover:bg-amber-300 font-bangers text-sm uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all relative overflow-hidden"
           >
-            {/* Glossy shine */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none" />
             <FolderPlus className="w-4 h-4 text-slate-900 relative" />
             <span className="relative">Select Folder...</span>
           </button>
@@ -86,7 +88,7 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
               onClick={() => setSelectedDrive(drive)}
               className={`p-4 rounded-2xl border-2.5 border-slate-900 cursor-pointer transition-all flex flex-col justify-between relative overflow-hidden comic-card-hover ${
                 isSelected
-                  ? 'bg-amber-50 shadow-comic-glow-amber ring-2 ring-amber-400'
+                  ? 'bg-amber-100/70 shadow-[5px_5px_0px_#0f172a] -translate-y-0.5'
                   : 'bg-white shadow-comic hover:bg-slate-50'
               }`}
             >
@@ -100,7 +102,7 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
                     <HardDrive className="w-6 h-6 text-slate-900 stroke-[2.2]" />
                   </div>
                   <div>
-                    <h3 className="font-comic text-base uppercase text-slate-900 flex items-center space-x-2">
+                    <h3 className="font-bangers text-xl uppercase tracking-wide text-slate-900 flex items-center space-x-2">
                       <span>{drive.name}</span>
                       {drive.is_read_only && (
                         <span title="Read-only volume">
@@ -123,41 +125,30 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
                 </div>
 
                 {isSelected && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-emerald-400 border-2 border-slate-900 text-slate-900 font-comic text-[10px] uppercase shadow-comic-sm animate-comic-pop">
-                    ✓ Selected
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-emerald-400 border-2 border-slate-900 text-slate-900 font-bangers text-xs uppercase tracking-wider shadow-comic-sm animate-comic-pop">
+                    ✓ Active Drive
                   </span>
                 )}
               </div>
 
               {/* Progress Bar */}
               <div className="relative mt-4 space-y-1.5">
-                <div className="w-full bg-slate-200 h-4 rounded-full border-2 border-slate-900 overflow-hidden relative">
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ${
-                      usedPercent > 90
-                        ? 'bg-gradient-to-r from-rose-400 to-rose-500 comic-progress-stripe'
-                        : usedPercent > 75
-                        ? 'bg-gradient-to-r from-amber-300 to-amber-500'
-                        : 'bg-gradient-to-r from-emerald-300 to-emerald-500'
-                    }`}
-                    style={{ width: `${usedPercent}%` }}
-                  />
-                  {usedPercent > 12 && (
-                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-comic font-bold text-slate-900/80">
-                      {usedPercent}%
-                    </span>
-                  )}
-                </div>
-                <div className="flex justify-between text-xs font-fredoka font-bold text-slate-700">
-                  <span>Used: {formatBytes(drive.used_bytes, settings.unit)} ({usedPercent}%)</span>
-                  <span>Free: {formatBytes(drive.available_bytes, settings.unit)}</span>
+                <ComicStorageBar
+                  percent={usedPercent}
+                  heightClass="h-4"
+                  showLabel={true}
+                  showStatusBadge={true}
+                />
+                <div className="flex justify-between text-xs font-comicNeue font-bold text-slate-700">
+                  <span>Used: <span className="font-mono">{formatBytes(drive.used_bytes, settings.unit)}</span> ({usedPercent}%)</span>
+                  <span>Free: <span className="font-mono">{formatBytes(drive.available_bytes, settings.unit)}</span></span>
                 </div>
               </div>
 
               {/* Action buttons */}
               <div className="relative mt-4 pt-3 border-t-2 border-slate-900 flex items-center justify-between">
-                <span className="text-xs font-comic text-slate-600 uppercase">
-                  Total: {formatBytes(drive.total_bytes, settings.unit)}
+                <span className="text-xs font-comicNeue font-bold text-slate-600 uppercase">
+                  Total: <span className="font-mono">{formatBytes(drive.total_bytes, settings.unit)}</span>
                 </span>
                 <button
                   onClick={(e) => {
@@ -165,9 +156,8 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
                     setSelectedDrive(drive);
                     onStartScan(drive.mount_point);
                   }}
-                  className="flex items-center space-x-1.5 px-4 py-1.5 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-slate-900 font-comic text-xs uppercase rounded-xl border-2 border-slate-900 shadow-comic-sm hover:-translate-y-1 hover:shadow-comic transition-all relative overflow-hidden group"
+                  className="flex items-center space-x-1.5 px-4 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bangers text-xs uppercase tracking-wider rounded-xl border-2 border-slate-900 shadow-comic-sm hover:-translate-y-0.5 hover:shadow-comic active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all relative overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none" />
                   <Play className="w-3 h-3 fill-current relative" />
                   <span className="relative">Scout Drive</span>
                 </button>
@@ -196,6 +186,13 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
           </div>
         </div>
       )}
+
+      {/* Custom Comic Folder Picker Modal */}
+      <ComicFolderPickerModal
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={handleFolderSelected}
+      />
     </div>
   );
 };

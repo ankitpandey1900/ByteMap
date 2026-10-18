@@ -74,25 +74,25 @@ export const SettingsTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 max-w-5xl select-none font-sans text-slate-900 pb-10">
+    <div className="space-y-4 w-full max-w-5xl mx-auto select-none font-sans text-slate-900 pb-10">
       {/* Top Banner */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3">
         <div>
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-1">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 mb-1">
             <Settings className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Preferences</span>
           </div>
-          <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1">
+          <h2 className="font-bangers text-2xl text-slate-900 uppercase tracking-wider mt-1">
             Configuration & Rules
           </h2>
-          <p className="text-xs font-fredoka font-semibold text-slate-600">
+          <p className="text-xs font-comicNeue font-bold text-slate-600">
             Configure storage unit standards, safety policies, exclusion rules, and data export.
           </p>
         </div>
 
         <button
           onClick={handleSave}
-          className="flex items-center space-x-1.5 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wider text-slate-900 border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+          className="flex items-center space-x-1.5 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 font-bangers text-sm uppercase tracking-wider text-slate-900 border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
         >
           {savedSuccess ? (
             <>
@@ -110,7 +110,7 @@ export const SettingsTab: React.FC = () => {
 
       {/* Storage Units */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
-        <h3 className="font-comic text-sm uppercase text-slate-900 flex items-center space-x-2">
+        <h3 className="font-bangers text-base uppercase tracking-wider text-slate-900 flex items-center space-x-2">
           <span>Storage Unit Calculation</span>
         </h3>
 
@@ -118,7 +118,7 @@ export const SettingsTab: React.FC = () => {
           <select
             value={settings.unit}
             onChange={(e) => updateSettings({ unit: e.target.value as 'binary' | 'decimal' })}
-            className="w-full max-w-md px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl font-comic text-xs uppercase text-slate-900 focus:outline-none"
+            className="w-full max-w-md px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl font-comicNeue font-bold text-xs uppercase text-slate-900 focus:outline-none"
           >
             <option value="binary">Binary Base 2 (1024 B = 1 KiB, MiB, GiB) - OS Standard</option>
             <option value="decimal">Decimal Base 10 (1000 B = 1 KB, MB, GB) - Drive Label</option>
@@ -128,7 +128,7 @@ export const SettingsTab: React.FC = () => {
 
       {/* Safety & Cleanup Policy */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
-        <h3 className="font-comic text-sm uppercase text-slate-900 flex items-center space-x-2">
+        <h3 className="font-bangers text-base uppercase tracking-wider text-slate-900 flex items-center space-x-2">
           <Shield className="w-4 h-4 text-emerald-600" />
           <span>Safety & Deletion Protocols</span>
         </h3>

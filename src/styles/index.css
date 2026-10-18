@@ -319,18 +319,18 @@
 }
 
 /* =============================================
-   COMIC CARD GLOW & HOVER STATES
+   COMIC CARD ELEVATION & HOVER STATES
    ============================================= */
 
-/* Cards that lift with a colored glow on hover */
+/* Authentic comic card pop-out on hover — solid black ink shadow, NO fuzzy AI glows */
 .comic-card-hover {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.2s ease;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease;
 }
 
 .comic-card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow: 4px 6px 0px #0f172a, 0 0 0 3px rgba(250, 204, 21, 0.4);
+  transform: translateY(-2.5px);
+  box-shadow: 5px 5px 0px #0f172a;
 }
 
 

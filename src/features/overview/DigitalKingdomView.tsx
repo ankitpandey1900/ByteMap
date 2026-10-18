@@ -28,6 +28,7 @@ import {
 import { useAppStore } from '@/lib/store';
 import { formatBytes, formatNumber, getCategoryColor, getCategoryEmoji } from '@/lib/utils';
 import { ScoutMascot, ScoutAvatar } from '@/components/ScoutMascot';
+import { ComicStorageBar } from '@/components/ComicStorageBar';
 import { api } from '@/lib/api';
 import { FileCategory } from '@/types';
 
@@ -371,41 +372,31 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
             <div className="absolute inset-0 bg-comic-crosshatch pointer-events-none rounded-2xl" />
 
             {/* Yellow Header Pill */}
-            <div className="relative inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 w-fit mb-2">
+            <div className="relative inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 w-fit mb-2">
               <ComicDrivesIcon className="w-4 h-4" />
               <span>Drive Overview</span>
             </div>
 
             {/* Drive Name & Real Capacity */}
             <div className="relative flex items-baseline justify-between mt-0.5">
-              <span className="font-comic text-lg text-slate-900 uppercase tracking-wide">
+              <span className="font-bangers text-xl text-slate-900 uppercase tracking-wide">
                 {activeDrive ? activeDrive.name : (drives.length > 0 ? drives[0].name : 'C: DRIVE')}
               </span>
-              <span className="font-fredoka font-bold text-sm text-slate-700">
+              <span className="font-comicNeue font-bold text-sm text-slate-700">
                 {totalDriveBytes > 0
                   ? `${formatBytes(usedDriveBytes, settings.unit)} / ${formatBytes(totalDriveBytes, settings.unit)}`
                   : 'No Drive Mounted'}
               </span>
             </div>
 
-            {/* Comic Progress Bar with candy stripe when near full */}
-            <div className="relative w-full h-4 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden my-2">
-              <div
-                className={`h-full rounded-full border-r-2 border-slate-900 transition-all duration-700 ${
-                  usedPercent > 90
-                    ? 'bg-gradient-to-r from-rose-400 to-rose-500 comic-progress-stripe'
-                    : usedPercent > 75
-                    ? 'bg-gradient-to-r from-amber-300 to-amber-500'
-                    : 'bg-gradient-to-r from-emerald-300 to-emerald-500'
-                }`}
-                style={{ width: `${Math.max(usedPercent > 0 ? 5 : 0, usedPercent)}%` }}
+            {/* Dynamic Comic Storage Bar with Escalating Alert Colors */}
+            <div className="relative my-2.5">
+              <ComicStorageBar
+                percent={usedPercent}
+                heightClass="h-4"
+                showLabel={true}
+                showStatusBadge={true}
               />
-              {/* Percent label inside bar */}
-              {usedPercent > 15 && (
-                <span className="absolute inset-0 flex items-center justify-center text-[9px] font-comic font-bold text-slate-900/80">
-                  {usedPercent}%
-                </span>
-              )}
             </div>
 
             {/* Scanning Speed / Telemetry */}
@@ -435,7 +426,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
 
             {/* Yellow Header Pill & Navigation */}
             <div className="relative flex items-center justify-between mb-1">
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 w-fit">
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 w-fit">
                 <ComicPieChartIcon className="w-4 h-4" />
                 <span>File Type Breakdown</span>
               </div>
@@ -582,11 +573,11 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 {/* Yellow Badge */}
-                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900">
                   <ComicKingdomIcon className="w-4 h-4" />
                   <span>Interactive Map</span>
                 </div>
-                <div className="flex items-center space-x-1.5 text-xs font-fredoka font-bold text-slate-500">
+                <div className="flex items-center space-x-1.5 text-xs font-comicNeue font-bold text-slate-600">
                   <button
                     onClick={() => setTreemapCurrentPath('')}
                     className="hover:text-amber-600 hover:underline uppercase transition-colors"
@@ -610,7 +601,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                   )}
                 </div>
               </div>
-              <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1 drop-shadow-sm">
+              <h2 className="font-bangers text-2xl text-slate-900 uppercase tracking-wider mt-1 drop-shadow-sm">
                 YOUR DIGITAL KINGDOM
               </h2>
               {/* Visual Comic Category Legend Banner */}
@@ -713,19 +704,6 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                         fill="url(#comic-dots-pattern)"
                         pointerEvents="none"
                       />
-
-                      {/* Glossy highlight on top of block */}
-                      {node.h > 30 && (
-                        <rect
-                          x={node.x + 4}
-                          y={node.y + 4}
-                          width={Math.max(0, node.w - 8)}
-                          height={Math.max(0, Math.min(node.h * 0.3, 20))}
-                          rx={6}
-                          fill="url(#comic-gloss-gradient)"
-                          pointerEvents="none"
-                        />
-                      )}
 
                       {/* Category Pill Tag at top of cell */}
                       {node.w > 75 && node.h > 55 && (
@@ -840,10 +818,6 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                   <pattern id="comic-dots-pattern" width="8" height="8" patternUnits="userSpaceOnUse">
                     <circle cx="2" cy="2" r="1" fill="#ffffff" fillOpacity="0.25" />
                   </pattern>
-                  <linearGradient id="comic-gloss-gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                  </linearGradient>
                 </defs>
               </svg>
             ) : (
@@ -860,13 +834,13 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                   )}
                 </div>
 
-                <h3 className="font-comic text-lg sm:text-xl text-slate-900 uppercase tracking-wide">
+                <h3 className="font-bangers text-2xl text-slate-900 uppercase tracking-wide">
                   {scanProgress.status === 'scanning'
                     ? 'Scouting In Progress!'
                     : 'Uncharted Digital Kingdom!'}
                 </h3>
 
-                <p className="font-fredoka text-xs text-slate-600 max-w-sm mt-1 mb-3 font-semibold">
+                <p className="font-comicNeue font-bold text-xs text-slate-600 max-w-sm mt-1 mb-3">
                   {scanProgress.status === 'scanning'
                     ? `Scout is actively analyzing files: ${formatNumber(scanProgress.scanned_files)} scanned (${formatBytes(scanProgress.scanned_bytes, settings.unit)})`
                     : 'Select a drive or directory and click the ANALYZE button at the top to scout your storage and reveal the interactive map.'}
@@ -875,9 +849,9 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 {scanProgress.status === 'scanning' ? (
                   <div className="w-64 max-w-full space-y-1.5">
                     <div className="w-full h-4 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden relative">
-                      <div className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 w-full comic-progress-stripe" />
+                      <div className="h-full bg-emerald-400 w-full comic-progress-stripe" />
                     </div>
-                    <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-emerald-400 border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase text-slate-900">
+                    <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-emerald-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900">
                       <span className="animate-spin">🧭</span>
                       <span>Scouting Files...</span>
                     </div>
@@ -885,7 +859,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 ) : (
                   <button
                     onClick={() => (onOpenScanModal ? onOpenScanModal() : setActiveTab('drives'))}
-                    className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 border-2 border-slate-900 shadow-comic hover:shadow-comic-glow-amber font-comic text-xs uppercase text-slate-900 transition-all hover:-translate-y-0.5 cursor-pointer"
+                    className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 border-2.5 border-slate-900 shadow-comic hover:shadow-comic-lg font-bangers text-sm uppercase tracking-wider text-slate-900 transition-all hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
                   >
                     <span>🗺️ Ready to Scout • Click to Scan</span>
                   </button>
@@ -1038,20 +1012,20 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 <div className="w-7 h-7 rounded-lg bg-red-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm comic-hover-wiggle">
                   <ComicTrashIcon className="w-4 h-4" />
                 </div>
-                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900">
                   <ComicDuplicatesIcon className="w-4 h-4" />
                   <span>Duplicate Alerts</span>
                 </div>
               </div>
 
               {/* Real Reclaimable Banner */}
-              <div className="flex items-center space-x-2 p-2 rounded-xl bg-gradient-to-r from-amber-100 to-orange-100 border-2 border-slate-900 mb-1.5 shadow-comic-sm">
+              <div className="flex items-center space-x-2 p-2 rounded-xl bg-amber-100 border-2 border-slate-900 mb-1.5 shadow-comic-sm">
                 <ComicDrivesIcon className="w-6 h-6 shrink-0 animate-comic-float" />
                 <div>
-                  <p className="font-comic text-xs text-slate-900 leading-tight">
+                  <p className="font-bangers text-sm text-slate-900 leading-tight">
                     {formatBytes(duplicateReclaimable, settings.unit)} Reclaimable!
                   </p>
-                  <p className="text-[10px] font-fredoka font-bold text-slate-600">
+                  <p className="text-[11px] font-comicNeue font-bold text-slate-600">
                     Byte-for-byte identical duplicates
                   </p>
                 </div>

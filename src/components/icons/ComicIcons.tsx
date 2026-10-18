@@ -439,3 +439,54 @@ export const ComicShieldIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5
     />
   </svg>
 );
+
+/**
+ * 📁 Comic Folder Icon
+ * Chunky cartoon manila folder with dark ink stroke
+ */
+export const ComicFolderIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M3 6C3 4.9 3.9 4 5 4H9.5L12 6.5H19C20.1 6.5 21 7.4 21 8.5V18C21 19.1 20.1 20 19 20H5C3.9 20 3 19.1 3 18V6Z"
+      fill="#f59e0b"
+      stroke="#0f172a"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M3 9H21V18C21 19.1 20.1 20 19 20H5C3.9 20 3 19.1 3 18V9Z"
+      fill="#fbbf24"
+      stroke="#0f172a"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/**
+ * 🏷️ Helper to render the appropriate comic category icon
+ */
+export const ComicCategoryFileIcon: React.FC<{ category?: string; className?: string }> = ({
+  category = 'other',
+  className = 'w-4 h-4',
+}) => {
+  switch (category?.toLowerCase()) {
+    case 'video':
+      return <ComicVideoIcon className={className} />;
+    case 'image':
+      return <ComicImageIcon className={className} />;
+    case 'archive':
+      return <ComicArchiveIcon className={className} />;
+    case 'app':
+      return <ComicAppIcon className={className} />;
+    case 'document':
+    default:
+      return <ComicDocIcon className={className} />;
+  }
+};
+

@@ -5,6 +5,7 @@ import {
   formatDuration,
   formatDate,
   getCategoryColor,
+  cleanDisplayPath,
 } from '@/lib/utils';
 
 describe('formatBytes utility', () => {
@@ -79,3 +80,13 @@ describe('getCategoryColor utility', () => {
     expect(getCategoryColor('other')).toBe('#64748b');
   });
 });
+
+describe('cleanDisplayPath utility', () => {
+  it('strips Windows NT extended prefix \\\\?\\', () => {
+    expect(cleanDisplayPath('\\\\?\\E:\\Download\\file.mp4')).toBe('E:\\Download\\file.mp4');
+    expect(cleanDisplayPath('\\\\?\\UNC\\server\\share\\file.txt')).toBe('\\\\server\\share\\file.txt');
+    expect(cleanDisplayPath('C:\\normal\\path.zip')).toBe('C:\\normal\\path.zip');
+    expect(cleanDisplayPath('')).toBe('');
+  });
+});
+

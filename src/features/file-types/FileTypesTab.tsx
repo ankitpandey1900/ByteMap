@@ -69,17 +69,17 @@ export const FileTypesTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 max-w-7xl select-none font-sans text-slate-900">
+    <div className="space-y-4 w-full select-none font-sans text-slate-900">
       {/* Top Banner Card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic">
-        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-1">
+        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 mb-1">
           <Layers className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Category Analysis</span>
         </div>
-        <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1">
+        <h2 className="font-bangers text-2xl text-slate-900 uppercase tracking-wider mt-1">
           File-Type Analytics
         </h2>
-        <p className="text-xs font-fredoka font-semibold text-slate-600">
+        <p className="text-xs font-comicNeue font-bold text-slate-600">
           Breakdown of scanned data across categories and file extensions.
         </p>
       </div>
@@ -93,9 +93,9 @@ export const FileTypesTab: React.FC = () => {
             <div
               key={cat.category}
               onClick={() => setSelectedCat(isSelected ? 'all' : cat.category)}
-              className={`p-3.5 rounded-2xl border-2.5 border-slate-900 cursor-pointer transition-all flex flex-col justify-between ${
+              className={`p-3.5 rounded-2xl border-2.5 border-slate-900 cursor-pointer transition-all flex flex-col justify-between comic-card-hover ${
                 isSelected
-                  ? 'bg-amber-100 shadow-comic ring-2 ring-amber-400'
+                  ? 'bg-amber-100 shadow-[5px_5px_0px_#0f172a] -translate-y-0.5'
                   : 'bg-white shadow-comic hover:bg-slate-50'
               }`}
             >
@@ -105,14 +105,14 @@ export const FileTypesTab: React.FC = () => {
                     className="w-3.5 h-3.5 rounded-md border border-slate-900 shrink-0"
                     style={{ backgroundColor: catColor }}
                   />
-                  <h3 className="font-comic text-sm uppercase text-slate-900">
+                  <h3 className="font-bangers text-lg uppercase tracking-wider text-slate-900">
                     {cat.category}
                   </h3>
                 </div>
                 {getCategoryIcon(cat.category)}
               </div>
 
-              <div className="text-xl font-comic text-slate-900 mt-1">
+              <div className="text-2xl font-mono font-bold text-slate-900 mt-1 tabular-nums">
                 {formatBytes(cat.total_bytes, settings.unit)}
               </div>
 
@@ -126,9 +126,9 @@ export const FileTypesTab: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-between items-center text-xs font-fredoka font-bold text-slate-600 mt-2">
-                <span>{formatNumber(cat.file_count)} files</span>
-                <span className="font-comic text-slate-900">{cat.percentage.toFixed(1)}%</span>
+              <div className="flex justify-between items-center text-xs font-comicNeue font-bold text-slate-600 mt-2">
+                <span className="font-mono">{formatNumber(cat.file_count)} files</span>
+                <span className="font-mono font-bold text-slate-900">{cat.percentage.toFixed(1)}%</span>
               </div>
             </div>
           );

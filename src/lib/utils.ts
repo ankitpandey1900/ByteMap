@@ -59,6 +59,14 @@ export function formatDate(timestamp?: number): string {
   }
 }
 
+/**
+ * Clean path for user display by stripping Windows extended NT prefix (\\?\ or \\?\UNC\)
+ */
+export function cleanDisplayPath(rawPath?: string): string {
+  if (!rawPath) return '';
+  return rawPath.replace(/^\\\\\?\\UNC\\/i, '\\\\').replace(/^\\\\\?\\/i, '');
+}
+
 export function getCategoryColor(category: FileCategory | string): string {
   switch (category?.toLowerCase()) {
     case 'video':

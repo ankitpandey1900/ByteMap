@@ -21,19 +21,6 @@ export const ScoutAvatar: React.FC<ScoutAvatarProps> = ({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          {/* Halftone scan cone pattern */}
-          <radialGradient id="scout-lens-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
-            <stop offset="60%" stopColor="#22d3ee" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="scout-beam-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
-          </linearGradient>
-        </defs>
-
         {/* Outer Circular Comic Badge */}
         <circle
           cx="60"
@@ -133,11 +120,11 @@ export const ScoutAvatar: React.FC<ScoutAvatarProps> = ({
             <g className="animate-[comic-scan-beam_1.2s_ease-in-out_infinite] origin-[74px_74px]">
               <path
                 d="M74 74 L40 115 L108 115 Z"
-                fill="url(#scout-beam-grad)"
-                stroke="#38bdf8"
+                fill="#38bdf8"
+                fillOpacity="0.25"
+                stroke="#0f172a"
                 strokeWidth="1.5"
                 strokeDasharray="3 3"
-                opacity="0.8"
               />
               {/* Radar rings inside beam */}
               <path
@@ -173,7 +160,7 @@ export const ScoutAvatar: React.FC<ScoutAvatarProps> = ({
             cx="72"
             cy="70"
             r="16"
-            fill={isScanning ? 'url(#scout-lens-glow)' : '#e0f2fe'}
+            fill={isScanning ? '#38bdf8' : '#e0f2fe'}
             fillOpacity={isScanning ? 0.95 : 0.8}
             stroke="#0f172a"
             strokeWidth="3.5"
@@ -230,7 +217,7 @@ export const ScoutMascot: React.FC<ScoutMascotProps> = ({
   statusText,
 }) => {
   return (
-    <div className="flex items-center space-x-3 bg-gradient-to-r from-amber-100 via-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-slate-900/60 p-2.5 rounded-xl border-2 border-slate-900 shadow-comic-sm relative overflow-hidden">
+    <div className="flex items-center space-x-3 bg-amber-100 p-2.5 rounded-xl border-2.5 border-slate-900 shadow-comic relative overflow-hidden">
       {/* Subtle halftone background texture */}
       <div className="absolute inset-0 bg-comic-dots opacity-20 pointer-events-none" />
 
@@ -249,10 +236,10 @@ export const ScoutMascot: React.FC<ScoutMascotProps> = ({
       <div className="relative flex-1 min-w-0 z-10">
         {/* Status Badge Pill */}
         <div
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full border-2 border-slate-900 text-[10px] font-extrabold font-fredoka uppercase tracking-wider mb-1 shadow-comic-sm ${
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full border-2 border-slate-900 text-xs font-bangers uppercase tracking-wider mb-1 shadow-comic-sm ${
             isScanning
               ? 'bg-emerald-400 text-slate-900'
-              : 'bg-sky-300 text-slate-900'
+              : 'bg-sky-400 text-slate-900'
           }`}
         >
           <span className={`mr-1 ${isScanning ? 'animate-spin' : ''}`}>
@@ -262,12 +249,12 @@ export const ScoutMascot: React.FC<ScoutMascotProps> = ({
         </div>
 
         {/* Speech text with cartoon tail */}
-        <div className="relative bg-yellow-100 border-2 border-slate-900 rounded-lg px-2.5 py-1.5 shadow-comic-sm">
+        <div className="relative bg-yellow-50 border-2 border-slate-900 rounded-lg px-2.5 py-1.5 shadow-comic-sm">
           {/* Speech bubble tail pointing to mascot */}
           <div className="absolute -left-2 top-2 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-slate-900 border-b-[6px] border-b-transparent" />
-          <div className="absolute -left-[6px] top-[9px] w-0 h-0 border-t-[5px] border-t-transparent border-r-[7px] border-r-yellow-100 border-b-[5px] border-b-transparent" />
+          <div className="absolute -left-[6px] top-[9px] w-0 h-0 border-t-[5px] border-t-transparent border-r-[7px] border-r-yellow-50 border-b-[5px] border-b-transparent" />
 
-          <p className="text-[11px] font-bold text-slate-800 dark:text-amber-200 font-fredoka leading-snug truncate">
+          <p className="text-xs font-bold text-slate-900 font-comicNeue leading-snug truncate">
             {statusText || (isScanning ? '80ms Telemetry • In Progress' : 'Ready to scout storage!')}
           </p>
         </div>

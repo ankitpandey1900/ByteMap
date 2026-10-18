@@ -79,11 +79,6 @@ export const api = {
         console.error('Directory picker error:', err);
       }
     }
-    // Web browser fallback: prompt user for folder or drive path
-    if (typeof window !== 'undefined' && window.prompt) {
-      const customPath = window.prompt('Enter directory or drive path to analyze:', 'D:\\');
-      return customPath ? customPath.trim() : null;
-    }
     return null;
   },
 

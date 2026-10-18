@@ -2,14 +2,11 @@ import React from 'react';
 
 export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-gradient-to-b from-sky-400 via-sky-300 to-blue-500 flex flex-col p-1.5 sm:p-2 md:p-2.5 select-none">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#38bdf8] flex flex-col p-1.5 sm:p-2 md:p-2.5 select-none">
       {/* Background Effects Layer */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Sun burst radial glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140vw] h-[70vh] bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.4)_0%,transparent_70%)]" />
-
-        {/* Animated halftone dot overlay — authentic retro comic feel */}
-        <div className="absolute inset-0 opacity-[0.18] bg-[radial-gradient(#ffffff_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
+        {/* Authentic Ben-Day halftone print dots overlay — flat retro newsprint style */}
+        <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:16px_16px]" />
 
         {/* Subtle speed lines radiating from top-left */}
         <div className="absolute inset-0 opacity-[0.06] comic-speed-lines" />

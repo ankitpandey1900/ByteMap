@@ -1,6 +1,6 @@
 [package]
 name = "bytemap"
-version = "1.0.0"
+version = "1.0.1"
 description = "ByteMap - Desktop Storage Intelligence"
 authors = ["ByteMap Team"]
 license = "MIT"

@@ -6,7 +6,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { formatBytes } from '@/lib/utils';
+import { formatBytes, cleanDisplayPath } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { DuplicateGroup } from '@/types';
 
@@ -86,18 +86,18 @@ export const DuplicatesTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 max-w-7xl select-none font-sans text-slate-900">
+    <div className="space-y-4 w-full select-none font-sans text-slate-900">
       {/* Top Banner Card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-1">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 mb-1">
             <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Cryptographic BLAKE3 Engine</span>
           </div>
-          <h2 className="font-comic text-xl text-slate-900 uppercase tracking-wider mt-1">
+          <h2 className="font-bangers text-2xl text-slate-900 uppercase tracking-wider mt-1">
             Byte-for-Byte Duplicate Detector
           </h2>
-          <p className="text-xs font-fredoka font-semibold text-slate-600">
+          <p className="text-xs font-comicNeue font-bold text-slate-600">
             Verified byte-for-byte using tiered size pre-filtering and BLAKE3 cryptographic hashes.
           </p>
         </div>
@@ -105,7 +105,7 @@ export const DuplicatesTab: React.FC = () => {
         <button
           onClick={handleRunDuplicateSearch}
           disabled={isHashing}
-          className="flex items-center space-x-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wider border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-50"
+          className="flex items-center space-x-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 font-bangers text-sm uppercase tracking-wider border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-50"
         >
           {isHashing ? (
             <>
@@ -197,17 +197,17 @@ export const DuplicatesTab: React.FC = () => {
                       </span>
                       <div className="truncate">
                         <div className="flex items-center space-x-2">
-                          <span className="font-fredoka font-bold text-slate-900 truncate">
+                          <span className="font-comicNeue font-bold text-slate-900 truncate">
                             {file.name}
                           </span>
                           {fileIdx === 0 && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] bg-emerald-400 border border-slate-900 text-slate-900 font-comic uppercase shadow-comic-sm">
+                            <span className="px-2 py-0.5 rounded-md text-xs bg-emerald-400 border border-slate-900 text-slate-900 font-bangers uppercase tracking-wider shadow-comic-sm">
                               Original File
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 font-mono truncate">
-                          {file.path}
+                        <p className="text-[11px] text-slate-500 font-mono truncate" title={cleanDisplayPath(file.path)}>
+                          {cleanDisplayPath(file.path)}
                         </p>
                       </div>
                     </div>

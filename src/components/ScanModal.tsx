@@ -12,6 +12,7 @@ import { api } from '@/lib/api';
 import { formatBytes, formatDuration, formatNumber } from '@/lib/utils';
 import { ScanOptions } from '@/types';
 import { ScoutMascot } from '@/components/ScoutMascot';
+import { ComicFolderPickerModal } from '@/components/ComicFolderPickerModal';
 
 interface ScanModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
   const [isScanning, setIsScanning] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
 
   useEffect(() => {
     let unlisten: (() => void) | null = null;
@@ -53,11 +55,8 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handleBrowse = async () => {
-    const selected = await api.selectDirectory();
-    if (selected) {
-      setScanPath(selected);
-    }
+  const handleBrowse = () => {
+    setIsFolderPickerOpen(true);
   };
 
   const handleStartScan = async () => {
@@ -97,9 +96,9 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 select-none">
       {/* Modal Card with pop-in animation */}
-      <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-comic-xl space-y-4 text-slate-900 font-sans relative max-h-[92vh] overflow-y-auto animate-comic-pop">
+      <div className="bg-white border-3 border-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-[8px_8px_0px_#0f172a] space-y-4 text-slate-900 font-sans relative max-h-[92vh] overflow-y-auto animate-comic-pop">
         {/* Halftone texture on modal */}
         <div className="absolute inset-0 bg-comic-dots opacity-[0.08] pointer-events-none rounded-2xl" />
 
@@ -110,13 +109,13 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               <HardDrive className="w-6 h-6 text-slate-900" />
             </div>
             <div>
-              <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-400 border border-slate-900 font-comic text-[10px] uppercase text-slate-900 mb-0.5 shadow-comic-sm">
+              <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-400 border border-slate-900 font-bangers text-xs uppercase tracking-wide text-slate-900 mb-0.5 shadow-comic-sm">
                 Scout Mission 🗺️
               </div>
-              <h3 className="font-comic text-lg uppercase tracking-wide text-slate-900 leading-none">
+              <h3 className="font-bangers text-2xl uppercase tracking-wider text-slate-900 leading-none">
                 Configure Storage Scan
               </h3>
-              <p className="text-[11px] font-fredoka font-semibold text-slate-500 mt-1">
+              <p className="text-xs font-comicNeue font-bold text-slate-600 mt-1">
                 Genuine local filesystem traversal & storage analysis
               </p>
             </div>
@@ -241,25 +240,25 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
             {/* Solid Cartoon Progress Bar with candy stripe */}
             <div className="w-full h-5 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden relative">
-              <div className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 w-full comic-progress-stripe" />
+              <div className="h-full bg-emerald-400 w-full comic-progress-stripe" />
             </div>
 
-            <div className="grid grid-cols-3 gap-2 py-1 text-center font-fredoka">
+            <div className="grid grid-cols-3 gap-2 py-1 text-center">
               <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm comic-card-hover">
-                <div className="text-[10px] text-slate-500 uppercase font-comic">Files</div>
-                <div className="font-bold text-slate-900 text-sm mt-0.5">
+                <div className="text-xs text-slate-500 uppercase font-bangers tracking-wider">Files</div>
+                <div className="font-mono font-bold text-slate-900 text-sm mt-0.5">
                   {formatNumber(scanProgress.scanned_files)}
                 </div>
               </div>
               <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm comic-card-hover">
-                <div className="text-[10px] text-slate-500 uppercase font-comic">Folders</div>
-                <div className="font-bold text-slate-900 text-sm mt-0.5">
+                <div className="text-xs text-slate-500 uppercase font-bangers tracking-wider">Folders</div>
+                <div className="font-mono font-bold text-slate-900 text-sm mt-0.5">
                   {formatNumber(scanProgress.scanned_directories)}
                 </div>
               </div>
               <div className="p-2 bg-white rounded-lg border-2 border-slate-900 shadow-comic-sm comic-card-hover">
-                <div className="text-[10px] text-slate-500 uppercase font-comic">Time</div>
-                <div className="font-bold text-slate-900 text-sm mt-0.5">
+                <div className="text-xs text-slate-500 uppercase font-bangers tracking-wider">Time</div>
+                <div className="font-mono font-bold text-slate-900 text-sm mt-0.5">
                   {formatDuration(scanProgress.elapsed_ms)}
                 </div>
               </div>
@@ -293,16 +292,14 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
             <>
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-slate-200 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-all text-slate-800 font-bold hover:-translate-y-0.5 active:translate-y-0.5"
+                className="px-5 py-2.5 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-slate-200 font-bangers text-sm uppercase tracking-wider shadow-comic-sm transition-all text-slate-800 hover:-translate-y-0.5 active:translate-y-0.5"
               >
                 Close
               </button>
               <button
                 onClick={handleStartScan}
-                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl border-2.5 border-slate-900 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 font-comic text-xs uppercase tracking-wide text-slate-900 shadow-comic transition-all hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 active:shadow-comic-sm font-bold relative overflow-hidden group"
+                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl border-2.5 border-slate-900 bg-amber-400 hover:bg-amber-300 font-bangers text-sm uppercase tracking-wider text-slate-900 shadow-comic transition-all hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none relative overflow-hidden"
               >
-                {/* Glossy shine sweep on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 pointer-events-none" />
                 <Play className="w-3.5 h-3.5 fill-current relative" />
                 <span className="relative">Start Scan</span>
               </button>
@@ -310,6 +307,14 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
           )}
         </div>
       </div>
+
+      {/* Target Directory Picker Modal */}
+      <ComicFolderPickerModal
+        isOpen={isFolderPickerOpen}
+        initialPath={scanPath}
+        onClose={() => setIsFolderPickerOpen(false)}
+        onSelect={(newPath) => setScanPath(newPath)}
+      />
     </div>
   );
 };
