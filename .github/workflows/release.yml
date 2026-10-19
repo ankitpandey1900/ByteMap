@@ -25,12 +25,14 @@ jobs:
               src-tauri/target/release/bundle/msi/*.msi
 
           - platform: 'macos-latest'
-            targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
+            targets: 'aarch64-apple-darwin, x86_64-apple-darwin'
             args: '--target universal-apple-darwin'
             artifact-name: 'ByteMap-macOS-Bundle'
             artifact-path: |
               src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
               src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app
+              src-tauri/target/release/bundle/dmg/*.dmg
+              src-tauri/target/release/bundle/macos/*.app
 
     steps:
       - name: Checkout repository
@@ -50,6 +52,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.targets }}
+
+      - name: Add Apple Universal Targets (macOS)
+        if: matrix.platform == 'macos-latest'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
 
       - name: Install Frontend Dependencies
         run: pnpm install

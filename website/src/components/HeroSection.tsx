@@ -4,12 +4,15 @@ import { GithubIcon } from './GithubIcon';
 
 export const HeroSection: React.FC = () => {
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
+  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_x64-setup.exe');
+  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_universal.dmg');
+  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_x64_en-US.msi');
 
   useEffect(() => {
     fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           let total = 0;
           for (const rel of data) {
             if (Array.isArray(rel.assets)) {
@@ -19,6 +22,35 @@ export const HeroSection: React.FC = () => {
             }
           }
           if (total > 0) setDownloadCount(total);
+
+          // Find direct asset URLs across releases
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              const dmg = rel.assets.find((a: any) => a.name.endsWith('.dmg'));
+              if (dmg && dmg.browser_download_url) {
+                setDmgUrl(dmg.browser_download_url);
+                break;
+              }
+            }
+          }
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              const exe = rel.assets.find((a: any) => a.name.endsWith('.exe'));
+              if (exe && exe.browser_download_url) {
+                setExeUrl(exe.browser_download_url);
+                break;
+              }
+            }
+          }
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              const msi = rel.assets.find((a: any) => a.name.endsWith('.msi'));
+              if (msi && msi.browser_download_url) {
+                setMsiUrl(msi.browser_download_url);
+                break;
+              }
+            }
+          }
         }
       })
       .catch(() => {});
@@ -34,7 +66,7 @@ export const HeroSection: React.FC = () => {
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
             <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
-            <span>Windows & macOS Desktop Storage Intelligence • v1.0.3</span>
+            <span>Windows & macOS Desktop Storage Intelligence • v1.0.4</span>
           </div>
           {downloadCount !== null && (
             <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-400 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
@@ -63,21 +95,21 @@ export const HeroSection: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-8">
           {/* Windows Download */}
           <a
-            href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.3/ByteMap_1.0.3_x64-setup.exe"
+            href={exeUrl}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-7 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 border-3 border-slate-900 font-bangers text-xl uppercase tracking-wider text-slate-900 shadow-comic-lg hover:-translate-y-1 hover:shadow-comic-xl active:translate-y-0.5 active:shadow-comic transition-all cursor-pointer group"
           >
             <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
             <div className="text-left">
               <span className="block leading-none">Windows Setup</span>
               <span className="font-mono text-[11px] font-bold text-slate-800 tracking-normal block mt-1">
-                .exe • Win 10/11 (~15 MB)
+                .exe • Win 10/11
               </span>
             </div>
           </a>
 
-          {/* macOS Download */}
+          {/* macOS Download - Direct .dmg Download */}
           <a
-            href="#download-mac"
+            href={dmgUrl}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-7 py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 border-3 border-slate-900 font-bangers text-xl uppercase tracking-wider text-slate-900 shadow-comic-lg hover:-translate-y-1 hover:shadow-comic-xl active:translate-y-0.5 active:shadow-comic transition-all cursor-pointer group"
           >
             <Apple className="w-6 h-6 group-hover:scale-110 transition-transform text-slate-900" />
@@ -91,10 +123,10 @@ export const HeroSection: React.FC = () => {
 
           {/* All Formats / MSI */}
           <a
-            href="#download"
+            href={msiUrl}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-3 border-slate-900 font-bangers text-lg uppercase tracking-wide text-slate-900 shadow-comic hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 transition-all cursor-pointer"
           >
-            <span>MSI & Options</span>
+            <span>MSI Installer</span>
           </a>
 
           <a

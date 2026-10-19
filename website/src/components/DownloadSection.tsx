@@ -5,12 +5,15 @@ export const DownloadSection: React.FC = () => {
   const [copiedWinget, setCopiedWinget] = useState(false);
   const [copiedMac, setCopiedMac] = useState(false);
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
+  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_x64-setup.exe');
+  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_universal.dmg');
+  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_x64_en-US.msi');
 
   useEffect(() => {
     fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           let total = 0;
           for (const rel of data) {
             if (Array.isArray(rel.assets)) {
@@ -20,6 +23,35 @@ export const DownloadSection: React.FC = () => {
             }
           }
           if (total > 0) setDownloadCount(total);
+
+          // Find direct asset URLs across releases
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              const dmg = rel.assets.find((a: any) => a.name.endsWith('.dmg'));
+              if (dmg && dmg.browser_download_url) {
+                setDmgUrl(dmg.browser_download_url);
+                break;
+              }
+            }
+          }
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              const exe = rel.assets.find((a: any) => a.name.endsWith('.exe'));
+              if (exe && exe.browser_download_url) {
+                setExeUrl(exe.browser_download_url);
+                break;
+              }
+            }
+          }
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              const msi = rel.assets.find((a: any) => a.name.endsWith('.msi'));
+              if (msi && msi.browser_download_url) {
+                setMsiUrl(msi.browser_download_url);
+                break;
+              }
+            }
+          }
         }
       })
       .catch(() => {});
@@ -44,7 +76,7 @@ export const DownloadSection: React.FC = () => {
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-12">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900 mb-3">
-            <span>Official Releases • v1.0.3</span>
+            <span>Official Releases • v1.0.4</span>
             {downloadCount !== null && (
               <>
                 <span>•</span>
@@ -81,13 +113,13 @@ export const DownloadSection: React.FC = () => {
                 Standard Windows user-mode installer. Includes automatic update checks and desktop shortcuts. No admin required.
               </p>
               <div className="p-3 bg-slate-50 rounded-xl border-2 border-slate-900 text-xs font-mono font-bold text-slate-600 space-y-1 mb-6">
-                <div>File: ByteMap_1.0.3_x64-setup.exe</div>
+                <div>File: ByteMap_1.0.4_x64-setup.exe</div>
                 <div>Size: ~4.5 MB • Windows 10/11 64-bit</div>
               </div>
             </div>
 
             <a
-              href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.3/ByteMap_1.0.3_x64-setup.exe"
+              href={exeUrl}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-amber-400 hover:bg-amber-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />
@@ -120,7 +152,7 @@ export const DownloadSection: React.FC = () => {
             </div>
 
             <a
-              href="https://github.com/ankitpandey1900/ByteMap/releases/latest"
+              href={dmgUrl}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Apple className="w-5 h-5 text-slate-900" />
@@ -147,13 +179,13 @@ export const DownloadSection: React.FC = () => {
                 Ideal for system administrators, computer labs, and scripted silent enterprise deployment via msiexec.
               </p>
               <div className="p-3 bg-slate-50 rounded-xl border-2 border-slate-900 text-xs font-mono font-bold text-slate-600 space-y-1 mb-6">
-                <div>File: ByteMap_1.0.3_x64_en-US.msi</div>
+                <div>File: ByteMap_1.0.4_x64_en-US.msi</div>
                 <div>Size: ~5.5 MB • Windows 10/11 64-bit</div>
               </div>
             </div>
 
             <a
-              href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.3/ByteMap_1.0.3_x64_en-US.msi"
+              href={msiUrl}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />
