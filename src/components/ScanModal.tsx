@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
-import { formatBytes, formatDuration, formatNumber } from '@/lib/utils';
+import { formatBytes, formatDuration, formatNumber, findDriveForPath } from '@/lib/utils';
 import { ScanOptions } from '@/types';
 import { ScoutMascot } from '@/components/ScoutMascot';
 import { ComicFolderPickerModal } from '@/components/ComicFolderPickerModal';
@@ -22,6 +22,7 @@ interface ScanModalProps {
 export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
   const {
     drives,
+    setSelectedDrive,
     scanPath,
     setScanPath,
     scanOptions,
@@ -67,6 +68,11 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
     setErrorMessage(null);
     setIsScanning(true);
+
+    const matched = findDriveForPath(scanPath.trim(), drives);
+    if (matched) {
+      setSelectedDrive(matched);
+    }
 
     const opts: ScanOptions = {
       root_path: scanPath.trim(),
@@ -161,7 +167,10 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               {drives.map((d) => (
                 <button
                   key={d.id}
-                  onClick={() => setScanPath(d.mount_point)}
+                  onClick={() => {
+                    setScanPath(d.mount_point);
+                    setSelectedDrive(d);
+                  }}
                   className={`px-2.5 py-1 rounded-lg border-2 border-slate-900 text-xs font-comic uppercase shadow-comic-sm transition-all hover:-translate-y-0.5 ${
                     scanPath === d.mount_point
                       ? 'bg-cyan-300 text-slate-900 shadow-comic'

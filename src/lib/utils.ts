@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { FileCategory } from "@/types";
+import { FileCategory, DriveInfo } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -65,6 +65,47 @@ export function formatDate(timestamp?: number): string {
 export function cleanDisplayPath(rawPath?: string): string {
   if (!rawPath) return '';
   return rawPath.replace(/^\\\\\?\\UNC\\/i, '\\\\').replace(/^\\\\\?\\/i, '');
+}
+
+/**
+ * Match a target path (e.g. "E:\", "\\?\E:\Games", "/Volumes/USB/photos") to its corresponding DriveInfo.
+ */
+export function findDriveForPath(targetPath: string | undefined, drives: DriveInfo[]): DriveInfo | null {
+  if (!targetPath || !drives || drives.length === 0) return null;
+  const cleanTarget = cleanDisplayPath(targetPath).toLowerCase();
+
+  // 1. Sort by mount_point length descending so deeper mounts take priority (e.g. /Volumes/Backup before /)
+  const sorted = [...drives].sort((a, b) => b.mount_point.length - a.mount_point.length);
+  for (const drive of sorted) {
+    const cleanMount = cleanDisplayPath(drive.mount_point).toLowerCase();
+    const cleanMountNoSlash = cleanMount.replace(/[\\\/]+$/, '');
+
+    if (cleanMountNoSlash) {
+      if (
+        cleanTarget === cleanMountNoSlash ||
+        cleanTarget.startsWith(cleanMountNoSlash + '\\') ||
+        cleanTarget.startsWith(cleanMountNoSlash + '/')
+      ) {
+        return drive;
+      }
+    } else if (cleanMount === '/' && cleanTarget.startsWith('/')) {
+      // Unix/macOS root mount fallback
+      return drive;
+    }
+  }
+
+  // 2. Windows drive letter match (e.g. "E:" or "e:\foo" matching drive letter "e")
+  const driveLetterMatch = cleanTarget.match(/^([a-z]):/i);
+  if (driveLetterMatch) {
+    const letter = driveLetterMatch[1].toLowerCase();
+    const drive = drives.find((d) => {
+      const mountLetterMatch = cleanDisplayPath(d.mount_point).toLowerCase().match(/^([a-z]):/i);
+      return mountLetterMatch && mountLetterMatch[1] === letter;
+    });
+    if (drive) return drive;
+  }
+
+  return null;
 }
 
 export function getCategoryColor(category: FileCategory | string): string {

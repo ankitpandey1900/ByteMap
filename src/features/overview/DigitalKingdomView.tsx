@@ -30,7 +30,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { useAppStore } from '@/lib/store';
-import { formatBytes, formatNumber, getCategoryColor } from '@/lib/utils';
+import { formatBytes, formatNumber, getCategoryColor, cleanDisplayPath, findDriveForPath } from '@/lib/utils';
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { ScoutMascot, ScoutAvatar } from '@/components/ScoutMascot';
 import { ComicStorageBar } from '@/components/ComicStorageBar';
@@ -204,7 +204,19 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   };
 
   // Active drive calculations - STRICTLY REAL DATA
-  const activeDrive = selectedDrive || (drives.length > 0 ? drives[0] : null);
+  const activeDrive = useMemo(() => {
+    if (scanSummary?.root_path) {
+      const matched = findDriveForPath(scanSummary.root_path, drives);
+      if (matched) return matched;
+    }
+    if (scanProgress.status === 'scanning' && scanProgress.current_path) {
+      const matched = findDriveForPath(scanProgress.current_path, drives);
+      if (matched) return matched;
+    }
+    if (selectedDrive) return selectedDrive;
+    return drives.length > 0 ? drives[0] : null;
+  }, [scanSummary, scanProgress.status, scanProgress.current_path, selectedDrive, drives]);
+
   const totalDriveBytes = activeDrive?.total_bytes || 0;
   const usedDriveBytes = activeDrive?.used_bytes || (scanSummary ? scanSummary.total_bytes : 0);
   const usedPercent = totalDriveBytes > 0 ? Math.min(100, Math.round((usedDriveBytes / totalDriveBytes) * 100)) : 0;
@@ -249,7 +261,40 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   }, [scanSummary]);
 
   // Real Treemap Current Path and Items
-  const currentPath = treemapCurrentPath || scanSummary?.root_path || 'Home';
+  const cleanRootPath = useMemo(() => {
+    return scanSummary?.root_path ? cleanDisplayPath(scanSummary.root_path).replace(/[\\\/]+$/, '') : '';
+  }, [scanSummary]);
+
+  const cleanDisplayCurrent = useMemo(() => {
+    return cleanDisplayPath(treemapCurrentPath || scanSummary?.root_path || 'Home');
+  }, [treemapCurrentPath, scanSummary]);
+
+  const isDrilledDown = useMemo(() => {
+    if (!treemapCurrentPath) return false;
+    const cleanCurrent = cleanDisplayPath(treemapCurrentPath).replace(/[\\\/]+$/, '');
+    if (!cleanCurrent) return false;
+    if (cleanRootPath && cleanCurrent.toLowerCase() === cleanRootPath.toLowerCase()) {
+      return false;
+    }
+    return true;
+  }, [treemapCurrentPath, cleanRootPath]);
+
+  const handleTreemapBack = () => {
+    if (!treemapCurrentPath) return;
+    const cleanP = cleanDisplayPath(treemapCurrentPath).replace(/[\\\/]+$/, '');
+    const parts = cleanP.split(/[\\\/]/);
+    parts.pop();
+    const parent = parts.join('\\');
+    if (
+      !parent ||
+      (cleanRootPath && parent.toLowerCase() === cleanRootPath.toLowerCase()) ||
+      (cleanRootPath && parent.length <= cleanRootPath.length)
+    ) {
+      setTreemapCurrentPath('');
+    } else {
+      setTreemapCurrentPath(parent);
+    }
+  };
 
   const treemapItems = useMemo<TreemapItem[]>(() => {
     if (!scanSummary) return [];
@@ -401,7 +446,9 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
             {/* Drive Name & Real Capacity */}
             <div className="relative flex items-baseline justify-between mt-0.5">
               <span className="font-bangers text-xl text-slate-900 uppercase tracking-wide">
-                {activeDrive ? activeDrive.name : (drives.length > 0 ? drives[0].name : 'C: DRIVE')}
+                {activeDrive
+                  ? activeDrive.name
+                  : (scanSummary?.root_path ? cleanDisplayPath(scanSummary.root_path) : (drives.length > 0 ? drives[0].name : 'Storage Overview'))}
               </span>
               <span className="font-comicNeue font-bold text-sm text-slate-700">
                 {totalDriveBytes > 0
@@ -645,26 +692,22 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 <button
                   onClick={() => setTreemapCurrentPath('')}
                   className={`px-2 py-0.5 rounded-md border border-slate-900 uppercase text-[11px] transition-all cursor-pointer ${
-                    !treemapCurrentPath
+                    !isDrilledDown
                       ? 'bg-amber-300 text-slate-900 font-bold shadow-[1px_1px_0px_#0f172a]'
                       : 'bg-white hover:bg-amber-100 text-slate-700 hover:-translate-y-0.5'
                   }`}
                   title="Return to Kingdom Root"
                 >
-                  Home
+                  {scanSummary?.root_path ? cleanDisplayPath(scanSummary.root_path) : 'Home'}
                 </button>
-                {treemapCurrentPath && (
+                {isDrilledDown && (
                   <>
                     <span className="text-slate-400 font-bold">&gt;</span>
                     <span className="truncate max-w-[160px] sm:max-w-[220px] text-slate-900 bg-white px-2 py-0.5 rounded-md border border-slate-900 text-[11px] shadow-[1px_1px_0px_#0f172a]">
-                      {currentPath.length > 25 ? '...' + currentPath.slice(-25) : currentPath}
+                      {cleanDisplayCurrent.length > 25 ? '...' + cleanDisplayCurrent.slice(-25) : cleanDisplayCurrent}
                     </span>
                     <button
-                      onClick={() => {
-                        const parts = treemapCurrentPath.replace(/[\\\/]+$/, '').split(/[\\\/]/);
-                        parts.pop();
-                        setTreemapCurrentPath(parts.join('\\'));
-                      }}
+                      onClick={handleTreemapBack}
                       className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-rose-200 hover:bg-rose-300 text-[10px] text-slate-800 font-comic uppercase border border-slate-900 shadow-[1px_1px_0px_#0f172a] transition-all hover:-translate-y-0.5 cursor-pointer"
                       title="Back to parent directory"
                     >

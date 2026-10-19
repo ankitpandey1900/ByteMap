@@ -6,7 +6,9 @@ import {
   formatDate,
   getCategoryColor,
   cleanDisplayPath,
+  findDriveForPath,
 } from '@/lib/utils';
+import { DriveInfo } from '@/types';
 
 describe('formatBytes utility', () => {
   it('formats zero bytes correctly', () => {
@@ -87,6 +89,85 @@ describe('cleanDisplayPath utility', () => {
     expect(cleanDisplayPath('\\\\?\\UNC\\server\\share\\file.txt')).toBe('\\\\server\\share\\file.txt');
     expect(cleanDisplayPath('C:\\normal\\path.zip')).toBe('C:\\normal\\path.zip');
     expect(cleanDisplayPath('')).toBe('');
+  });
+});
+
+describe('findDriveForPath utility', () => {
+  const mockDrives: DriveInfo[] = [
+    {
+      id: 'c',
+      name: 'WINDOWS-SSD (C:)',
+      mount_point: 'C:\\',
+      filesystem: 'NTFS',
+      total_bytes: 300000000000,
+      available_bytes: 30000000000,
+      used_bytes: 270000000000,
+      is_removable: false,
+      is_read_only: false,
+    },
+    {
+      id: 'e',
+      name: 'DATA (E:)',
+      mount_point: 'E:\\',
+      filesystem: 'NTFS',
+      total_bytes: 1000000000000,
+      available_bytes: 500000000000,
+      used_bytes: 500000000000,
+      is_removable: false,
+      is_read_only: false,
+    },
+    {
+      id: 'backup',
+      name: 'Backup Volume',
+      mount_point: '/Volumes/Backup',
+      filesystem: 'APFS',
+      total_bytes: 2000000000000,
+      available_bytes: 1000000000000,
+      used_bytes: 1000000000000,
+      is_removable: true,
+      is_read_only: false,
+    },
+    {
+      id: 'root',
+      name: 'Macintosh HD',
+      mount_point: '/',
+      filesystem: 'APFS',
+      total_bytes: 500000000000,
+      available_bytes: 200000000000,
+      used_bytes: 300000000000,
+      is_removable: false,
+      is_read_only: false,
+    },
+  ];
+
+  it('matches Windows drive letter with extended NT prefix \\\\?\\E:\\', () => {
+    const matched = findDriveForPath('\\\\?\\E:\\', mockDrives);
+    expect(matched?.id).toBe('e');
+    expect(matched?.name).toBe('DATA (E:)');
+  });
+
+  it('matches subfolder on Windows drive \\\\?\\E:\\Games\\Cyberpunk', () => {
+    const matched = findDriveForPath('\\\\?\\E:\\Games\\Cyberpunk', mockDrives);
+    expect(matched?.id).toBe('e');
+  });
+
+  it('matches normal C:\\ drive path', () => {
+    const matched = findDriveForPath('C:\\Users\\ankit\\Downloads', mockDrives);
+    expect(matched?.id).toBe('c');
+  });
+
+  it('matches Unix mount point hierarchy correctly', () => {
+    const external = findDriveForPath('/Volumes/Backup/Photos', mockDrives);
+    expect(external?.id).toBe('backup');
+
+    const root = findDriveForPath('/Users/macuser/Desktop', mockDrives);
+    expect(root?.id).toBe('root');
+  });
+
+  it('returns null when path is empty or drives empty', () => {
+    expect(findDriveForPath('', mockDrives)).toBeNull();
+    expect(findDriveForPath(undefined, mockDrives)).toBeNull();
+    expect(findDriveForPath('E:\\', [])).toBeNull();
   });
 });
 

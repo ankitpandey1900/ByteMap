@@ -114,7 +114,7 @@ export const useAppStore = create<AppState>((set) => ({
   setScanSummary: (scanSummary) =>
     set({
       scanSummary,
-      treemapCurrentPath: scanSummary ? scanSummary.root_path : '',
+      treemapCurrentPath: '',
     }),
   clearScan: () =>
     set({

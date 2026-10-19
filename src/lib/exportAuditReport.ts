@@ -1,5 +1,5 @@
 import { ScanSummary, AppSettings, DriveInfo } from '@/types';
-import { formatBytes } from './utils';
+import { formatBytes, cleanDisplayPath } from './utils';
 
 export function exportStorageAuditHtml(
   scanSummary: ScanSummary,
@@ -16,7 +16,7 @@ export function exportStorageAuditHtml(
     hour: '2-digit',
     minute: '2-digit',
   });
-  const driveLabel = drive ? `${drive.name} (${drive.mount_point})` : 'Target Root';
+  const driveLabel = drive ? `${drive.name} (${cleanDisplayPath(drive.mount_point)})` : 'Target Root';
 
   const totalReclaimable = scanSummary.cleanup_candidates.reduce(
     (acc, c) => acc + c.file.size_bytes,
@@ -51,7 +51,7 @@ export function exportStorageAuditHtml(
           <span style="background: #fef3c7; border: 1.5px solid #0f172a; padding: 2px 6px; border-radius: 6px;">${f.category}</span>
         </td>
         <td style="font-family: monospace; font-weight: 700; text-align: right;">${formatBytes(f.size_bytes, settings.unit)}</td>
-        <td style="font-family: monospace; font-size: 11px; color: #64748b; word-break: break-all;">${escapeHtml(f.path)}</td>
+        <td style="font-family: monospace; font-size: 11px; color: #64748b; word-break: break-all;">${escapeHtml(cleanDisplayPath(f.path))}</td>
       </tr>`
     )
     .join('');
@@ -65,7 +65,7 @@ export function exportStorageAuditHtml(
         <td style="font-weight: 700; word-break: break-all;">${escapeHtml(f.name)}</td>
         <td style="font-family: monospace;">${f.file_count.toLocaleString()}</td>
         <td style="font-family: monospace; font-weight: 700; text-align: right;">${formatBytes(f.size_bytes, settings.unit)}</td>
-        <td style="font-family: monospace; font-size: 11px; color: #64748b; word-break: break-all;">${escapeHtml(f.path)}</td>
+        <td style="font-family: monospace; font-size: 11px; color: #64748b; word-break: break-all;">${escapeHtml(cleanDisplayPath(f.path))}</td>
       </tr>`
     )
     .join('');
@@ -75,7 +75,7 @@ export function exportStorageAuditHtml(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ByteMap Storage Audit — ${escapeHtml(scanSummary.root_path)}</title>
+  <title>ByteMap Storage Audit — ${escapeHtml(cleanDisplayPath(scanSummary.root_path))}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -211,7 +211,7 @@ export function exportStorageAuditHtml(
       <div class="header-badge">ByteMap Storage Intelligence</div>
       <h1>Drive Storage Audit Report</h1>
       <p style="font-size: 13px; color: #475569;">
-        Generated on <strong>${dateStr} at ${timeStr}</strong> • Target: <strong>${escapeHtml(driveLabel)}</strong> (<code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${escapeHtml(scanSummary.root_path)}</code>)
+        Generated on <strong>${dateStr} at ${timeStr}</strong> • Target: <strong>${escapeHtml(driveLabel)}</strong> (<code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-family: monospace;">${escapeHtml(cleanDisplayPath(scanSummary.root_path))}</code>)
       </p>
 
       <div class="meta-grid">
