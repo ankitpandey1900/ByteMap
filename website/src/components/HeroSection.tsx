@@ -4,9 +4,9 @@ import { GithubIcon } from './GithubIcon';
 
 export const HeroSection: React.FC = () => {
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
-  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_x64-setup.exe');
-  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_universal.dmg');
-  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.4/ByteMap_1.0.4_x64_en-US.msi');
+  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.5/ByteMap_1.0.5_x64-setup.exe');
+  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.5/ByteMap_1.0.5_universal.dmg');
+  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.5/ByteMap_1.0.5_x64_en-US.msi');
 
   useEffect(() => {
     fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
@@ -66,7 +66,7 @@ export const HeroSection: React.FC = () => {
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
             <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
-            <span>Windows & macOS Desktop Storage Intelligence • v1.0.4</span>
+            <span>Windows & macOS Desktop Storage Intelligence • v1.0.5</span>
           </div>
           {downloadCount !== null && (
             <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-400 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
