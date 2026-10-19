@@ -2,6 +2,9 @@
 
 Here is how ByteMap is organized under the hood, why certain tech choices were made, and how data moves between the Rust backend and the React frontend.
 
+> 💡 **Looking for complete diagrams, sequence charts, and subsystem workflows?**  
+> Check out the complete [System Design Specification](SYSTEM_DESIGN.md) for detailed Mermaid diagrams, TOCTOU security flows, and duplicate detection funnels.
+
 ---
 
 ## High-Level Picture

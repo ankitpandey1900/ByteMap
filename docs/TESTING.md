@@ -12,7 +12,7 @@ To run the full frontend test suite:
 pnpm test
 ```
 
-This runs Vitest in a headless JSDOM environment against 18 test cases.
+This runs Vitest in a headless JSDOM environment against 26 automated unit and component test cases.
 
 To run tests in watch mode while making changes:
 
@@ -38,6 +38,10 @@ pnpm test:watch
   - Converts UNIX timestamps to readable dates, with fallback for missing timestamps.
 - **`getCategoryColor`**:
   - Verifies that all 9 categories return their defined hex color codes.
+- **`cleanDisplayPath`**:
+  - Strips Windows extended-length NT prefixes (`\\?\` and `\\?\UNC\`), cleanly formatting paths for UI presentation while preserving standard Windows and Unix paths.
+- **`findDriveForPath`**:
+  - Resolves target scan paths (e.g., `\\?\E:\`, `E:\Games`, `/Volumes/Backup/Photos`, `/Users/demo`) to their matching mounted `DriveInfo` records across Windows drive letters and Unix/macOS root and volume hierarchies.
 
 ### Zustand State Store (`src/tests/store.test.ts`)
 - Initial default values (dark theme, binary units, trash enabled).

@@ -35,6 +35,7 @@ And I wanted it to run fast without leaving stale indexes or tracking databases 
 - **3-Stage Duplicate Finder**: Compares files by exact size first, then hashes the first 4KB prefix, and only runs a full BLAKE3 cryptographic hash on genuine collision candidates. Doesn't guess based on filename alone.
 - **Safe Cleanup**: Flags common candidates (old installers, temp files, large archives, duplicates) with risk indicators. Never deletes anything automatically. Every cleanup action asks for confirmation and defaults to moving files to your OS Recycle Bin / Trash.
 - **No Database Policy**: No SQLite, no IndexedDB, no LocalStorage cache. Scan data lives strictly in RAM while the app is open. When you quit, it's gone.
+- **System Design & Architecture Specifications**: Complete technical diagrams, sequence flows, and threat models available in [docs/SYSTEM_DESIGN.md](docs/SYSTEM_DESIGN.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
