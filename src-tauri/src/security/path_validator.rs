@@ -56,10 +56,12 @@ impl PathValidator {
             }
         }
 
-        // Unix protected directories
+        // Unix & macOS protected directories
         let protected_unix = [
             "/bin", "/sbin", "/usr", "/etc", "/var", "/dev", "/proc", "/sys", "/boot", "/root",
             "/lib", "/lib64",
+            // macOS core system directories
+            "/system", "/library", "/applications", "/private", "/volumes",
         ];
 
         for protected in &protected_unix {

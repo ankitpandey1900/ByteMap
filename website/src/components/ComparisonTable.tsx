@@ -49,8 +49,17 @@ const rows: Row[] = [
     commercialOk: false,
   },
   {
+    feature: 'Platform Support',
+    bytemap: 'Windows 10/11 & macOS (Apple Silicon + Intel)',
+    bytemapOk: true,
+    windirstat: 'Windows only (legacy Win32)',
+    windirstatOk: false,
+    commercial: 'Separate paid subscription per OS',
+    commercialOk: false,
+  },
+  {
     feature: 'Deletion Safety',
-    bytemap: 'Windows Recycle Bin + System Guard',
+    bytemap: 'OS Trash / Recycle Bin + System Guard',
     bytemapOk: true,
     windirstat: 'Irreversible permanent raw deletion',
     windirstatOk: false,

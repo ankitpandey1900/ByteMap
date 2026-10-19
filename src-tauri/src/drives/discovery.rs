@@ -11,10 +11,15 @@ impl DriveDiscovery {
         for disk in &disks {
             let mount_point = disk.mount_point().to_string_lossy().to_string();
             let name_str = disk.name().to_string_lossy().to_string();
-            let name = if name_str.trim().is_empty() {
-                format!("Local Disk ({})", mount_point.trim_end_matches('\\'))
+            let clean_mount = if mount_point == "/" {
+                "/".to_string()
             } else {
-                format!("{} ({})", name_str, mount_point.trim_end_matches('\\'))
+                mount_point.trim_end_matches(['\\', '/']).to_string()
+            };
+            let name = if name_str.trim().is_empty() {
+                format!("Local Disk ({})", clean_mount)
+            } else {
+                format!("{} ({})", name_str, clean_mount)
             };
 
             let filesystem = disk.file_system().to_string_lossy().to_string();

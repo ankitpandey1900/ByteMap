@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, ShieldCheck, Zap, HardDrive, CheckCircle2, Sparkles } from 'lucide-react';
+import { Download, ShieldCheck, Zap, HardDrive, CheckCircle2, Sparkles, Apple } from 'lucide-react';
 import { GithubIcon } from './GithubIcon';
 
 export const HeroSection: React.FC = () => {
@@ -34,7 +34,7 @@ export const HeroSection: React.FC = () => {
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
             <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
-            <span>Windows Desktop Storage Intelligence • v1.0.3</span>
+            <span>Windows & macOS Desktop Storage Intelligence • v1.0.3</span>
           </div>
           {downloadCount !== null && (
             <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-400 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
@@ -61,32 +61,47 @@ export const HeroSection: React.FC = () => {
 
         {/* Download Call to Action Group */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-8">
+          {/* Windows Download */}
           <a
             href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.3/ByteMap_1.0.3_x64-setup.exe"
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 border-3 border-slate-900 font-bangers text-xl uppercase tracking-wider text-slate-900 shadow-comic-lg hover:-translate-y-1 hover:shadow-comic-xl active:translate-y-0.5 active:shadow-comic transition-all cursor-pointer group"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-7 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 border-3 border-slate-900 font-bangers text-xl uppercase tracking-wider text-slate-900 shadow-comic-lg hover:-translate-y-1 hover:shadow-comic-xl active:translate-y-0.5 active:shadow-comic transition-all cursor-pointer group"
           >
             <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
             <div className="text-left">
-              <span className="block leading-none">Download for Windows</span>
+              <span className="block leading-none">Windows Setup</span>
               <span className="font-mono text-[11px] font-bold text-slate-800 tracking-normal block mt-1">
-                Setup.exe • v1.0.3 (~15 MB)
+                .exe • Win 10/11 (~15 MB)
               </span>
             </div>
           </a>
 
+          {/* macOS Download */}
           <a
-            href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.3/ByteMap_1.0.3_x64_en-US.msi"
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 px-6 py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-3 border-slate-900 font-bangers text-lg uppercase tracking-wide text-slate-900 shadow-comic hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 transition-all cursor-pointer"
+            href="#download-mac"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-7 py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 border-3 border-slate-900 font-bangers text-xl uppercase tracking-wider text-slate-900 shadow-comic-lg hover:-translate-y-1 hover:shadow-comic-xl active:translate-y-0.5 active:shadow-comic transition-all cursor-pointer group"
           >
-            <span>MSI Installer</span>
-            <span className="font-mono text-xs font-bold text-slate-800">(.msi)</span>
+            <Apple className="w-6 h-6 group-hover:scale-110 transition-transform text-slate-900" />
+            <div className="text-left">
+              <span className="block leading-none">macOS MacBook</span>
+              <span className="font-mono text-[11px] font-bold text-slate-800 tracking-normal block mt-1">
+                .dmg • Universal Apple Silicon / Intel
+              </span>
+            </div>
+          </a>
+
+          {/* All Formats / MSI */}
+          <a
+            href="#download"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-3 border-slate-900 font-bangers text-lg uppercase tracking-wide text-slate-900 shadow-comic hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 transition-all cursor-pointer"
+          >
+            <span>MSI & Options</span>
           </a>
 
           <a
             href="https://github.com/ankitpandey1900/ByteMap"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-4 rounded-2xl bg-white hover:bg-slate-100 border-3 border-slate-900 font-comic text-sm uppercase text-slate-900 shadow-comic hover:-translate-y-0.5 transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl bg-white hover:bg-slate-100 border-3 border-slate-900 font-comic text-sm uppercase text-slate-900 shadow-comic hover:-translate-y-0.5 transition-all"
           >
             <GithubIcon className="w-5 h-5" />
             <span>GitHub (MIT)</span>
