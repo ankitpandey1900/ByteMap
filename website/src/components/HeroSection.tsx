@@ -1,18 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, ShieldCheck, Zap, HardDrive, CheckCircle2, Sparkles } from 'lucide-react';
 import { GithubIcon } from './GithubIcon';
 
 export const HeroSection: React.FC = () => {
+  const [downloadCount, setDownloadCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          let total = 0;
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              for (const asset of rel.assets) {
+                total += asset.download_count || 0;
+              }
+            }
+          }
+          if (total > 0) setDownloadCount(total);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="relative pt-12 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Halftone dot background */}
       <div className="absolute inset-0 bg-comic-dots opacity-40 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative z-10 text-center">
-        {/* Top Tagline Badge */}
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-6">
-          <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
-          <span>Windows Desktop Storage Intelligence • v1.0.2</span>
+        {/* Top Tagline Badge & Live Counter */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
+            <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
+            <span>Windows Desktop Storage Intelligence • v1.0.2</span>
+          </div>
+          {downloadCount !== null && (
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-400 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
+              <Download className="w-3.5 h-3.5 text-slate-900" />
+              <span><strong>{downloadCount}</strong> Community Downloads</span>
+            </div>
+          )}
         </div>
 
         {/* Massive Comic Headline - Crystal Clear Readability */}

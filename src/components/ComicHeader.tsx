@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { HelpCircle } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { ActiveTab } from '@/types';
 import {
@@ -11,14 +12,15 @@ import {
   ComicSettingsIcon,
   ComicZapIcon,
 } from '@/components/icons/ComicIcons';
-import { api } from '@/lib/api';
+import { UserManualModal } from './UserManualModal';
 
 interface ComicHeaderProps {
   onOpenScanModal: () => void;
 }
 
 export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => {
-  const { activeTab, setActiveTab } = useAppStore();
+  const { activeTab, setActiveTab, zoomLevel, zoomIn, zoomOut, resetZoom } = useAppStore();
+  const [showGuide, setShowGuide] = useState(false);
 
   const navItems: { tab: ActiveTab; label: string; icon: React.ReactNode }[] = [
     { tab: 'overview', label: 'Kingdom', icon: <ComicKingdomIcon className="w-4 h-4" /> },
@@ -83,22 +85,49 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
           })}
         </nav>
 
-        {/* Right: Author Portfolio Button + Big Analyze Action Button */}
+        {/* Right: UI Zoom Control + Author Portfolio Button + Big Analyze Action Button */}
         <div className="flex items-center space-x-2">
+          {/* Visual Zoom Pill Control */}
+          <div
+            className="flex items-center space-x-1 px-1.5 py-1 rounded-xl border-2 border-slate-900 bg-white shadow-comic-sm"
+            title="App Zoom (Ctrl + / Ctrl - to adjust, Ctrl 0 to reset)"
+          >
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={zoomLevel <= 70}
+              title="Zoom Out (Ctrl -)"
+              className="w-5 h-5 rounded-md font-mono font-bold text-xs flex items-center justify-center text-slate-800 hover:bg-amber-300 border border-transparent hover:border-slate-900 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+            >
+              -
+            </button>
+            <button
+              type="button"
+              onClick={resetZoom}
+              title="Reset Zoom to 100% (Ctrl 0)"
+              className="px-1.5 py-0.5 font-mono font-bold text-[11px] text-slate-800 hover:text-slate-900 hover:bg-amber-100 rounded border border-transparent hover:border-slate-900 transition-all tabular-nums cursor-pointer"
+            >
+              {zoomLevel}%
+            </button>
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={zoomLevel >= 160}
+              title="Zoom In (Ctrl +)"
+              className="w-5 h-5 rounded-md font-mono font-bold text-xs flex items-center justify-center text-slate-800 hover:bg-amber-300 border border-transparent hover:border-slate-900 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+            >
+              +
+            </button>
+          </div>
+
           <button
             type="button"
-            onClick={() => api.openExternalUrl('https://ankitpandey19.vercel.app/')}
-            className="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-amber-100 text-slate-900 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all cursor-pointer group"
-            title="Made by Ankit Pandey — Visit Portfolio (https://ankitpandey19.vercel.app/)"
+            onClick={() => setShowGuide(true)}
+            className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-amber-200 text-slate-900 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all cursor-pointer"
+            title="Interactive User Guide — How to solve everyday storage problems"
           >
-            <div className="w-5 h-5 rounded-full overflow-hidden border border-slate-900 shrink-0 shadow-xs">
-              <img
-                src="/ankit.jpg"
-                alt="Ankit Pandey"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="font-comic font-bold text-[11px]">By Ankit</span>
+            <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span className="font-comic font-bold text-[11px] hidden md:inline">User Guide</span>
           </button>
 
           <button
@@ -110,6 +139,9 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
           </button>
         </div>
       </div>
+
+      {/* Interactive User Manual Survival Guide Modal */}
+      <UserManualModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
     </header>
   );
 };

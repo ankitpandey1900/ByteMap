@@ -1,8 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, ShieldCheck, Check, Copy, ExternalLink, HardDrive, Terminal } from 'lucide-react';
 
 export const DownloadSection: React.FC = () => {
   const [copied, setCopied] = useState(false);
+  const [downloadCount, setDownloadCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          let total = 0;
+          for (const rel of data) {
+            if (Array.isArray(rel.assets)) {
+              for (const asset of rel.assets) {
+                total += asset.download_count || 0;
+              }
+            }
+          }
+          if (total > 0) setDownloadCount(total);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleCopyCmd = () => {
     navigator.clipboard.writeText('winget install ankitpandey1900.ByteMap');
@@ -18,6 +38,12 @@ export const DownloadSection: React.FC = () => {
         <div className="text-center mb-12">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900 mb-3">
             <span>Official Releases • v1.0.2</span>
+            {downloadCount !== null && (
+              <>
+                <span>•</span>
+                <span>{downloadCount} Downloads</span>
+              </>
+            )}
           </div>
           <h2 className="font-bangers text-5xl sm:text-6xl text-white uppercase tracking-wider comic-text-shadow-lg">
             DOWNLOAD BYTEMAP FOR WINDOWS

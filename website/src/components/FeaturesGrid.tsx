@@ -7,6 +7,9 @@ import {
   Cpu,
   EyeOff,
   Sparkles,
+  History,
+  Code2,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 interface FeatureCard {
@@ -29,6 +32,15 @@ const features: FeatureCard[] = [
     highlight: 'Scans 1TB NVMe drives in ~4.2 seconds',
   },
   {
+    icon: <History className="w-6 h-6 text-slate-900" />,
+    title: 'Time Machine Storage Diff',
+    badge: 'Where Did Space Go?',
+    badgeColor: 'bg-amber-400',
+    description:
+      'Takes lightweight baseline snapshots of directory sizes and compares them over time. Caught 20GB vanishing overnight? ByteMap flags every swollen directory with >5MB delta.',
+    highlight: 'Instantly spots hidden Windows update and game bloat',
+  },
+  {
     icon: <EyeOff className="w-6 h-6 text-slate-900" />,
     title: 'Strict Zero-Database Privacy',
     badge: '100% Volatile RAM',
@@ -38,6 +50,15 @@ const features: FeatureCard[] = [
     highlight: 'Zero disk footprints left behind',
   },
   {
+    icon: <Code2 className="w-6 h-6 text-slate-900" />,
+    title: 'Developer Build Sweeper',
+    badge: 'node_modules & target',
+    badgeColor: 'bg-indigo-300',
+    description:
+      'Specifically scans and batches stale package directories: node_modules, target, .venv, .next, .gradle, and dist. Reclaim 50GB+ from abandoned client repos in one click.',
+    highlight: 'Source code is 100% shielded and untouched',
+  },
+  {
     icon: <Files className="w-6 h-6 text-slate-900" />,
     title: '3-Stage BLAKE3 Duplicate Finder',
     badge: 'Cryptographic Precision',
@@ -45,6 +66,15 @@ const features: FeatureCard[] = [
     description:
       'Compares files by exact byte size first, then hashes a 4KB prefix, and only runs a full BLAKE3 cryptographic hash on genuine collision candidates. Never deletes by name alone.',
     highlight: 'Zero false-positive deletions guaranteed',
+  },
+  {
+    icon: <FileSpreadsheet className="w-6 h-6 text-slate-900" />,
+    title: 'One-Click Offline HTML Audit',
+    badge: 'Zero-Dependency Report',
+    badgeColor: 'bg-sky-300',
+    description:
+      'Exports a self-contained, offline HTML audit report with interactive category breakdowns, top 20 storage hogs, and print-ready PDF styling to send to IT or colleagues.',
+    highlight: 'Opens in any browser offline without internet',
   },
   {
     icon: <Trash2 className="w-6 h-6 text-slate-900" />,
@@ -61,7 +91,7 @@ const features: FeatureCard[] = [
     badge: 'Interactive Hierarchy',
     badgeColor: 'bg-purple-300',
     description:
-      'Turns nested directories into crisp, color-coded visual rectangles. Double-click any folder to drill down into its contents and use breadcrumbs to jump back.',
+      'Turns nested directories into crisp, color-coded visual rectangles with one-click category spotlighting. Click into any folder to drill down into its contents and use breadcrumbs to jump back.',
     highlight: 'Instantly spots 10GB+ hidden movie/game folders',
   },
   {

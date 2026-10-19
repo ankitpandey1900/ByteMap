@@ -13,11 +13,15 @@ import {
   Loader2,
   CheckSquare,
   Square,
+  Code2,
+  FolderMinus,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBytes, cleanDisplayPath } from '@/lib/utils';
 import { api, CleanupExecutionResult } from '@/lib/api';
 import { RiskLevel } from '@/types';
+import { DevArtifactsCard } from './DevArtifactsCard';
+import { EmptyFoldersCard } from './EmptyFoldersCard';
 
 export const CleanupTab: React.FC = () => {
   const {
@@ -29,6 +33,7 @@ export const CleanupTab: React.FC = () => {
     clearCleanupSelection,
   } = useAppStore();
 
+  const [cleanupView, setCleanupView] = useState<'junk' | 'dev' | 'empty'>('junk');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [isExecuting, setIsExecuting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -154,27 +159,29 @@ export const CleanupTab: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
-          {selectedCleanupIds.size > 0 ? (
-            <button
-              onClick={() => setShowConfirmModal(true)}
-              disabled={isExecuting}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-sm uppercase tracking-wider border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>
-                Clean Selected ({selectedCleanupIds.size} files • {formatBytes(totalSelectedBytes, settings.unit)})
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={() => selectAllCleanup()}
-              className="px-4 py-2 bg-amber-300 hover:bg-amber-400 border-2 border-slate-900 font-bangers text-sm uppercase tracking-wider text-slate-900 rounded-xl shadow-comic-sm transition-all"
-            >
-              Select All Recommendations
-            </button>
-          )}
-        </div>
+        {cleanupView === 'junk' && (
+          <div className="flex items-center space-x-3">
+            {selectedCleanupIds.size > 0 ? (
+              <button
+                onClick={() => setShowConfirmModal(true)}
+                disabled={isExecuting}
+                className="flex items-center space-x-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-sm uppercase tracking-wider border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>
+                  Clean Selected ({selectedCleanupIds.size} files • {formatBytes(totalSelectedBytes, settings.unit)})
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={() => selectAllCleanup()}
+                className="px-4 py-2 bg-amber-300 hover:bg-amber-400 border-2 border-slate-900 font-bangers text-sm uppercase tracking-wider text-slate-900 rounded-xl shadow-comic-sm transition-all"
+              >
+                Select All Recommendations
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Execution Feedback Banner */}
@@ -189,7 +196,7 @@ export const CleanupTab: React.FC = () => {
                 Cleanup completed: {formatBytes(lastResult.total_freed_bytes, settings.unit)} recovered!
               </p>
               <p className="text-slate-700">
-                Processed {lastResult.successful_count} files
+                Processed {lastResult.successful_count} targets
                 {lastResult.failed_count > 0 && ` (${lastResult.failed_count} failed)`}
                 {settings.prefer_trash ? ' • Moved safely to Recycle Bin' : ' • Deleted'}
               </p>
@@ -204,117 +211,181 @@ export const CleanupTab: React.FC = () => {
         </div>
       )}
 
-      {/* Filter Tabs */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
-        {['all', 'temp_file', 'old_installer', 'large_archive', 'large_download'].map((f) => (
-          <button
-            key={f}
-            onClick={() => setActiveFilter(f)}
-            className={`px-3 py-1.5 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
-              activeFilter === f
-                ? 'bg-amber-400 text-slate-900 shadow-comic translate-y-[-1px]'
-                : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
-            }`}
-          >
-            {f === 'all' ? 'All Candidates' : f.replace('_', ' ')}
-          </button>
-        ))}
+      {/* Cleanup Sub-Station Selector Tabs */}
+      <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border-2.5 border-slate-900 shadow-comic-sm">
+        <button
+          onClick={() => setCleanupView('junk')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+            cleanupView === 'junk'
+              ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5'
+              : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
+          }`}
+        >
+          <Trash2 className="w-4 h-4 text-slate-900" />
+          <span>Junk & Temp Files ({candidates.length})</span>
+        </button>
 
-        {selectedCleanupIds.size > 0 && (
-          <button
-            onClick={clearCleanupSelection}
-            className="text-xs font-comic uppercase text-slate-700 hover:text-rose-600 underline ml-auto shrink-0"
-          >
-            Clear selection ({selectedCleanupIds.size})
-          </button>
-        )}
+        <button
+          onClick={() => setCleanupView('dev')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+            cleanupView === 'dev'
+              ? 'bg-purple-400 text-slate-900 shadow-comic -translate-y-0.5'
+              : 'bg-white hover:bg-purple-100 text-slate-700 shadow-comic-sm'
+          }`}
+        >
+          <Code2 className="w-4 h-4 text-purple-700" />
+          <span>Developer Build Bloat</span>
+        </button>
+
+        <button
+          onClick={() => setCleanupView('empty')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+            cleanupView === 'empty'
+              ? 'bg-emerald-400 text-slate-900 shadow-comic -translate-y-0.5'
+              : 'bg-white hover:bg-emerald-100 text-slate-700 shadow-comic-sm'
+          }`}
+        >
+          <FolderMinus className="w-4 h-4 text-emerald-700" />
+          <span>Empty Folders & Ghosts</span>
+        </button>
       </div>
 
-      {/* Candidates List */}
-      <div className="space-y-2.5">
-        {filteredCandidates.map((candidate) => {
-          const isSelected = selectedCleanupIds.has(candidate.id);
-          return (
-            <div
-              key={candidate.id}
-              onClick={() => toggleCleanupSelection(candidate.id)}
-              className={`p-3.5 rounded-2xl border-2 border-slate-900 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 ${
-                isSelected
-                  ? 'bg-amber-100 shadow-comic'
-                  : 'bg-white shadow-comic-sm hover:bg-slate-50'
-              }`}
-            >
-              <div className="flex items-start space-x-3 truncate">
-                <button
-                  type="button"
-                  className="mt-0.5 text-slate-900 shrink-0"
-                >
-                  {isSelected ? (
-                    <CheckSquare className="w-5 h-5 text-amber-600 fill-amber-300" />
-                  ) : (
-                    <Square className="w-5 h-5 text-slate-500" />
-                  )}
-                </button>
+      {/* Developer Artifacts Sweeper View */}
+      {cleanupView === 'dev' && (
+        <DevArtifactsCard
+          folders={scanSummary.largest_folders}
+          preferTrash={settings.prefer_trash}
+          unit={settings.unit}
+          onCleanupComplete={(res) => setLastResult(res)}
+        />
+      )}
 
-                <div className="truncate">
-                  <div className="flex items-center space-x-2">
-                    {getTypeIcon(candidate.type)}
-                    <h4 className="font-comic text-xs uppercase tracking-wide text-slate-900 truncate">
-                      {candidate.title}
-                    </h4>
-                    {getRiskBadge(candidate.risk_level)}
+      {/* Empty Folders & Zero-Byte Ghosts View */}
+      {cleanupView === 'empty' && (
+        <EmptyFoldersCard
+          folders={scanSummary.largest_folders}
+          largestFiles={scanSummary.largest_files}
+          preferTrash={settings.prefer_trash}
+          onCleanupComplete={(res) => setLastResult(res)}
+        />
+      )}
+
+      {/* Safe Junk & Cache Recommendations View */}
+      {cleanupView === 'junk' && (
+        <>
+          {/* Filter Tabs */}
+          <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
+            {['all', 'temp_file', 'old_installer', 'large_archive', 'large_download'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setActiveFilter(f)}
+                className={`px-3 py-1.5 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+                  activeFilter === f
+                    ? 'bg-amber-400 text-slate-900 shadow-comic translate-y-[-1px]'
+                    : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
+                }`}
+              >
+                {f === 'all' ? 'All Candidates' : f.replace('_', ' ')}
+              </button>
+            ))}
+
+            {selectedCleanupIds.size > 0 && (
+              <button
+                onClick={clearCleanupSelection}
+                className="text-xs font-comic uppercase text-slate-700 hover:text-rose-600 underline ml-auto shrink-0"
+              >
+                Clear selection ({selectedCleanupIds.size})
+              </button>
+            )}
+          </div>
+
+          {/* Candidates List */}
+          <div className="space-y-2.5">
+            {filteredCandidates.map((candidate) => {
+              const isSelected = selectedCleanupIds.has(candidate.id);
+              return (
+                <div
+                  key={candidate.id}
+                  onClick={() => toggleCleanupSelection(candidate.id)}
+                  className={`p-3.5 rounded-2xl border-2 border-slate-900 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                    isSelected
+                      ? 'bg-amber-100 shadow-comic'
+                      : 'bg-white shadow-comic-sm hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-start space-x-3 truncate">
+                    <button
+                      type="button"
+                      className="mt-0.5 text-slate-900 shrink-0"
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-5 h-5 text-amber-600 fill-amber-300" />
+                      ) : (
+                        <Square className="w-5 h-5 text-slate-500" />
+                      )}
+                    </button>
+
+                    <div className="truncate">
+                      <div className="flex items-center space-x-2">
+                        {getTypeIcon(candidate.type)}
+                        <h4 className="font-comic text-xs uppercase tracking-wide text-slate-900 truncate">
+                          {candidate.title}
+                        </h4>
+                        {getRiskBadge(candidate.risk_level)}
+                      </div>
+
+                      <p className="text-[11px] font-fredoka font-semibold text-slate-600 mt-1 line-clamp-1">
+                        {candidate.description}
+                      </p>
+                      <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5" title={cleanDisplayPath(candidate.file.path)}>
+                        {cleanDisplayPath(candidate.file.path)}
+                      </p>
+                      <p className="text-[10px] font-fredoka font-bold text-amber-700 mt-1 flex items-center">
+                        <Info className="w-3 h-3 mr-1 shrink-0" />
+                        {candidate.risk_explanation}
+                      </p>
+                    </div>
                   </div>
 
-                  <p className="text-[11px] font-fredoka font-semibold text-slate-600 mt-1 line-clamp-1">
-                    {candidate.description}
-                  </p>
-                  <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5" title={cleanDisplayPath(candidate.file.path)}>
-                    {cleanDisplayPath(candidate.file.path)}
-                  </p>
-                  <p className="text-[10px] font-fredoka font-bold text-amber-700 mt-1 flex items-center">
-                    <Info className="w-3 h-3 mr-1 shrink-0" />
-                    {candidate.risk_explanation}
-                  </p>
+                  <div className="flex items-center space-x-4 shrink-0 pl-8 md:pl-0">
+                    <div className="text-right">
+                      <span className="font-comic text-sm text-slate-900">
+                        {formatBytes(candidate.file.size_bytes, settings.unit)}
+                      </span>
+                      <p className="text-[10px] font-fredoka font-bold text-slate-500 capitalize">
+                        {settings.prefer_trash ? 'Recycle Bin' : 'Permanent'}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReveal(candidate.file.path);
+                      }}
+                      className="p-1.5 rounded-lg border border-slate-900 bg-white hover:bg-amber-200 text-slate-900 shadow-comic-sm transition-colors"
+                      title="Reveal in native file explorer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
+              );
+            })}
+
+            {filteredCandidates.length === 0 && (
+              <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border-2 border-slate-900 shadow-comic">
+                <ShieldCheck className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+                <h4 className="font-comic text-sm uppercase text-slate-900">
+                  No cleanup candidates in this category
+                </h4>
+                <p className="text-xs font-fredoka font-semibold text-slate-600 mt-1">
+                  Your scanned storage does not contain obsolete temporary files or leftover archives.
+                </p>
               </div>
-
-              <div className="flex items-center space-x-4 shrink-0 pl-8 md:pl-0">
-                <div className="text-right">
-                  <span className="font-comic text-sm text-slate-900">
-                    {formatBytes(candidate.file.size_bytes, settings.unit)}
-                  </span>
-                  <p className="text-[10px] font-fredoka font-bold text-slate-500 capitalize">
-                    {settings.prefer_trash ? 'Recycle Bin' : 'Permanent'}
-                  </p>
-                </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReveal(candidate.file.path);
-                  }}
-                  className="p-1.5 rounded-lg border border-slate-900 bg-white hover:bg-amber-200 text-slate-900 shadow-comic-sm transition-colors"
-                  title="Reveal in native file explorer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-
-        {filteredCandidates.length === 0 && (
-          <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border-2 border-slate-900 shadow-comic">
-            <ShieldCheck className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
-            <h4 className="font-comic text-sm uppercase text-slate-900">
-              No cleanup candidates in this category
-            </h4>
-            <p className="text-xs font-fredoka font-semibold text-slate-600 mt-1">
-              Your scanned storage does not contain obsolete temporary files or leftover archives.
-            </p>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Confirmation Modal */}
       {showConfirmModal && (

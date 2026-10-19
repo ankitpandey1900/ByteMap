@@ -54,6 +54,13 @@ interface AppState {
   // Settings
   settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
+
+  // UI Zoom (Ctrl+ / Ctrl- / Ctrl 0)
+  zoomLevel: number;
+  setZoomLevel: (zoom: number | ((prev: number) => number)) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -155,4 +162,48 @@ export const useAppStore = create<AppState>((set) => ({
   settings: defaultSettings,
   updateSettings: (newSettings) =>
     set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+
+  // UI Zoom implementation
+  zoomLevel: (() => {
+    try {
+      const saved = localStorage.getItem('bytemap_zoom_level');
+      if (saved) {
+        const val = parseInt(saved, 10);
+        if (!isNaN(val) && val >= 75 && val <= 160) return val;
+      }
+    } catch {}
+    return 100;
+  })(),
+  setZoomLevel: (zoom) =>
+    set((state) => {
+      const next = typeof zoom === 'function' ? zoom(state.zoomLevel) : zoom;
+      const clamped = Math.max(75, Math.min(160, Math.round(next)));
+      try {
+        localStorage.setItem('bytemap_zoom_level', String(clamped));
+      } catch {}
+      return { zoomLevel: clamped };
+    }),
+  zoomIn: () =>
+    set((state) => {
+      const clamped = Math.min(160, state.zoomLevel + 5);
+      try {
+        localStorage.setItem('bytemap_zoom_level', String(clamped));
+      } catch {}
+      return { zoomLevel: clamped };
+    }),
+  zoomOut: () =>
+    set((state) => {
+      const clamped = Math.max(70, state.zoomLevel - 5);
+      try {
+        localStorage.setItem('bytemap_zoom_level', String(clamped));
+      } catch {}
+      return { zoomLevel: clamped };
+    }),
+  resetZoom: () =>
+    set(() => {
+      try {
+        localStorage.setItem('bytemap_zoom_level', '100');
+      } catch {}
+      return { zoomLevel: 100 };
+    }),
 }));

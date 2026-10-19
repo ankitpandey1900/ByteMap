@@ -14,7 +14,6 @@ import {
   formatDate,
   formatNumber,
   getCategoryColor,
-  getCategoryEmoji,
   cleanDisplayPath,
 } from '@/lib/utils';
 import {
@@ -22,6 +21,7 @@ import {
   ComicCategoryFileIcon,
   ComicExploreIcon,
 } from '@/components/icons/ComicIcons';
+import { CategoryIcon } from '@/components/CategoryIcon';
 import { ScoutAvatar } from '@/components/ScoutMascot';
 import { api } from '@/lib/api';
 
@@ -302,7 +302,6 @@ export const ExplorerTab: React.FC = () => {
                       Math.max(6, Math.round((file.size_bytes / maxFileSize) * 100))
                     );
                     const catColor = getCategoryColor(file.category);
-                    const catEmoji = getCategoryEmoji(file.category);
 
                     return (
                       <tr
@@ -348,13 +347,13 @@ export const ExplorerTab: React.FC = () => {
                         {/* Category Pill */}
                         <td className="py-2.5 px-4 text-center whitespace-nowrap">
                           <span
-                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]"
                             style={{
                               backgroundColor: `${catColor}25`,
                               color: '#0f172a',
                             }}
                           >
-                            <span>{catEmoji}</span>
+                            <CategoryIcon category={file.category} className="w-3.5 h-3.5" />
                             <span>{file.category}</span>
                           </span>
                         </td>

@@ -8,12 +8,13 @@ import {
   FolderMinus,
   Globe,
   ExternalLink,
+  ZoomIn,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
 
 export const SettingsTab: React.FC = () => {
-  const { settings, updateSettings, scanSummary } = useAppStore();
+  const { settings, updateSettings, scanSummary, zoomLevel, setZoomLevel, zoomIn, zoomOut, resetZoom } = useAppStore();
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [newExcludePattern, setNewExcludePattern] = useState('');
 
@@ -125,6 +126,85 @@ export const SettingsTab: React.FC = () => {
             <option value="binary">Binary Base 2 (1024 B = 1 KiB, MiB, GiB) - OS Standard</option>
             <option value="decimal">Decimal Base 10 (1000 B = 1 KB, MB, GB) - Drive Label</option>
           </select>
+        </div>
+      </div>
+
+      {/* UI Scale & Zoom Section */}
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bangers text-base uppercase tracking-wider text-slate-900 flex items-center space-x-2">
+            <ZoomIn className="w-4 h-4 text-sky-600" />
+            <span>Display Scale & Zoom</span>
+          </h3>
+          <div className="flex items-center space-x-2">
+            <span className="font-mono font-bold text-xs bg-amber-200 px-2.5 py-1 rounded-md border border-slate-900 shadow-comic-sm">
+              Current: {zoomLevel}%
+            </span>
+            {zoomLevel !== 100 && (
+              <button
+                type="button"
+                onClick={resetZoom}
+                className="px-2 py-1 bg-white hover:bg-rose-100 border border-slate-900 rounded-md font-comic text-xs uppercase font-bold text-slate-800 transition-all cursor-pointer shadow-comic-sm"
+                title="Reset to 100%"
+              >
+                Reset (100%)
+              </button>
+            )}
+          </div>
+        </div>
+
+        <p className="text-xs font-fredoka font-semibold text-slate-600">
+          Scale the entire application interface to fit your screen resolution or visual comfort.
+        </p>
+
+        <div className="flex items-center gap-2 flex-wrap pt-1">
+          <div className="flex items-center space-x-1 border-2 border-slate-900 rounded-xl p-1 bg-slate-50">
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={zoomLevel <= 70}
+              className="w-8 h-8 rounded-lg font-mono font-bold text-sm bg-white border border-slate-900 flex items-center justify-center hover:bg-amber-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-comic-sm"
+              title="Zoom Out (Ctrl -)"
+            >
+              -
+            </button>
+            <span className="w-16 text-center font-mono font-bold text-xs tabular-nums text-slate-900">
+              {zoomLevel}%
+            </span>
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={zoomLevel >= 160}
+              className="w-8 h-8 rounded-lg font-mono font-bold text-sm bg-white border border-slate-900 flex items-center justify-center hover:bg-amber-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-comic-sm"
+              title="Zoom In (Ctrl +)"
+            >
+              +
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {[75, 85, 90, 95, 100, 105, 110, 125, 150].map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setZoomLevel(preset)}
+                className={`px-2.5 py-1.5 rounded-xl border-2 border-slate-900 font-mono text-xs font-bold transition-all cursor-pointer ${
+                  zoomLevel === preset
+                    ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5'
+                    : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
+                }`}
+              >
+                {preset}%{preset === 100 ? ' (Default)' : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-2.5 bg-sky-50 border-1.5 border-slate-900 rounded-xl text-[11px] font-fredoka font-semibold text-slate-700 flex items-center space-x-2">
+          <span>💡</span>
+          <span>
+            Shortcut tip: You can press <kbd className="px-1.5 py-0.5 bg-white border border-slate-900 rounded font-mono text-[10px] font-bold">Ctrl +</kbd> to zoom in, <kbd className="px-1.5 py-0.5 bg-white border border-slate-900 rounded font-mono text-[10px] font-bold">Ctrl -</kbd> to zoom out, or <kbd className="px-1.5 py-0.5 bg-white border border-slate-900 rounded font-mono text-[10px] font-bold">Ctrl 0</kbd> to reset anywhere in ByteMap!
+          </span>
         </div>
       </div>
 

@@ -99,13 +99,29 @@
   font-feature-settings: "tnum";
 }
 
+html, body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+*, *::before, *::after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+svg text {
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
 /* =============================================
    COMIC / POP-ART ADVENTURE STYLE SYSTEM
    ============================================= */
 
-/* Bold Comic Text Shadow */
+/* Bold Comic Text Shadow - Clean Directional Drop Shadow */
 .comic-text-shadow {
-  text-shadow: 2px 2px 0px #0f172a, -1px -1px 0px #0f172a, 1px -1px 0px #0f172a, -1px 1px 0px #0f172a, 2px 0px 0px #0f172a, 0px 2px 0px #0f172a;
+  text-shadow: 2px 2px 0px #0f172a;
 }
 
 /* Halftone Dot Patterns */

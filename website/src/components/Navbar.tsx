@@ -81,6 +81,15 @@ export const Navbar: React.FC = () => {
             >
               FAQ
             </a>
+            <a
+              href="https://github.com/ankitpandey1900/ByteMap/blob/main/USER_MANUAL.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 text-slate-900 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all flex items-center space-x-1"
+              title="Read the Interactive Survival Guide for Everyday Users"
+            >
+              <span>📖 User Guide</span>
+            </a>
           </nav>
 
           {/* Right Action Buttons */}

@@ -9,13 +9,13 @@ import {
   formatDate,
   formatNumber,
   getCategoryColor,
-  getCategoryEmoji,
   cleanDisplayPath,
 } from '@/lib/utils';
 import {
   ComicCategoryFileIcon,
   ComicLargeFilesIcon,
 } from '@/components/icons/ComicIcons';
+import { CategoryIcon } from '@/components/CategoryIcon';
 import { ScoutAvatar } from '@/components/ScoutMascot';
 import { api } from '@/lib/api';
 
@@ -159,7 +159,6 @@ export const LargeFilesTab: React.FC = () => {
             Math.max(8, Math.round((file.size_bytes / largestSize) * 100))
           );
           const catColor = getCategoryColor(file.category);
-          const catEmoji = getCategoryEmoji(file.category);
 
           return (
             <div
@@ -182,13 +181,13 @@ export const LargeFilesTab: React.FC = () => {
                       {file.name}
                     </span>
                     <span
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]"
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]"
                       style={{
                         backgroundColor: `${catColor}25`,
                         color: '#0f172a',
                       }}
                     >
-                      <span>{catEmoji}</span>
+                      <CategoryIcon category={file.category} className="w-3.5 h-3.5" />
                       <span>{file.category}</span>
                     </span>
                   </div>

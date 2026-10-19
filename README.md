@@ -25,7 +25,11 @@ And I wanted it to run fast without leaving stale indexes or tracking databases 
 
 - **Real Drive Discovery**: Reads actual system partitions using native OS APIs (`sysinfo`), showing total, used, and free capacity for NTFS, FAT32, APFS, and ext4 drives.
 - **Fast Traversal Engine**: Walks directories asynchronously on a worker thread with `walkdir`. Throttles progress events to ~80ms intervals so the UI never stutters or drops frames.
-- **Interactive Squarified Treemap**: Visualizes directory hierarchies as nested rectangles. Click into any folder to drill down, use breadcrumbs to jump back, and filter by size or name.
+- **Interactive Squarified Treemap**: Visualizes directory hierarchies as nested rectangles with one-click category spotlighting. Click into any folder to drill down, use breadcrumbs to jump back, and spotlight specific file types directly from the legend.
+- **"Where Did My Space Go?" (Time Machine)**: Saves lightweight baseline snapshots of directory sizes and compares them over time. Caught 20GB vanishing overnight? ByteMap flags every swollen folder with >5MB delta.
+- **Developer Bloat & Ghost Sweeper**: Detects and groups stale build artifacts (`node_modules`, `target`, `.venv`, `.next`, `.gradle`, `dist`) and empty 0-byte ghost directories while keeping source code 100% untouched.
+- **One-Click Standalone HTML Audit Report**: Exports a self-contained, offline HTML report with interactive charts, top 20 storage hogs, and print-ready PDF styling to send to IT or colleagues.
+- **Interactive Survival Guide (User Manual)**: Built-in handbook ([USER_MANUAL.md](USER_MANUAL.md)) written directly by creator Ankit Pandey explaining 6 step-by-step everyday fixes with zero technical jargon.
 - **Explorer & Large Files View**: Browse files in a sortable, paginated table (50 items/page) or filter large files by configurable thresholds (10MB to 5GB+). Includes a button to reveal the file in Explorer/Finder.
 - **File Type Analytics**: Groups files into categories (video, audio, image, documents, code, archives, apps, games) and shows top extensions by byte size.
 - **3-Stage Duplicate Finder**: Compares files by exact size first, then hashes the first 4KB prefix, and only runs a full BLAKE3 cryptographic hash on genuine collision candidates. Doesn't guess based on filename alone.

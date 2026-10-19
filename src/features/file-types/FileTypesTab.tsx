@@ -15,8 +15,13 @@ import { formatBytes, formatNumber, getCategoryColor } from '@/lib/utils';
 import { FileCategory } from '@/types';
 
 export const FileTypesTab: React.FC = () => {
-  const { scanSummary, settings } = useAppStore();
+  const { scanSummary, settings, setActiveTab, setSearchQuery } = useAppStore();
   const [selectedCat, setSelectedCat] = useState<string>('all');
+
+  const handleDrilldown = (extName: string) => {
+    setSearchQuery(extName.startsWith('.') ? extName : `.${extName}`);
+    setActiveTab('explore');
+  };
 
   const categories = scanSummary?.categories || [];
   const extensions = scanSummary?.extensions || [];
@@ -163,7 +168,9 @@ export const FileTypesTab: React.FC = () => {
           {filteredExtensions.map((ext, idx) => (
             <div
               key={ext.extension}
-              className="p-2.5 rounded-xl bg-slate-50 border-1.5 border-slate-900 flex items-center justify-between text-xs hover:bg-amber-50 transition-colors"
+              onClick={() => handleDrilldown(ext.extension)}
+              title={`Click to view all ${ext.extension} files in Explorer`}
+              className="p-2.5 rounded-xl bg-slate-50 border-1.5 border-slate-900 flex items-center justify-between text-xs hover:bg-amber-100 hover:-translate-y-0.5 hover:shadow-comic-sm transition-all cursor-pointer group active:translate-y-0"
             >
               <div className="flex items-center space-x-2.5">
                 <span className="font-comic text-slate-500 w-5">
