@@ -37,7 +37,7 @@ export const DownloadSection: React.FC = () => {
       <div className="max-w-5xl mx-auto relative z-10">
         <div className="text-center mb-12">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900 mb-3">
-            <span>Official Releases • v1.0.2</span>
+            <span>Official Releases • v1.0.3</span>
             {downloadCount !== null && (
               <>
                 <span>•</span>
@@ -74,13 +74,13 @@ export const DownloadSection: React.FC = () => {
                 Standard Windows user-mode installer. Includes automatic update checks and desktop shortcuts. No admin rights required.
               </p>
               <div className="p-3 bg-slate-50 rounded-xl border-2 border-slate-900 text-xs font-mono font-bold text-slate-600 space-y-1 mb-6">
-                <div>File: ByteMap_1.0.2_x64-setup.exe</div>
+                <div>File: ByteMap_1.0.3_x64-setup.exe</div>
                 <div>Size: ~15.2 MB • Target: Windows 10/11 64-bit</div>
               </div>
             </div>
 
             <a
-              href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.2/ByteMap_1.0.2_x64-setup.exe"
+              href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.3/ByteMap_1.0.3_x64-setup.exe"
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-amber-400 hover:bg-amber-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />
@@ -107,13 +107,13 @@ export const DownloadSection: React.FC = () => {
                 Ideal for system administrators, IT lab imaging, and scripted deployments with msiexec flags.
               </p>
               <div className="p-3 bg-slate-50 rounded-xl border-2 border-slate-900 text-xs font-mono font-bold text-slate-600 space-y-1 mb-6">
-                <div>File: ByteMap_1.0.2_x64_en-US.msi</div>
+                <div>File: ByteMap_1.0.3_x64_en-US.msi</div>
                 <div>Size: ~16.0 MB • Target: Windows 10/11 64-bit</div>
               </div>
             </div>
 
             <a
-              href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.2/ByteMap_1.0.2_x64_en-US.msi"
+              href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.3/ByteMap_1.0.3_x64_en-US.msi"
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />

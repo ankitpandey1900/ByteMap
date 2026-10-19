@@ -10,7 +10,7 @@ export const Navbar: React.FC = () => {
       {/* Top Banner Announcement */}
       <div className="bg-amber-400 border-b-2.5 border-slate-900 py-2 px-4 text-center text-xs sm:text-sm font-fredoka font-semibold text-slate-950 flex flex-wrap items-center justify-center gap-2 relative z-50">
         <span className="animate-comic-bounce">🚀</span>
-        <span>ByteMap v1.0.2 is live! Native Rust speed, zero database memory policy, and Pop-Art visualization.</span>
+        <span>ByteMap v1.0.3 is live! Native Rust speed, zero database memory policy, and Pop-Art visualization.</span>
         <a
           href="#download"
           className="px-2.5 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold inline-flex items-center space-x-1 shadow-xs transition-all hover:-translate-y-0.5"

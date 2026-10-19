@@ -348,7 +348,7 @@ export const SettingsTab: React.FC = () => {
             <span>Author & Credits 🧭</span>
           </div>
           <span className="text-xs font-mono font-bold text-slate-500">
-            ByteMap v1.0.2 • MIT License
+            ByteMap v1.0.3 • MIT License
           </span>
         </div>
 
