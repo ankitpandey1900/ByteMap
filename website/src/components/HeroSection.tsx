@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Download, ShieldCheck, Zap, HardDrive, CheckCircle2, Sparkles, Apple } from 'lucide-react';
+import { Download, ShieldCheck, Zap, HardDrive, CheckCircle2, Sparkles, Apple, Eye } from 'lucide-react';
 import { GithubIcon } from './GithubIcon';
 
 export const HeroSection: React.FC = () => {
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
   const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.5/ByteMap_1.0.5_x64-setup.exe');
   const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.5/ByteMap_1.0.5_universal.dmg');
   const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.5/ByteMap_1.0.5_x64_en-US.msi');
 
   useEffect(() => {
+    // 1. Fetch live GitHub Release download metrics
     fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
       .then((res) => res.json())
       .then((data) => {
@@ -54,6 +56,43 @@ export const HeroSection: React.FC = () => {
         }
       })
       .catch(() => {});
+
+    // 2. Free live visitor counter with baseline for past visitors
+    const BASELINE_PREVIOUS_VISITORS = 180;
+    try {
+      const hasCountedSession = sessionStorage.getItem('bytemap_visitor_counted');
+      const counterEndpoint = hasCountedSession
+        ? 'https://abacus.jasoncameron.dev/get/bytemap/visits'
+        : 'https://abacus.jasoncameron.dev/hit/bytemap/visits';
+
+      fetch(counterEndpoint)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && typeof data.value === 'number') {
+            sessionStorage.setItem('bytemap_visitor_counted', 'true');
+            setVisitorCount(BASELINE_PREVIOUS_VISITORS + data.value);
+          } else {
+            setVisitorCount(BASELINE_PREVIOUS_VISITORS);
+          }
+        })
+        .catch(() => {
+          // Secondary fallback counter
+          fetch('https://countapi.mileshilliard.com/api/v1/hit/bytemap_site_visitors')
+            .then((res) => res.json())
+            .then((data) => {
+              if (data && typeof data.value === 'number') {
+                setVisitorCount(BASELINE_PREVIOUS_VISITORS + data.value);
+              } else {
+                setVisitorCount(BASELINE_PREVIOUS_VISITORS);
+              }
+            })
+            .catch(() => {
+              setVisitorCount(BASELINE_PREVIOUS_VISITORS);
+            });
+        });
+    } catch {
+      setVisitorCount(BASELINE_PREVIOUS_VISITORS);
+    }
   }, []);
 
   return (
@@ -62,12 +101,18 @@ export const HeroSection: React.FC = () => {
       <div className="absolute inset-0 bg-comic-dots opacity-40 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative z-10 text-center">
-        {/* Top Tagline Badge & Live Counter */}
+        {/* Top Tagline Badge & Live Counters */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
             <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
             <span>Windows & macOS Desktop Storage Intelligence • v1.0.5</span>
           </div>
+          {visitorCount !== null && (
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 hover:-translate-y-0.5 transition-transform cursor-default" title="Total visitors who explored ByteMap">
+              <Eye className="w-3.5 h-3.5 text-slate-900" />
+              <span><strong>{visitorCount.toLocaleString()}</strong> Site Explorers</span>
+            </div>
+          )}
           {downloadCount !== null && (
             <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-400 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
               <Download className="w-3.5 h-3.5 text-slate-900" />
