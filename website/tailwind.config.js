@@ -30,14 +30,14 @@ export default {
         }
       },
       fontFamily: {
-        comic: ["Fredoka", "'Comic Neue'", "'Plus Jakarta Sans'", "sans-serif"],
-        bangers: ["'Bangers'", "cursive"],
-        luckiest: ["'Luckiest Guy'", "cursive"],
-        comicNeue: ["'Comic Neue'", "cursive"],
+        comic: ["Fredoka", "Comic Neue", "Plus Jakarta Sans", "sans-serif"],
+        bangers: ["Bangers", "cursive"],
+        luckiest: ["Luckiest Guy", "cursive"],
+        comicNeue: ["Comic Neue", "cursive"],
         fredoka: ["Fredoka", "sans-serif"],
-        heading: ["'Bangers'", "Fredoka", "sans-serif"],
-        sans: ["'Plus Jakarta Sans'", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        mono: ["'JetBrains Mono'", "Fira Code", "Consolas", "monospace"],
+        heading: ["Bangers", "Fredoka", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        mono: ["JetBrains Mono", "Fira Code", "Consolas", "monospace"],
       },
       boxShadow: {
         comic: "3px 3px 0px #0f172a",

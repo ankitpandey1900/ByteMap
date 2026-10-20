@@ -49,7 +49,7 @@ impl Scanner {
         let mut last_progress_report = Instant::now();
         const PROGRESS_INTERVAL_MS: u128 = 80; // throttled progress reporting
 
-        let mut walker = WalkDir::new(&root_path)
+        let walker = WalkDir::new(&root_path)
             .follow_links(options.follow_symlinks)
             .same_file_system(true);
 

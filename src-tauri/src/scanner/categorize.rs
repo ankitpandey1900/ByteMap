@@ -5,8 +5,8 @@ pub fn categorize_extension(ext: &str) -> FileCategory {
     match ext_lower.as_str() {
         // Videos
         "mp4" | "mkv" | "mov" | "avi" | "wmv" | "flv" | "webm" | "m4v" | "mpg" | "mpeg" | "3gp"
-        | "3g2" | "m2ts" | "mts" | "vob" | "ogv" | "ts" | "divx" | "xvid" | "rm" | "rmvb"
-        | "asf" | "f4v" | "m4p" | "mpv" | "mpe" | "bik" | "hevc" => FileCategory::Video,
+        | "3g2" | "m2ts" | "vob" | "ogv" | "divx" | "xvid" | "rm" | "rmvb" | "asf" | "f4v"
+        | "m4p" | "mpv" | "mpe" | "bik" | "hevc" => FileCategory::Video,
 
         // Images
         "jpg" | "jpeg" | "png" | "gif" | "bmp" | "webp" | "svg" | "tiff" | "tif" | "ico"

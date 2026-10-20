@@ -8,7 +8,7 @@ export function getFileCategory(ext: string) {
   // Videos
   if ([
     '.mp4', '.mkv', '.mov', '.avi', '.wmv', '.flv', '.webm', '.m4v', '.mpg', '.mpeg',
-    '.3gp', '.3g2', '.m2ts', '.mts', '.vob', '.ogv', '.ts', '.divx', '.xvid', '.rm',
+    '.3gp', '.3g2', '.m2ts', '.vob', '.ogv', '.divx', '.xvid', '.rm',
     '.rmvb', '.asf', '.f4v', '.m4p', '.mpv', '.mpe', '.bik', '.hevc',
   ].includes(e)) return 'video';
 
