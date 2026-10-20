@@ -75,6 +75,7 @@ jobs:
           releaseBody: 'See the release assets below to download ByteMap for Windows (.exe / .msi) or macOS (.dmg Universal).'
           releaseDraft: false
           prerelease: false
+          includeUpdaterJson: true
           args: ${{ matrix.args }}
 
       - name: Upload Artifacts
