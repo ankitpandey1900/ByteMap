@@ -47,6 +47,12 @@ export const Navbar: React.FC = () => {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-2">
             <a
+              href="#proof"
+              className="px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-300 hover:bg-amber-400 text-slate-900 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all flex items-center space-x-1 font-bold"
+            >
+              <span>🔥 1.3M Proof</span>
+            </a>
+            <a
               href="#features"
               className="px-3.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-amber-100 text-slate-800 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all"
             >
@@ -125,6 +131,13 @@ export const Navbar: React.FC = () => {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden px-4 pt-2 pb-5 bg-sky-300 border-t-2.5 border-slate-900 space-y-2">
+            <a
+              href="#proof"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2 rounded-xl border-2 border-slate-900 bg-amber-300 font-comic text-xs uppercase shadow-comic-sm font-bold text-slate-900"
+            >
+              🔥 1.3M File Scan Proof
+            </a>
             <a
               href="#features"
               onClick={() => setMobileMenuOpen(false)}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
+import { RealWorldProof } from './components/RealWorldProof';
 import { InteractiveDemo } from './components/InteractiveDemo';
 import { FeaturesGrid } from './components/FeaturesGrid';
 import { ComparisonTable } from './components/ComparisonTable';
@@ -21,6 +22,7 @@ export const App: React.FC = () => {
 
         <main className="flex-1">
           <HeroSection />
+          <RealWorldProof />
           <InteractiveDemo />
           <FeaturesGrid />
           <ComparisonTable />

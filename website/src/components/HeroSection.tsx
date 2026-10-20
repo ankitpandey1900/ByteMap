@@ -207,35 +207,49 @@ export const HeroSection: React.FC = () => {
 
         {/* App Showcase Screenshot Card */}
         <div className="relative max-w-5xl mx-auto">
+          {/* Floating real proof badge top left */}
+          <div className="hidden sm:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl bg-amber-300 border-2.5 border-slate-900 shadow-comic font-comic text-xs uppercase font-bold text-slate-900 absolute -top-5 left-6 z-20 hover:scale-105 transition-transform">
+            <Zap className="w-4 h-4 text-slate-900" />
+            <span>1,319,645 Files Scanned • 2,891 files/sec</span>
+          </div>
+
+          {/* Floating real proof badge bottom right */}
+          <div className="hidden sm:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl bg-emerald-400 border-2.5 border-slate-900 shadow-comic font-comic text-xs uppercase font-bold text-slate-900 absolute -bottom-4 right-6 z-20 hover:scale-105 transition-transform">
+            <CheckCircle2 className="w-4 h-4 text-slate-900" />
+            <span>7.77 GB Reclaimable Space Located</span>
+          </div>
+
           {/* Comic background accent backdrop */}
           <div className="absolute -inset-2 bg-amber-400 rounded-3xl border-3 border-slate-900 shadow-comic-xl transform -rotate-0.5" />
           
-          {/* Main App Frame */}
-          <div className="relative bg-slate-900 rounded-2xl border-3 border-slate-900 shadow-comic-lg overflow-hidden">
-            {/* Window titlebar */}
-            <div className="px-4 py-3 bg-sky-400 border-b-2.5 border-slate-900 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-slate-900 inline-block" />
-                <span className="w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-slate-900 inline-block" />
-                <span className="w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-900 inline-block" />
-                <span className="font-comic text-xs uppercase text-slate-900 ml-2 font-bold hidden sm:inline">
-                  ByteMap — Desktop Storage Intelligence
-                </span>
-              </div>
-              <span className="px-2.5 py-0.5 rounded-lg bg-amber-300 border border-slate-900 font-bangers text-[11px] uppercase tracking-wider text-slate-900">
-                Live App Preview
-              </span>
-            </div>
-
-            {/* Showcase Screenshot */}
-            <div className="bg-slate-100 p-2 sm:p-4">
+          {/* Main App Frame - Edge-to-Edge Single Native Window */}
+          <div className="relative bg-slate-900 rounded-2xl border-3 border-slate-900 shadow-comic-lg overflow-hidden group">
+            <a href="#proof" title="Click to view full uncompressed screenshots and proof" className="block relative">
               <img
                 src="/screenshots/overview.png"
-                alt="ByteMap Storage Intelligence Dashboard Screenshot"
-                className="w-full h-auto rounded-xl border-2.5 border-slate-900 shadow-comic object-cover"
+                alt="ByteMap Storage Intelligence Dashboard Screenshot showing 1,319,645 files scanned"
+                className="w-full h-auto block select-none group-hover:scale-[1.005] transition-transform duration-200"
+                style={{ imageRendering: '-webkit-optimize-contrast' }}
               />
-            </div>
+              {/* Subtle hover prompt */}
+              <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <div className="px-4 py-2 rounded-xl bg-amber-400 border-2.5 border-slate-900 shadow-comic font-bangers text-sm text-slate-900 uppercase tracking-wide">
+                  View Full 1.3M File Proof Breakdown →
+                </div>
+              </div>
+            </a>
           </div>
+        </div>
+
+        {/* Caption below screenshot */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-comic font-bold text-slate-700">
+          <span>Actual unedited desktop scan on Windows-SSD (C:).</span>
+          <a
+            href="#proof"
+            className="text-slate-900 underline decoration-amber-400 decoration-2 hover:text-amber-600 transition-colors"
+          >
+            Inspect the 1.3M treemap, BLAKE3 duplicate results & Time Machine delta →
+          </a>
         </div>
       </div>
     </section>
