@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Ideas
+    url: https://github.com/ankitpandey1900/ByteMap/discussions
+    about: Ask questions or bounce ideas before opening a bug or feature request

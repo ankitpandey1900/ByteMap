@@ -1,14 +1,14 @@
-# Contributing to ByteMap 🗺️
+# Contributing to ByteMap
 
-Hey! Thanks for wanting to improve ByteMap. Whether you're fixing a small typo, tuning a Rust traversal loop, or tweaking a comic UI button, I really appreciate you taking the time.
+Hey! Thanks for wanting to improve ByteMap. Whether you're fixing a typo, tuning a Rust traversal loop, or tweaking a UI button, I appreciate the help.
 
-Here's the straight-up guide to getting set up, running the app locally, and sending in a clean pull request.
+Here is the quick guide to getting setup, running the app locally, and sending in a clean pull request.
 
 ---
 
-## 🧭 The Core Rules of ByteMap
+## The Core Rules of ByteMap
 
-Before writing code, keep these 4 golden rules in mind:
+Before writing code, keep these principles in mind:
 1. **Zero-Database Policy**: ByteMap never uses SQLite, IndexedDB, or cached catalogs on disk. Scans live in RAM while open and get dropped on exit. No tracking, no disk bloat.
 2. **100% Offline & Private**: No analytics SDKs, no tracking pixels, no telemetry pings.
 3. **Pop-Art Comic Aesthetic**: Thick 2.5px borders (`#0f172a`), retro halftone dots, bold typography (Bangers, Comic Neue, Fredoka), and playful mascot vibes.
@@ -16,7 +16,7 @@ Before writing code, keep these 4 golden rules in mind:
 
 ---
 
-## 💻 Getting Started Locally
+## Getting Started Locally
 
 ### Prerequisites
 Make sure you have these installed:
@@ -49,7 +49,7 @@ pnpm website:dev
 
 ---
 
-## 🧪 Testing & Quality Checks
+## Testing & Quality Checks
 
 Before opening a pull request, run these quick sanity checks so CI passes without hiccups:
 
@@ -68,11 +68,11 @@ cd ..
 
 ---
 
-## 🔀 Submitting a Pull Request
+## Submitting a Pull Request
 
 1. Fork the repo and create your branch from `main`:
    ```bash
-   git checkout -b fix/my-awesome-fix
+   git checkout -b fix/my-fix
    ```
 2. Commit with clear, descriptive commit messages:
    - `fix: resolve drive letter matching on Windows`
@@ -83,7 +83,7 @@ cd ..
 
 ---
 
-## 🐛 Found a Bug or Have an Idea?
+## Found a Bug or Have an Idea?
 
 - **Bug Reports**: Open an issue using the Bug Report template. Tell me what OS you're on, what drive you scanned, and what happened.
 - **Feature Requests**: Have a cool idea? Open an issue and let's talk through it before you spend hours coding it up.
