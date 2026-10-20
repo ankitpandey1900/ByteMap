@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
+import packageJson from '../../../package.json';
 
 export const SettingsTab: React.FC = () => {
   const { settings, updateSettings, scanSummary, zoomLevel, setZoomLevel, zoomIn, zoomOut, resetZoom } = useAppStore();
@@ -348,7 +349,7 @@ export const SettingsTab: React.FC = () => {
             <span>Author & Credits 🧭</span>
           </div>
           <span className="text-xs font-mono font-bold text-slate-500">
-            ByteMap v1.0.5 • MIT License
+            ByteMap v{packageJson.version} • MIT License
           </span>
         </div>
 

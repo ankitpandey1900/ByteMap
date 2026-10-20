@@ -18,7 +18,7 @@ export interface DevArtifactItem {
   projectName: string;
   path: string;
   size_bytes: number;
-  type: 'node' | 'rust' | 'python' | 'java' | 'build';
+  type: 'node' | 'rust' | 'python' | 'java' | 'dotnet' | 'cpp' | 'go' | 'mobile' | 'build';
 }
 
 interface DevArtifactsCardProps {
@@ -49,14 +49,47 @@ export const DevArtifactsCard: React.FC<DevArtifactsCardProps> = ({
 
       if (lower === 'node_modules') {
         type = 'node';
-      } else if (lower === 'target' && (folder.path.includes('\\src') || folder.path.includes('/src') || folder.size_bytes > 5 * 1024 * 1024)) {
+      } else if (
+        lower === 'target' &&
+        (folder.path.includes('\\src') || folder.path.includes('/src') || folder.size_bytes > 5 * 1024 * 1024)
+      ) {
         type = 'rust';
-      } else if (lower === '.venv' || lower === 'venv' || lower === '__pycache__') {
+      } else if (
+        lower === '.venv' ||
+        lower === 'venv' ||
+        lower === '__pycache__' ||
+        lower === '.pytest_cache' ||
+        lower === '.mypy_cache' ||
+        lower === '.tox'
+      ) {
         type = 'python';
-      } else if (lower === '.gradle' || lower === '.m2') {
+      } else if (lower === '.gradle' || lower === '.m2' || lower === '.idea') {
         type = 'java';
-      } else if (lower === '.next' || lower === '.nuxt' || lower === 'dist' || lower === 'build') {
-        if (folder.size_bytes > 15 * 1024 * 1024) {
+      } else if (lower === 'bin' || lower === 'obj' || lower === '.vs') {
+        if (folder.path.toLowerCase().includes('bin') || folder.path.toLowerCase().includes('obj') || folder.size_bytes > 5 * 1024 * 1024) {
+          type = 'dotnet';
+        }
+      } else if (lower === 'cmake-build-debug' || lower === 'cmake-build-release' || lower === 'cmakefiles') {
+        type = 'cpp';
+      } else if (lower === '.gocache' || (lower === 'vendor' && folder.path.includes('go'))) {
+        type = 'go';
+      } else if (lower === 'pods' || lower === 'deriveddata' || lower === '.dart_tool') {
+        type = 'mobile';
+      } else if (
+        lower === '.next' ||
+        lower === '.nuxt' ||
+        lower === '.turbo' ||
+        lower === '.parcel-cache' ||
+        lower === '.vite' ||
+        lower === '.svelte-kit' ||
+        lower === '.output' ||
+        lower === '.angular' ||
+        lower === '.terraform' ||
+        lower === 'dist' ||
+        lower === 'build' ||
+        lower === 'storybook-static'
+      ) {
+        if (folder.size_bytes > 5 * 1024 * 1024) {
           type = 'build';
         }
       }
@@ -136,10 +169,19 @@ export const DevArtifactsCard: React.FC<DevArtifactsCardProps> = ({
       case 'rust':
         return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-orange-100 text-orange-900 border border-slate-900 shadow-comic-sm">Rust (target/)</span>;
       case 'python':
-        return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-100 text-blue-900 border border-slate-900 shadow-comic-sm">Python (.venv / cache)</span>;
+        return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-100 text-blue-900 border border-slate-900 shadow-comic-sm">Python (venv / cache)</span>;
       case 'java':
         return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-slate-900 shadow-comic-sm">Java (.gradle / .m2)</span>;
+      case 'dotnet':
+        return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-violet-100 text-violet-900 border border-slate-900 shadow-comic-sm">.NET (bin / obj)</span>;
+      case 'cpp':
+        return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-cyan-100 text-cyan-900 border border-slate-900 shadow-comic-sm">C++ (cmake / .vs)</span>;
+      case 'go':
+        return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-sky-100 text-sky-900 border border-slate-900 shadow-comic-sm">Go (cache / vendor)</span>;
+      case 'mobile':
+        return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-100 text-indigo-900 border border-slate-900 shadow-comic-sm">Mobile (Pods / dart)</span>;
       case 'build':
+      default:
         return <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-purple-100 text-purple-900 border border-slate-900 shadow-comic-sm">Build Dist (.next / dist)</span>;
     }
   };
