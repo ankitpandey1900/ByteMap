@@ -12,6 +12,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
     permissions:
       contents: write
+    env:
+      CLEAN_SIGNING_KEY: ''
+      CLEAN_SIGNING_PASSWORD: ''
     strategy:
       fail-fast: false
       matrix:
