@@ -16,7 +16,9 @@ ByteMap will **never use any database engine** (no SQLite, MongoDB, IndexedDB, o
 
 - When a scan runs, data lives strictly in RAM.
 - When you quit or click "Clear Scan", the memory is dropped.
-- The only persistent file is a tiny JSON preferences file (`config.json`) storing non-sensitive settings (theme, display units, ignore patterns).
+- The only persistent files on disk are:
+  1. A tiny JSON preferences file (`config.json`) storing non-sensitive settings (theme, display units, ignore patterns).
+  2. Optional Time Machine baseline signatures (~35KB lightweight JSON files of folder path hashes and sizes) only when you explicitly click "Save Baseline Snapshot".
 
 ## Trade-offs
 - **Cons**: You have to run a scan when you open the app if you want fresh numbers.
