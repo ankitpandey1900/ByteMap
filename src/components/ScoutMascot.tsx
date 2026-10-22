@@ -1,4 +1,5 @@
 import React from 'react';
+import { Compass, ShieldCheck } from 'lucide-react';
 
 export interface ScoutAvatarProps {
   className?: string;
@@ -236,14 +237,18 @@ export const ScoutMascot: React.FC<ScoutMascotProps> = ({
       <div className="relative flex-1 min-w-0 z-10">
         {/* Status Badge Pill */}
         <div
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full border-2 border-slate-900 text-xs font-bangers uppercase tracking-wider mb-1 shadow-comic-sm ${
+          className={`inline-flex items-center pl-1.5 pr-2.5 py-0.5 rounded-full border-2 border-slate-900 text-xs font-bangers uppercase tracking-wider mb-1 shadow-comic-sm transition-colors ${
             isScanning
               ? 'bg-emerald-400 text-slate-900'
               : 'bg-sky-400 text-slate-900'
           }`}
         >
-          <span className={`mr-1 ${isScanning ? 'animate-spin' : ''}`}>
-            {isScanning ? '🧭' : '🛡️'}
+          <span className="w-4 h-4 rounded-full bg-white border border-slate-900 flex items-center justify-center mr-1.5 shrink-0 shadow-[1px_1px_0px_#0f172a]">
+            {isScanning ? (
+              <Compass className="w-2.5 h-2.5 text-slate-900 animate-spin" />
+            ) : (
+              <ShieldCheck className="w-2.5 h-2.5 text-slate-900 stroke-[3]" />
+            )}
           </span>
           {isScanning ? 'Active Scanning' : 'Scout Ready'}
         </div>

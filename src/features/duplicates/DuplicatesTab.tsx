@@ -86,7 +86,7 @@ export const DuplicatesTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 w-full select-none font-sans text-slate-900">
+    <div className="space-y-4 w-full font-sans text-slate-900">
       {/* Top Banner Card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
         <div>

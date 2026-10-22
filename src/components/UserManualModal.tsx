@@ -8,6 +8,10 @@ import {
   Keyboard,
   CheckCircle2,
   ExternalLink,
+  Target,
+  Zap,
+  BarChart3,
+  Trash2,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { ActiveTab } from '@/types';
@@ -49,6 +53,47 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     safetyTip: 'Everything moved through ByteMap goes straight to your Windows Recycle Bin first, so you can always restore anything if you change your mind.',
   },
   {
+    id: 'ide-caches',
+    category: 'dev',
+    badge: 'AI & IDE Caches 🤖',
+    badgeColor: 'bg-sky-400 text-slate-900',
+    title: 'AI models (Antigravity/Cursor), VS Code & package managers eating 25+ GB',
+    symptom:
+      'You code or run AI assistants, and your SSD is losing 20+ GB to invisible session caches, model weights, and package managers without any big files in Downloads.',
+    ankitsTake:
+      'Most disk tools only look at your regular Documents and Downloads. But modern developer tools (Google Antigravity, Cursor AI, VS Code, npm, pnpm, Cargo, pip) stash massive model weights, video session recordings, and unpacked tarballs in hidden user folders (.gemini, AppData, .cargo). I built the Coding & IDE Cache Purger so you can sweep them in 1 click without waiting for a full drive scan:',
+    solutionSteps: [
+      'Open the "Cleanup" tab in the top header.',
+      'Click the "Coding & IDE Caches" pill at the top.',
+      'Click the prominent "[ 🚀 Scan Developer Caches ]" button to audit your machine.',
+      'Filter by category badges: All Caches, AI & IDEs, Package Managers, or Build Systems.',
+      'Select what you want to remove and click "Purge Selected". All caches are 100% safe to clear and rebuild cleanly when you run your tools next time.',
+    ],
+    recommendedTab: 'cleanup',
+    tabActionLabel: 'Open Coding Cache Purger',
+    safetyTip: 'Purging IDE caches will never delete your source code or git repos; it only removes temporary download buffers, model weights, and session logs.',
+  },
+  {
+    id: 'drive-health',
+    category: 'emergency',
+    badge: 'Drive Health 📊',
+    badgeColor: 'bg-amber-400 text-slate-900',
+    title: 'Understanding Drive Health Badges: Safe, Rising, Heavy, and Critical',
+    symptom:
+      'You see status badges on your drives (🟢 SAFE, 🟡 RISING, ⚡ HEAVY, 🔥 CRITICAL) and want to know what they mean and when your SSD is in danger.',
+    ankitsTake:
+      'When Solid State Drives exceed 75% capacity, write speeds begin throttling and drive life decreases due to write amplification. I coded 4 clear operational stages so you know when to intervene:',
+    solutionSteps: [
+      'SAFE (0–49% used): Great health! Plenty of breathing room for Windows and applications.',
+      'RISING (50–74% used): Normal operational range. Good time to review old downloads if planning big game installs.',
+      'HEAVY (75–89% used): Warning territory! SSD wear increases. Open "Large Files" to prune obsolete media or archives.',
+      'CRITICAL (90%+ used): Danger zone! Windows updates and background paging will fail. Open "Cleanup" right away.',
+    ],
+    recommendedTab: 'drives',
+    tabActionLabel: 'Check Drives Health',
+    safetyTip: 'Always keep at least 15% free space on your boot drive so Windows TRIM and wear-leveling can maintain peak performance.',
+  },
+  {
     id: 'where-space-went',
     category: 'diff',
     badge: 'Time Machine ⏱️',
@@ -67,6 +112,26 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     recommendedTab: 'overview',
     tabActionLabel: 'Open Kingdom Overview',
     safetyTip: 'Snapshots are feather-light and saved locally in your app memory. Zero files are uploaded anywhere.',
+  },
+  {
+    id: 'live-sync',
+    category: 'cleanup',
+    badge: 'Live Sync ⚡',
+    badgeColor: 'bg-emerald-400 text-slate-900',
+    title: 'Instant Storage Synchronizer — No Waiting For 5-Minute Re-Scans',
+    symptom:
+      'In older disk tools, deleting a file meant waiting 5 minutes for the whole drive to re-scan just to see updated numbers.',
+    ankitsTake:
+      'I hate waiting for redundant scans. I engineered ByteMap\'s Live Storage Synchronizer so the moment you purge a file or cache, your drive gauges and charts update in memory with 0ms latency:',
+    solutionSteps: [
+      'Click "Clean Selected" in Cleanup or Developer Caches.',
+      'ByteMap\'s Rust background worker deletes the targets safely into your Windows Recycle Bin.',
+      'Your available space gauge increases and the pruned files disappear from memory immediately.',
+      'A green celebratory banner pops up at the top showing exactly how many megabytes were freed!',
+    ],
+    recommendedTab: 'overview',
+    tabActionLabel: 'View Kingdom Overview',
+    safetyTip: 'All storage calculations happen locally in RAM; zero data is sent to external servers.',
   },
   {
     id: 'duplicate-files',
@@ -145,6 +210,26 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     safetyTip: 'Pruning empty directories speeds up Windows search indexing and keeps your folder hierarchy organized.',
   },
   {
+    id: 'text-highlight',
+    category: 'hidden',
+    badge: 'Yellow Highlighter 🖍️',
+    badgeColor: 'bg-amber-300 text-slate-900',
+    title: 'How to Copy Paths with the Comic Yellow Highlighter',
+    symptom:
+      'You found a rogue file and want to copy its full path or jump directly to it in Windows File Explorer.',
+    ankitsTake:
+      'You do not need to manually re-type long folder paths. I enabled full text selection with a bold comic yellow marker so copying paths is effortless:',
+    solutionSteps: [
+      'Click and drag your mouse over any file path, size, or hash anywhere in ByteMap.',
+      'The text highlights in bright comic yellow with deep ink contrast.',
+      'Press Ctrl + C to copy it directly to your clipboard.',
+      'Or click the folder icon next to any file row to reveal and pre-select it directly in Windows File Explorer!',
+    ],
+    recommendedTab: 'explore',
+    tabActionLabel: 'Open Explorer Scout',
+    safetyTip: 'Clicking the folder icon uses the native Windows shell to reveal the file in its real folder.',
+  },
+  {
     id: 'html-report',
     category: 'hidden',
     badge: 'IT Audit Report 📑',
@@ -195,7 +280,7 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none backdrop-blur-xs font-sans text-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs font-sans text-slate-900">
       <div className="bg-white border-3 border-slate-900 rounded-3xl max-w-4xl w-full p-6 shadow-comic-xl flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header with Ankit's Creator Badge */}
         <div className="flex items-center justify-between pb-4 border-b-2.5 border-slate-900 shrink-0">
@@ -281,6 +366,96 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
 
         {/* Body Cards List */}
         <div className="flex-1 overflow-y-auto py-3 space-y-3.5 pr-1">
+          {/* Simple Visual App Workflow Diagram (From User's Perspective) */}
+          <div className="bg-gradient-to-r from-amber-50 via-sky-50 to-blue-50 border-2.5 border-slate-900 rounded-2xl p-4 shadow-comic space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center font-bangers text-sm shadow-comic-sm">
+                  🧭
+                </div>
+                <div>
+                  <h3 className="font-bangers text-lg uppercase tracking-wider text-slate-900 leading-none">
+                    How ByteMap Works — The 4-Step Recovery Workflow
+                  </h3>
+                  <p className="text-[11px] font-fredoka font-semibold text-slate-600 leading-none mt-1">
+                    Written by Ankit: Zero cloud uploads • 100% In-Memory Rust engine • Instant Recycle Bin recovery
+                  </p>
+                </div>
+              </div>
+
+              <span className="text-[10px] font-comic font-bold uppercase text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-900 shadow-comic-sm">
+                4 Simple Steps
+              </span>
+            </div>
+
+            {/* 4 Step Diagram Cards Grid with Connective Indicators */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-slate-900">
+              {/* Step 1 */}
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+                <div className="flex items-center justify-between">
+                  <span className="font-bangers text-[11px] text-amber-900 bg-amber-300 px-1.5 py-0.5 rounded border border-slate-900">
+                    STEP 01
+                  </span>
+                  <Target className="w-4 h-4 text-amber-600" />
+                </div>
+                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                  1. Pick Target
+                </h4>
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
+                  Choose your C: drive or browse to any folder (Downloads, games, or work repos) you want to investigate.
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+                <div className="flex items-center justify-between">
+                  <span className="font-bangers text-[11px] text-sky-900 bg-sky-300 px-1.5 py-0.5 rounded border border-slate-900">
+                    STEP 02
+                  </span>
+                  <Zap className="w-4 h-4 text-sky-600" />
+                </div>
+                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                  2. Hit Analyze
+                </h4>
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
+                  Multi-core Rust engine walks millions of files in RAM in seconds. Never spins your disk needlessly.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+                <div className="flex items-center justify-between">
+                  <span className="font-bangers text-[11px] text-purple-900 bg-purple-300 px-1.5 py-0.5 rounded border border-slate-900">
+                    STEP 03
+                  </span>
+                  <BarChart3 className="w-4 h-4 text-purple-600" />
+                </div>
+                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                  3. Spot Space Hogs
+                </h4>
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
+                  Giant interactive blocks & rankers reveal hidden gigabytes, obsolete installers, and duplicate clones.
+                </p>
+              </div>
+
+              {/* Step 4 */}
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+                <div className="flex items-center justify-between">
+                  <span className="font-bangers text-[11px] text-emerald-900 bg-emerald-300 px-1.5 py-0.5 rounded border border-slate-900">
+                    STEP 04
+                  </span>
+                  <Trash2 className="w-4 h-4 text-emerald-600" />
+                </div>
+                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                  4. Safe 1-Click Clean
+                </h4>
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
+                  Clean to Recycle Bin (undo anytime!), purge IDE/AI session caches, and watch space recover live!
+                </p>
+              </div>
+            </div>
+          </div>
+
           {filteredProblems.length > 0 ? (
             filteredProblems.map((p) => (
               <div

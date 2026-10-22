@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   FolderMinus,
   Trash2,
@@ -25,6 +25,14 @@ export const EmptyFoldersCard: React.FC<EmptyFoldersCardProps> = ({
   preferTrash,
   onCleanupComplete,
 }) => {
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isCleaning, setIsCleaning] = useState(false);
 
@@ -94,7 +102,9 @@ export const EmptyFoldersCard: React.FC<EmptyFoldersCardProps> = ({
     } catch (err) {
       console.error('Failed to prune empty items:', err);
     } finally {
-      setIsCleaning(false);
+      if (isMountedRef.current) {
+        setIsCleaning(false);
+      }
     }
   };
 

@@ -149,7 +149,7 @@ export const ExplorerTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-3 flex flex-col h-full w-full select-none font-sans text-slate-900 min-h-0">
+    <div className="space-y-3 flex flex-col h-full w-full font-sans text-slate-900 min-h-0">
       {/* Search and Filters comic toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border-3 border-slate-900 rounded-2xl shadow-[4px_4px_0px_#0f172a]">
         <div className="flex items-center space-x-3 flex-1 flex-wrap gap-2">

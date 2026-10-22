@@ -192,7 +192,7 @@ To answer *"Where did my disk space go overnight?"*:
 ByteMap includes a built-in cryptographic updater so you get notified when a new version drops:
 
 ```
-[ New Git Tag pushed (v1.0.7) ]
+[ New Git Tag pushed (v1.0.8) ]
               │
               ▼
 [ GitHub Actions Workflow ]

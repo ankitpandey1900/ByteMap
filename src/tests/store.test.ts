@@ -180,4 +180,26 @@ describe('useAppStore ephemeral state store', () => {
     expect(state.lastCleanupSummary?.freedBytes).toBe(40000);
     expect(state.lastCleanupSummary?.count).toBe(1);
   });
+
+  it('manages dev caches in store and removes purged caches on applyCleanupResult', () => {
+    const mockCache = {
+      id: 'cache-npm',
+      tool: 'npm',
+      tool_icon: 'package',
+      name: 'npm Cache',
+      description: 'Node package manager cache',
+      path: 'C:\\Users\\user\\AppData\\Local\\npm-cache',
+      size_bytes: 1024000,
+      file_count: 50,
+      safety_level: 'safe' as const,
+      safety_explanation: 'Safe to delete',
+    };
+
+    useAppStore.getState().setDevCaches([mockCache]);
+    expect(useAppStore.getState().devCaches?.length).toBe(1);
+
+    // Apply cleanup for this path
+    useAppStore.getState().applyCleanupResult(1024000, ['C:\\Users\\user\\AppData\\Local\\npm-cache']);
+    expect(useAppStore.getState().devCaches?.length).toBe(0);
+  });
 });

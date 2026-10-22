@@ -1,4 +1,5 @@
 import React from 'react';
+import { Zap, Flame, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export interface ComicStorageBarProps {
   percent: number;
@@ -16,6 +17,7 @@ export interface StorageStage {
   badgeBorder: string;
   stageName: string;
   stageEmoji: string;
+  icon: React.ReactNode;
 }
 
 export function getStorageStage(percent: number): StorageStage {
@@ -29,6 +31,7 @@ export function getStorageStage(percent: number): StorageStage {
       badgeBorder: 'border-slate-900',
       stageName: 'CRITICAL',
       stageEmoji: '🔥',
+      icon: <Flame className="w-3 h-3 text-white fill-white shrink-0" />,
     };
   }
 
@@ -40,6 +43,7 @@ export function getStorageStage(percent: number): StorageStage {
       badgeBorder: 'border-slate-900',
       stageName: 'HEAVY',
       stageEmoji: '⚡',
+      icon: <Zap className="w-3 h-3 text-slate-900 fill-slate-900 shrink-0" />,
     };
   }
 
@@ -51,6 +55,7 @@ export function getStorageStage(percent: number): StorageStage {
       badgeBorder: 'border-slate-900',
       stageName: 'RISING',
       stageEmoji: '🟡',
+      icon: <AlertTriangle className="w-3 h-3 text-slate-900 fill-amber-500 stroke-slate-900 stroke-[2] shrink-0" />,
     };
   }
 
@@ -61,6 +66,7 @@ export function getStorageStage(percent: number): StorageStage {
     badgeBorder: 'border-slate-900',
     stageName: 'SAFE',
     stageEmoji: '🟢',
+    icon: <CheckCircle2 className="w-3 h-3 text-slate-900 fill-emerald-200 stroke-slate-900 stroke-[2] shrink-0" />,
   };
 }
 
@@ -76,7 +82,7 @@ export const ComicStorageBar: React.FC<ComicStorageBarProps> = ({
   const visualWidth = Math.max(0, Math.min(100, percent));
 
   return (
-    <div className={`w-full flex flex-col gap-1.5 select-none ${className}`}>
+    <div className={`w-full flex flex-col gap-1.5 ${className}`}>
       {/* Top Header Row: Status badge + Label on left, Clean Mono percentage on right */}
       {(showLabel || showStatusBadge) && (
         <div className="flex items-center justify-between">
@@ -85,7 +91,7 @@ export const ComicStorageBar: React.FC<ComicStorageBarProps> = ({
               <span
                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bangers uppercase tracking-wider border-2 shadow-[1px_1px_0px_#0f172a] ${stage.badgeBg} ${stage.badgeText} ${stage.badgeBorder}`}
               >
-                <span>{stage.stageEmoji}</span>
+                {stage.icon}
                 <span>{stage.stageName}</span>
               </span>
             )}

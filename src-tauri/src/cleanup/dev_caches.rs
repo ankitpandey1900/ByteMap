@@ -1,5 +1,6 @@
 use crate::models::RiskLevel;
 use crate::security::PathValidator;
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -34,12 +35,24 @@ pub struct DevCacheCleanSummary {
     pub results: Vec<DevCacheCleanResult>,
 }
 
+#[derive(Debug, Clone)]
+pub struct CacheDescriptor {
+    pub id: &'static str,
+    pub tool: &'static str,
+    pub tool_icon: &'static str,
+    pub name: &'static str,
+    pub description: &'static str,
+    pub path: PathBuf,
+    pub safety_level: RiskLevel,
+    pub safety_explanation: &'static str,
+}
+
 pub struct DevCacheScanner;
 
 impl DevCacheScanner {
-    /// Discovers system-wide coding and IDE caches across known toolchain paths.
-    pub fn scan_system_caches() -> Vec<DevCacheItem> {
-        let mut items = Vec::new();
+    /// Builds the list of known toolchain and IDE cache directory candidates.
+    pub fn get_candidate_descriptors() -> Vec<CacheDescriptor> {
+        let mut descriptors = Vec::new();
 
         let home = dirs::home_dir();
         let appdata = dirs::data_dir(); // Roaming on Windows, Library/Application Support on macOS
@@ -48,328 +61,259 @@ impl DevCacheScanner {
 
         // 1. Google Antigravity IDE Caches
         if let Some(ref h) = home {
-            // Antigravity IDE brain, recordings, and logs
-            let ag_ide_brain = h.join(".gemini").join("antigravity-ide").join("brain");
-            if ag_ide_brain.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "antigravity_brain",
-                    "Antigravity IDE",
-                    "brain",
-                    "Session Brain, Transcripts & Media Recordings",
-                    "Temporary subagent screen captures, video recordings, scratch files, and trajectory logs.",
-                    &ag_ide_brain,
-                    RiskLevel::Safe,
-                    "Safe to purge. These are scratch recordings and temp logs from completed agent sessions.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "antigravity_brain",
+                tool: "Antigravity IDE",
+                tool_icon: "brain",
+                name: "Session Brain, Transcripts & Media Recordings",
+                description: "Temporary subagent screen captures, video recordings, scratch files, and trajectory logs.",
+                path: h.join(".gemini").join("antigravity-ide").join("brain"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "Safe to purge. These are scratch recordings and temp logs from completed agent sessions.",
+            });
 
-            // Antigravity Browser Profile & AI Model Weights
-            let ag_profile_model = h
-                .join(".gemini")
-                .join("antigravity-browser-profile")
-                .join("OptGuideOnDeviceModel");
-            if ag_profile_model.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "antigravity_model",
-                    "Antigravity IDE",
-                    "sparkles",
-                    "AI On-Device Model Weights (weights.bin)",
-                    "Offline Gemma/Gemini model weights cached for the in-browser subagent.",
-                    &ag_profile_model,
-                    RiskLevel::Safe,
-                    "Safe to remove. Weights will automatically re-download if on-device model feature is used.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "antigravity_model",
+                tool: "Antigravity IDE",
+                tool_icon: "sparkles",
+                name: "AI On-Device Model Weights (weights.bin)",
+                description: "Offline Gemma/Gemini model weights cached for the in-browser subagent.",
+                path: h.join(".gemini").join("antigravity-browser-profile").join("OptGuideOnDeviceModel"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "Safe to remove. Weights will automatically re-download if on-device model feature is used.",
+            });
 
-            // Antigravity Browser Profile Chromium Web Cache
-            let ag_profile_cache = h
-                .join(".gemini")
-                .join("antigravity-browser-profile")
-                .join("Default")
-                .join("Cache");
-            if ag_profile_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "antigravity_browser_cache",
-                    "Antigravity IDE",
-                    "globe",
-                    "Browser Subagent Chromium Web Cache",
-                    "HTTP disk cache, GPUCache, and IndexedDB blobs created during browser sessions.",
-                    &ag_profile_cache,
-                    RiskLevel::Safe,
-                    "100% safe to clear. Standard browser web cache.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "antigravity_browser_cache",
+                tool: "Antigravity IDE",
+                tool_icon: "globe",
+                name: "Browser Subagent Chromium Web Cache",
+                description: "HTTP disk cache, GPUCache, and IndexedDB blobs created during browser sessions.",
+                path: h.join(".gemini").join("antigravity-browser-profile").join("Default").join("Cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to clear. Standard browser web cache.",
+            });
         }
 
         // 2. VS Code Caches
         if let Some(ref ro) = appdata {
-            let code_cache = ro.join("Code").join("Cache");
-            if code_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "vscode_cache",
-                    "VS Code",
-                    "code",
-                    "HTTP & Network Cache",
-                    "Editor webview cache, downloaded extension assets, and update temporary files.",
-                    &code_cache,
-                    RiskLevel::Safe,
-                    "100% safe to clear. Does not touch code, workspace settings, or installed extensions.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "vscode_cache",
+                tool: "VS Code",
+                tool_icon: "code",
+                name: "HTTP & Network Cache",
+                description: "Editor webview cache, downloaded extension assets, and update temporary files.",
+                path: ro.join("Code").join("Cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to clear. Does not touch code, workspace settings, or installed extensions.",
+            });
 
-            let code_cached_data = ro.join("Code").join("CachedData");
-            if code_cached_data.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "vscode_cached_data",
-                    "VS Code",
-                    "code",
-                    "V8 Bytecode & Extension AST Cache",
+            descriptors.push(CacheDescriptor {
+                id: "vscode_cached_data",
+                tool: "VS Code",
+                tool_icon: "code",
+                name: "V8 Bytecode & Extension AST Cache",
+                description:
                     "Pre-compiled V8 JavaScript bytecode generated for fast VS Code startup.",
-                    &code_cached_data,
-                    RiskLevel::Safe,
-                    "Safe to purge. Rebuilds automatically on next editor launch.",
-                ) {
-                    items.push(item);
-                }
-            }
+                path: ro.join("Code").join("CachedData"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "Safe to purge. Rebuilds automatically on next editor launch.",
+            });
 
-            let code_workspace = ro.join("Code").join("User").join("workspaceStorage");
-            if code_workspace.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "vscode_workspace_storage",
-                    "VS Code",
-                    "folder-code",
-                    "Workspace Language Server Storage",
-                    "Indexed symbol ASTs, search cache, and TypeScript project states.",
-                    &code_workspace,
-                    RiskLevel::Low,
+            descriptors.push(CacheDescriptor {
+                id: "vscode_workspace_storage",
+                tool: "VS Code",
+                tool_icon: "folder-code",
+                name: "Workspace Language Server Storage",
+                description: "Indexed symbol ASTs, search cache, and TypeScript project states.",
+                path: ro.join("Code").join("User").join("workspaceStorage"),
+                safety_level: RiskLevel::Low,
+                safety_explanation:
                     "Safe to remove. Editor will re-index symbols next time you open a project.",
-                ) {
-                    items.push(item);
-                }
-            }
+            });
         }
 
         // 3. Cursor AI Editor Caches
         if let Some(ref ro) = appdata {
-            let cursor_cache = ro.join("Cursor").join("Cache");
-            if cursor_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "cursor_cache",
-                    "Cursor AI",
-                    "sparkles",
-                    "Cursor Editor Web & Model Cache",
+            descriptors.push(CacheDescriptor {
+                id: "cursor_cache",
+                tool: "Cursor AI",
+                tool_icon: "sparkles",
+                name: "Cursor Editor Web & Model Cache",
+                description:
                     "AI completions cache, extension assets, and temporary editor session state.",
-                    &cursor_cache,
-                    RiskLevel::Safe,
-                    "100% safe to purge.",
-                ) {
-                    items.push(item);
-                }
-            }
+                path: ro.join("Cursor").join("Cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to purge.",
+            });
 
-            let cursor_workspace = ro.join("Cursor").join("User").join("workspaceStorage");
-            if cursor_workspace.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "cursor_workspace_storage",
-                    "Cursor AI",
-                    "code",
-                    "Cursor Workspace & Symbol Index",
-                    "Project-specific embeddings and language server caches.",
-                    &cursor_workspace,
-                    RiskLevel::Low,
-                    "Safe to purge. Re-indexes when projects are opened.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "cursor_workspace_storage",
+                tool: "Cursor AI",
+                tool_icon: "code",
+                name: "Cursor Workspace & Symbol Index",
+                description: "Project-specific embeddings and language server caches.",
+                path: ro.join("Cursor").join("User").join("workspaceStorage"),
+                safety_level: RiskLevel::Low,
+                safety_explanation: "Safe to purge. Re-indexes when projects are opened.",
+            });
         }
 
         // 4. Node.js & Package Managers (npm, pnpm, yarn, bun)
         if let Some(ref loc) = local_appdata {
-            let npm_cache = loc.join("npm-cache");
-            if npm_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "npm_cache",
-                    "npm",
-                    "package",
-                    "Global npm Tarball Cache",
-                    "Cached `.tgz` tarballs of packages downloaded via `npm install`.",
-                    &npm_cache,
-                    RiskLevel::Safe,
-                    "100% safe to purge (equivalent to `npm cache clean --force`). Packages re-download if requested.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "npm_cache",
+                tool: "npm",
+                tool_icon: "package",
+                name: "Global npm Tarball Cache",
+                description: "Cached `.tgz` tarballs of packages downloaded via `npm install`.",
+                path: loc.join("npm-cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to purge (equivalent to `npm cache clean --force`). Packages re-download if requested.",
+            });
 
-            let pnpm_cache = loc.join("pnpm-cache");
-            if pnpm_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "pnpm_cache",
-                    "pnpm",
-                    "package",
-                    "pnpm Download Cache",
-                    "HTTP response cache and downloaded package metadata for pnpm.",
-                    &pnpm_cache,
-                    RiskLevel::Safe,
-                    "100% safe to delete. Does not corrupt project node_modules or global store hard links.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "pnpm_cache",
+                tool: "pnpm",
+                tool_icon: "package",
+                name: "pnpm Download Cache",
+                description: "HTTP response cache and downloaded package metadata for pnpm.",
+                path: loc.join("pnpm-cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to delete. Does not corrupt project node_modules or global store hard links.",
+            });
 
-            let yarn_cache = loc.join("Yarn").join("Cache");
-            if yarn_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "yarn_cache",
-                    "Yarn",
-                    "package",
-                    "Yarn v1/v2 Package Cache",
-                    "Cached package archives stored from yarn installations.",
-                    &yarn_cache,
-                    RiskLevel::Safe,
-                    "100% safe to purge.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "yarn_cache",
+                tool: "Yarn",
+                tool_icon: "package",
+                name: "Yarn v1/v2 Package Cache",
+                description: "Cached package archives stored from yarn installations.",
+                path: loc.join("Yarn").join("Cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to purge.",
+            });
         }
 
         // Unix/macOS package caches
         if let Some(ref c) = cache_dir {
-            let npm_unix = c.join("npm");
-            if npm_unix.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "npm_unix_cache",
-                    "npm",
-                    "package",
-                    "npm HTTP Cache",
-                    "Package tarballs and registry cache.",
-                    &npm_unix,
-                    RiskLevel::Safe,
-                    "Safe to purge.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "npm_unix_cache",
+                tool: "npm",
+                tool_icon: "package",
+                name: "npm HTTP Cache",
+                description: "Package tarballs and registry cache.",
+                path: c.join("npm"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "Safe to purge.",
+            });
         }
 
         // 5. Rust / Cargo Cache
         if let Some(ref h) = home {
-            let cargo_cache = h.join(".cargo").join("registry").join("cache");
-            if cargo_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "cargo_cache",
-                    "Rust Cargo",
-                    "cpu",
-                    "Cargo Downloaded .crate Archives",
-                    "Gzipped source tarballs of crates downloaded from crates.io.",
-                    &cargo_cache,
-                    RiskLevel::Safe,
-                    "100% safe to purge. Does not touch your project code or compiled binaries; Cargo will re-download on build if missing.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "cargo_cache",
+                tool: "Rust Cargo",
+                tool_icon: "cpu",
+                name: "Cargo Downloaded .crate Archives",
+                description: "Gzipped source tarballs of crates downloaded from crates.io.",
+                path: h.join(".cargo").join("registry").join("cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to purge. Does not touch your project code or compiled binaries; Cargo will re-download on build if missing.",
+            });
         }
 
         // 6. Python / pip / uv
         if let Some(ref loc) = local_appdata {
-            let pip_cache = loc.join("pip").join("cache");
-            if pip_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "pip_cache",
-                    "Python pip",
-                    "terminal",
-                    "Python Wheel & Source Cache",
-                    "Downloaded `.whl` and `.tar.gz` distribution wheels from PyPI.",
-                    &pip_cache,
-                    RiskLevel::Safe,
-                    "100% safe to purge (equivalent to `pip cache purge`).",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "pip_cache",
+                tool: "Python pip",
+                tool_icon: "terminal",
+                name: "Python Wheel & Source Cache",
+                description: "Downloaded `.whl` and `.tar.gz` distribution wheels from PyPI.",
+                path: loc.join("pip").join("cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to purge (equivalent to `pip cache purge`).",
+            });
 
-            let uv_cache = loc.join("uv").join("cache");
-            if uv_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "uv_cache",
-                    "Astral uv",
-                    "terminal",
-                    "Fast Python Package Cache",
-                    "Pre-built virtualenv artifacts and wheel cache.",
-                    &uv_cache,
-                    RiskLevel::Safe,
-                    "100% safe to purge.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "uv_cache",
+                tool: "Astral uv",
+                tool_icon: "terminal",
+                name: "Fast Python Package Cache",
+                description: "Pre-built virtualenv artifacts and wheel cache.",
+                path: loc.join("uv").join("cache"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to purge.",
+            });
         }
 
         // 7. Java / Gradle / Maven Caches
         if let Some(ref h) = home {
-            let gradle_cache = h.join(".gradle").join("caches");
-            if gradle_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "gradle_cache",
-                    "Gradle",
-                    "coffee",
-                    "Gradle Dependency & Wrapper Cache",
-                    "Downloaded JAR dependencies, Gradle distribution wrappers, and build task output hashes.",
-                    &gradle_cache,
-                    RiskLevel::Safe,
-                    "Safe to purge. Gradle will re-download required dependencies on the next project build.",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "gradle_cache",
+                tool: "Gradle",
+                tool_icon: "coffee",
+                name: "Gradle Dependency & Wrapper Cache",
+                description: "Downloaded JAR dependencies, Gradle distribution wrappers, and build task output hashes.",
+                path: h.join(".gradle").join("caches"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "Safe to purge. Gradle will re-download required dependencies on the next project build.",
+            });
 
-            let m2_repo = h.join(".m2").join("repository");
-            if m2_repo.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "maven_cache",
-                    "Maven",
-                    "coffee",
-                    "Maven Local Artifact Repository",
-                    "Downloaded Java dependency libraries and POM descriptors.",
-                    &m2_repo,
-                    RiskLevel::Low,
+            descriptors.push(CacheDescriptor {
+                id: "maven_cache",
+                tool: "Maven",
+                tool_icon: "coffee",
+                name: "Maven Local Artifact Repository",
+                description: "Downloaded Java dependency libraries and POM descriptors.",
+                path: h.join(".m2").join("repository"),
+                safety_level: RiskLevel::Low,
+                safety_explanation:
                     "Safe to purge. Cleaned artifacts will re-fetch from central repositories.",
-                ) {
-                    items.push(item);
-                }
-            }
+            });
         }
 
         // 8. Go Build Cache
         if let Some(ref loc) = local_appdata {
-            let go_cache = loc.join("go-build");
-            if go_cache.exists() {
-                if let Some(item) = Self::inspect_cache_dir(
-                    "go_cache",
-                    "Go Toolchain",
-                    "binary",
-                    "Go Build & Test Cache",
-                    "Compiled object packages and test results.",
-                    &go_cache,
-                    RiskLevel::Safe,
-                    "100% safe to clear (equivalent to `go clean -cache`).",
-                ) {
-                    items.push(item);
-                }
-            }
+            descriptors.push(CacheDescriptor {
+                id: "go_cache",
+                tool: "Go Toolchain",
+                tool_icon: "binary",
+                name: "Go Build & Test Cache",
+                description: "Compiled object packages and test results.",
+                path: loc.join("go-build"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to clear (equivalent to `go clean -cache`).",
+            });
         }
+
+        descriptors
+    }
+
+    /// Discovers system-wide coding and IDE caches across known toolchain paths concurrently using Rayon.
+    pub fn scan_system_caches() -> Vec<DevCacheItem> {
+        let candidates = Self::get_candidate_descriptors();
+
+        let mut items: Vec<DevCacheItem> = candidates
+            .into_par_iter()
+            .filter_map(|c| {
+                if c.path.exists() {
+                    Self::inspect_cache_dir(
+                        c.id,
+                        c.tool,
+                        c.tool_icon,
+                        c.name,
+                        c.description,
+                        &c.path,
+                        c.safety_level,
+                        c.safety_explanation,
+                    )
+                } else {
+                    None
+                }
+            })
+            .collect();
 
         // Sort largest caches first
         items.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
@@ -406,7 +350,7 @@ impl DevCacheScanner {
         })
     }
 
-    /// Recursively calculates total byte size and file count of a directory.
+    /// Recursively calculates total byte size and file count of a directory without blocking metadata calls.
     pub fn calculate_dir_stats(path: &Path) -> (u64, u64) {
         let mut total_bytes = 0;
         let mut file_count = 0;
@@ -416,12 +360,14 @@ impl DevCacheScanner {
             if let Ok(entries) = std::fs::read_dir(&current_dir) {
                 for entry_res in entries {
                     if let Ok(entry) = entry_res {
-                        if let Ok(meta) = entry.metadata() {
-                            if meta.is_dir() {
+                        if let Ok(file_type) = entry.file_type() {
+                            if file_type.is_dir() {
                                 stack.push(entry.path());
-                            } else if meta.is_file() {
-                                total_bytes += meta.len();
-                                file_count += 1;
+                            } else if file_type.is_file() {
+                                if let Ok(meta) = entry.metadata() {
+                                    total_bytes += meta.len();
+                                    file_count += 1;
+                                }
                             }
                         }
                     }
@@ -432,28 +378,29 @@ impl DevCacheScanner {
         (total_bytes, file_count)
     }
 
-    /// Purges the specified cache targets safely.
+    /// Purges ONLY the specified cache targets safely without re-scanning untouched caches.
     pub fn clean_cache_targets(target_ids: &[String], prefer_trash: bool) -> DevCacheCleanSummary {
-        let all_available = Self::scan_system_caches();
         let target_set: std::collections::HashSet<&str> =
             target_ids.iter().map(|s| s.as_str()).collect();
+
+        let candidates = Self::get_candidate_descriptors();
+        let target_candidates: Vec<CacheDescriptor> = candidates
+            .into_iter()
+            .filter(|c| target_set.contains(c.id))
+            .collect();
 
         let mut total_freed_bytes = 0;
         let mut successful_count = 0;
         let mut failed_count = 0;
         let mut results = Vec::new();
 
-        for item in all_available {
-            if !target_set.contains(item.id.as_str()) {
-                continue;
-            }
-
-            let path = PathBuf::from(&item.path);
+        for desc in target_candidates {
+            let path = desc.path;
             if !path.exists() {
                 failed_count += 1;
                 results.push(DevCacheCleanResult {
-                    id: item.id,
-                    path: item.path,
+                    id: desc.id.to_string(),
+                    path: path.to_string_lossy().to_string(),
                     success: false,
                     bytes_freed: 0,
                     error: Some("Path no longer exists".to_string()),
@@ -465,8 +412,8 @@ impl DevCacheScanner {
             if PathValidator::is_protected_system_path(&path) {
                 failed_count += 1;
                 results.push(DevCacheCleanResult {
-                    id: item.id,
-                    path: item.path,
+                    id: desc.id.to_string(),
+                    path: path.to_string_lossy().to_string(),
                     success: false,
                     bytes_freed: 0,
                     error: Some("Protected system path cannot be purged".to_string()),
@@ -474,7 +421,7 @@ impl DevCacheScanner {
                 continue;
             }
 
-            let freed = item.size_bytes;
+            let (freed, _) = Self::calculate_dir_stats(&path);
             let op_res = if prefer_trash {
                 trash::delete(&path).map_err(|e| format!("Recycle bin deletion failed: {}", e))
             } else {
@@ -487,8 +434,8 @@ impl DevCacheScanner {
                     successful_count += 1;
                     total_freed_bytes += freed;
                     results.push(DevCacheCleanResult {
-                        id: item.id,
-                        path: item.path,
+                        id: desc.id.to_string(),
+                        path: path.to_string_lossy().to_string(),
                         success: true,
                         bytes_freed: freed,
                         error: None,
@@ -497,8 +444,8 @@ impl DevCacheScanner {
                 Err(err_msg) => {
                     failed_count += 1;
                     results.push(DevCacheCleanResult {
-                        id: item.id,
-                        path: item.path,
+                        id: desc.id.to_string(),
+                        path: path.to_string_lossy().to_string(),
                         success: false,
                         bytes_freed: 0,
                         error: Some(err_msg),

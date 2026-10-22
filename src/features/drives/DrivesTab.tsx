@@ -37,12 +37,9 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
   };
 
   return (
-    <div className="space-y-4 w-full select-none font-sans text-slate-900">
+    <div className="space-y-4 w-full font-sans text-slate-900">
       {/* Header bar card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3 relative overflow-hidden">
-        {/* Crosshatch texture */}
-        <div className="absolute inset-0 bg-comic-crosshatch pointer-events-none rounded-2xl" />
-
         <div className="relative">
           <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-1">
             <HardDrive className="w-3.5 h-3.5 stroke-[2.5]" />

@@ -74,7 +74,7 @@ export const FileTypesTab: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 w-full select-none font-sans text-slate-900">
+    <div className="space-y-4 w-full font-sans text-slate-900">
       {/* Top Banner Card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic">
         <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 mb-1">

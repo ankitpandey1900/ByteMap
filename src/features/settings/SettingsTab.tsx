@@ -78,7 +78,7 @@ export const SettingsTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 w-full max-w-5xl mx-auto select-none font-sans text-slate-900 pb-10">
+    <div className="space-y-4 w-full max-w-5xl mx-auto font-sans text-slate-900 pb-10">
       {/* Top Banner */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3">
         <div>

@@ -37,8 +37,8 @@ const features: FeatureCard[] = [
     badge: 'Where Did Space Go?',
     badgeColor: 'bg-amber-400',
     description:
-      'Takes lightweight baseline snapshots of directory sizes and compares them over time. Caught 20GB vanishing overnight? ByteMap flags every swollen directory with >5MB delta.',
-    highlight: 'Instantly spots hidden Windows update and game bloat',
+      'Takes lightweight baseline snapshots with responsive date range filtering and interactive growth charts. Caught 20GB vanishing overnight? ByteMap flags every swollen directory with diverging visual deltas.',
+    highlight: 'Interactive timeline charts & date filters pinpoint bloat',
   },
   {
     icon: <EyeOff className="w-6 h-6 text-slate-900" />,

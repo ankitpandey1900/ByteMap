@@ -58,14 +58,14 @@ pub async fn start_scan(
     sanitized_options.root_path = validated_root.to_string_lossy().to_string();
 
     let app_clone = app.clone();
-    let scan_res = std::thread::spawn(move || {
+    let scan_res = tauri::async_runtime::spawn_blocking(move || {
         let res = Scanner::scan(sanitized_options, cancel_token, |prog| {
             let _ = app_clone.emit("scan_progress", &prog);
         });
         is_scanning.store(false, Ordering::SeqCst);
         res
     })
-    .join()
+    .await
     .map_err(|_| AppError::General("Scan thread panicked".to_string()))?;
 
     match scan_res {
@@ -150,12 +150,12 @@ pub async fn find_duplicates(
     cancel_token.store(false, Ordering::SeqCst);
 
     let app_clone = app.clone();
-    let dup_res = std::thread::spawn(move || {
+    let dup_res = tauri::async_runtime::spawn_blocking(move || {
         DuplicateDetector::find_duplicates(&files, cancel_token, |processed, total| {
             let _ = app_clone.emit("duplicate_progress", (processed, total));
         })
     })
-    .join()
+    .await
     .map_err(|_| AppError::General("Duplicate detection thread panicked".to_string()))??;
 
     // Update in-memory scan summary with detected duplicates
@@ -174,7 +174,7 @@ pub struct CleanupTargetRequest {
 }
 
 #[tauri::command]
-pub fn execute_cleanup(
+pub async fn execute_cleanup(
     state: State<'_, AppScanState>,
     targets: Vec<CleanupTargetRequest>,
     prefer_trash: bool,
@@ -185,13 +185,17 @@ pub fn execute_cleanup(
         summary.root_path.clone()
     };
 
-    let root_path = Path::new(&root_path_str);
     let target_tuples: Vec<(String, Option<u64>)> = targets
         .into_iter()
         .map(|t| (t.path, t.expected_size))
         .collect();
 
-    let summary = CleanupExecutor::execute_cleanup(&target_tuples, root_path, prefer_trash);
+    let summary = tauri::async_runtime::spawn_blocking(move || {
+        let root_path = Path::new(&root_path_str);
+        CleanupExecutor::execute_cleanup(&target_tuples, root_path, prefer_trash)
+    })
+    .await
+    .map_err(|e| AppError::General(format!("Cleanup execution panicked: {}", e)))?;
 
     // Refresh affected statistics in memory
     let mut lock = state.current_summary.lock().unwrap();
@@ -294,17 +298,20 @@ pub fn save_settings(settings: AppSettings) -> Result<(), AppError> {
 }
 
 #[tauri::command]
-pub fn scan_dev_caches() -> Vec<DevCacheItem> {
-    DevCacheScanner::scan_system_caches()
+pub async fn scan_dev_caches() -> Result<Vec<DevCacheItem>, AppError> {
+    tauri::async_runtime::spawn_blocking(DevCacheScanner::scan_system_caches)
+        .await
+        .map_err(|e| AppError::General(format!("Background dev cache scan failed: {}", e)))
 }
 
 #[tauri::command]
-pub fn clean_dev_caches(
+pub async fn clean_dev_caches(
     target_ids: Vec<String>,
     prefer_trash: bool,
 ) -> Result<DevCacheCleanSummary, AppError> {
-    Ok(DevCacheScanner::clean_cache_targets(
-        &target_ids,
-        prefer_trash,
-    ))
+    tauri::async_runtime::spawn_blocking(move || {
+        DevCacheScanner::clean_cache_targets(&target_ids, prefer_trash)
+    })
+    .await
+    .map_err(|e| AppError::General(format!("Background dev cache cleanup failed: {}", e)))
 }

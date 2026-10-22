@@ -3,6 +3,7 @@ import { api } from '@/lib/api';
 import {
   ActiveTab,
   AppSettings,
+  DevCacheItem,
   DriveInfo,
   FileCategory,
   ScanOptions,
@@ -55,6 +56,13 @@ interface AppState {
   refreshDrives: () => Promise<void>;
   lastCleanupSummary: { freedBytes: number; count: number; timestamp: number } | null;
   clearLastCleanupSummary: () => void;
+
+  // Developer Toolchain Caches (Manual on-demand scan with store cache)
+  devCaches: DevCacheItem[] | null;
+  isScanningDevCaches: boolean;
+  setDevCaches: (caches: DevCacheItem[] | null) => void;
+  setIsScanningDevCaches: (isScanning: boolean) => void;
+  scanDevCachesAction: () => Promise<DevCacheItem[]>;
 
   // Settings
   settings: AppSettings;
@@ -294,11 +302,20 @@ export const useAppStore = create<AppState>((set) => ({
         )
       );
 
+      // 4. Update cached devCaches in store
+      let updatedDevCaches = state.devCaches;
+      if (updatedDevCaches) {
+        updatedDevCaches = updatedDevCaches.filter(
+          (c) => !deletedSet.has(c.path.toLowerCase()) && !isPathDeleted(c.path)
+        );
+      }
+
       return {
         drives: updatedDrives,
         selectedDrive: updatedSelectedDrive,
         scanSummary: updatedSummary,
         selectedCleanupIds: updatedSelectedCleanupIds,
+        devCaches: updatedDevCaches,
         lastCleanupSummary: {
           freedBytes,
           count: deletedPaths.length,
@@ -307,7 +324,7 @@ export const useAppStore = create<AppState>((set) => ({
       };
     });
 
-    // 4. Background re-query real OS drives via sysinfo for bit-perfect accuracy
+    // 5. Background re-query real OS drives via sysinfo for bit-perfect accuracy
     api
       .getDrives()
       .then((freshDrives) => {
@@ -328,6 +345,23 @@ export const useAppStore = create<AppState>((set) => ({
         });
       })
       .catch((err) => console.error('Background drive refresh error:', err));
+  },
+
+  // Developer Toolchain Caches state & manual scan action
+  devCaches: null,
+  isScanningDevCaches: false,
+  setDevCaches: (caches) => set({ devCaches: caches }),
+  setIsScanningDevCaches: (isScanning) => set({ isScanningDevCaches: isScanning }),
+  scanDevCachesAction: async () => {
+    set({ isScanningDevCaches: true });
+    try {
+      const items = await api.scanDevCaches();
+      set({ devCaches: items, isScanningDevCaches: false });
+      return items;
+    } catch (err) {
+      set({ isScanningDevCaches: false });
+      throw err;
+    }
   },
 
   settings: defaultSettings,

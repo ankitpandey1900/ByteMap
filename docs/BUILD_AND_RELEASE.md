@@ -42,7 +42,7 @@ Once the build finishes, your installer files are located at:
 
 Official releases are automated through GitHub Actions (`.github/workflows/release.yml`):
 
-1. **Trigger**: Pushing a version tag (e.g. `git tag -a v1.0.7 -m "Release v1.0.7" && git push origin v1.0.7`).
+1. **Trigger**: Pushing a version tag (e.g. `git tag -a v1.0.8 -m "Release v1.0.8" && git push origin v1.0.8`).
 2. **Matrix Build**:
    - `windows-latest`: Builds Windows NSIS setup (`.exe`), MSI package (`.msi`), and updater tarballs.
    - `macos-latest`: Builds macOS Universal `.dmg` (compiling both `aarch64-apple-darwin` and `x86_64-apple-darwin` into a single universal binary) and `.app.tar.gz` updater bundles.

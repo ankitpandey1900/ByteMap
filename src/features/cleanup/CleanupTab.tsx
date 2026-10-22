@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Trash2,
   AlertTriangle,
@@ -35,6 +35,14 @@ export const CleanupTab: React.FC = () => {
     applyCleanupResult,
   } = useAppStore();
 
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const [cleanupView, setCleanupView] = useState<'dev_caches' | 'junk' | 'dev' | 'empty'>('dev_caches');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [isExecuting, setIsExecuting] = useState(false);
@@ -70,7 +78,9 @@ export const CleanupTab: React.FC = () => {
       }));
 
       const res = await api.executeCleanup(targets, settings.prefer_trash);
-      setLastResult(res);
+      if (isMountedRef.current) {
+        setLastResult(res);
+      }
       clearCleanupSelection();
 
       // LIVE STORAGE SYNCHRONIZER: Update storage gauges & metrics immediately!
@@ -79,7 +89,9 @@ export const CleanupTab: React.FC = () => {
     } catch (err) {
       console.error('Cleanup execution failed:', err);
     } finally {
-      setIsExecuting(false);
+      if (isMountedRef.current) {
+        setIsExecuting(false);
+      }
     }
   };
 
@@ -130,7 +142,7 @@ export const CleanupTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 w-full select-none font-sans text-slate-900">
+    <div className="space-y-4 w-full font-sans text-slate-900">
       {/* Top Banner Card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -209,7 +221,7 @@ export const CleanupTab: React.FC = () => {
           }`}
         >
           <Sparkles className="w-4 h-4 text-sky-800" />
-          <span>⚡ Coding & IDE Caches</span>
+          <span>Coding & IDE Caches</span>
         </button>
 
         <button
@@ -283,7 +295,7 @@ export const CleanupTab: React.FC = () => {
             Drive Scout Not Performed
           </h3>
           <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
-            Click <strong>ANALYZE</strong> to scout your drive and detect safe reclaimable files, obsolete installers, and temp files. Or switch to <strong>⚡ Coding & IDE Caches</strong> above to purge developer caches right away.
+            Click <strong>ANALYZE</strong> to scout your drive and detect safe reclaimable files, obsolete installers, and temp files. Or switch to <strong>Coding & IDE Caches</strong> above to purge developer caches right away.
           </p>
         </div>
       )}

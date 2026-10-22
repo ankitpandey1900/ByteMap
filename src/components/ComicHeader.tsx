@@ -33,7 +33,7 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
   ];
 
   return (
-    <header className="px-4 py-2.5 border-b-3 border-slate-900 bg-sky-400 select-none shadow-comic-sm relative overflow-hidden">
+    <header className="px-3 sm:px-4 py-2 border-b-3 border-slate-900 bg-sky-400 select-none shadow-comic-sm relative shrink-0">
       {/* Subtle halftone dot background texture */}
       <div className="absolute inset-0 bg-comic-dots opacity-25 pointer-events-none" />
 
@@ -41,7 +41,7 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
         {/* Left: Mascot Badge + Comic 3D "BYTEMAP" Logo */}
         <div
           onClick={() => setActiveTab('overview')}
-          className="flex items-center space-x-2.5 cursor-pointer group"
+          className="flex items-center space-x-2.5 cursor-pointer group shrink-0"
           title="Return to Digital Kingdom Overview"
         >
           {/* Mascot Logo Badge with solid comic ink shadow on hover */}
@@ -65,7 +65,7 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
         </div>
 
         {/* Center: Comic Navigation Tabs */}
-        <nav className="flex items-center space-x-1.5 flex-wrap">
+        <nav className="flex items-center gap-1.5 flex-wrap">
           {navItems.map((item) => {
             const isActive = activeTab === item.tab;
             return (
@@ -86,7 +86,7 @@ export const ComicHeader: React.FC<ComicHeaderProps> = ({ onOpenScanModal }) => 
         </nav>
 
         {/* Right: UI Zoom Control + Author Portfolio Button + Big Analyze Action Button */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           {/* Visual Zoom Pill Control */}
           <div
             className="flex items-center space-x-1 px-1.5 py-1 rounded-xl border-2 border-slate-900 bg-white shadow-comic-sm"

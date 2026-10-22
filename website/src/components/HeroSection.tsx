@@ -5,9 +5,9 @@ import { GithubIcon } from './GithubIcon';
 export const HeroSection: React.FC = () => {
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
-  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.7/ByteMap_1.0.7_x64-setup.exe');
-  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.7/ByteMap_1.0.7_universal.dmg');
-  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.7/ByteMap_1.0.7_x64_en-US.msi');
+  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.8/ByteMap_1.0.8_x64-setup.exe');
+  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.8/ByteMap_1.0.8_universal.dmg');
+  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.8/ByteMap_1.0.8_x64_en-US.msi');
 
   useEffect(() => {
     // 1. Fetch live GitHub Release download metrics
@@ -105,7 +105,7 @@ export const HeroSection: React.FC = () => {
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
             <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
-            <span>Windows & macOS Desktop Storage Intelligence • v1.0.7</span>
+            <span>Windows & macOS Desktop Storage Intelligence • v1.0.8</span>
           </div>
           {visitorCount !== null && (
             <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 hover:-translate-y-0.5 transition-transform cursor-default" title="Total visitors who explored ByteMap">

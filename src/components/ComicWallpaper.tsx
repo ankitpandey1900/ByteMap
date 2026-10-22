@@ -2,14 +2,11 @@ import React from 'react';
 
 export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#38bdf8] flex flex-col p-1.5 sm:p-2 md:p-2.5 select-none">
+    <div className="relative w-full h-full overflow-hidden bg-[#38bdf8] flex flex-col p-1 sm:p-1.5 md:p-2 min-h-0 min-w-0">
       {/* Background Effects Layer */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Authentic Ben-Day halftone print dots overlay — flat retro newsprint style */}
         <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:16px_16px]" />
-
-        {/* Subtle speed lines radiating from top-left */}
-        <div className="absolute inset-0 opacity-[0.06] comic-speed-lines" />
 
         {/* Floating cloud — left, gently bouncing */}
         <div className="absolute top-6 left-6 opacity-90 animate-comic-float">
@@ -75,29 +72,9 @@ export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ childr
       </div>
 
       {/* Main ByteMap Window Container */}
-      <div className="relative z-10 flex-1 flex flex-col rounded-2xl border-3 border-slate-900 bg-slate-100 dark:bg-slate-950 shadow-comic-xl overflow-hidden min-h-0">
-        {/* macOS Style Window Frame Top Bar */}
-        <div className="h-7 bg-slate-200 dark:bg-slate-900 border-b-2 border-slate-900 px-3 flex items-center justify-between shrink-0 select-none">
-          {/* Window Traffic Lights with hover effects */}
-          <div className="flex items-center space-x-2 group">
-            <span className="w-3 h-3 rounded-full bg-red-500 border border-slate-900 inline-block shadow-sm group-hover:scale-110 transition-transform" />
-            <span className="w-3 h-3 rounded-full bg-amber-400 border border-slate-900 inline-block shadow-sm group-hover:scale-110 transition-transform" />
-            <span className="w-3 h-3 rounded-full bg-emerald-500 border border-slate-900 inline-block shadow-sm group-hover:scale-110 transition-transform" />
-          </div>
-
-          {/* Window Title */}
-          <div className="font-comic text-xs tracking-wider text-slate-700 dark:text-slate-300 uppercase flex items-center space-x-1.5">
-            <span>✦</span>
-            <span>ByteMap — Storage Intelligence</span>
-            <span>✦</span>
-          </div>
-
-          {/* Spacer */}
-          <div className="w-12" />
-        </div>
-
-        {/* Inner App Content */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="relative z-10 flex-1 flex flex-col rounded-2xl border-3 border-slate-900 bg-slate-100 dark:bg-slate-950 shadow-comic-xl overflow-hidden min-h-0 min-w-0">
+        {/* Inner App Content (Clean full height without fake titlebar) */}
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
           {children}
         </div>
       </div>

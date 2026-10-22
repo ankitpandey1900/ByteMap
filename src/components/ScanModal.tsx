@@ -190,7 +190,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
           <span className="font-comic text-xs uppercase tracking-wide text-slate-800">
             Scanning Options
           </span>
-          <div className="space-y-2.5 bg-amber-50 p-3.5 rounded-xl border-2 border-slate-900 text-xs font-fredoka font-bold shadow-comic-sm bg-comic-crosshatch">
+          <div className="space-y-2.5 bg-amber-50 p-3.5 rounded-xl border-2 border-slate-900 text-xs font-fredoka font-bold shadow-comic-sm">
             <label className="flex items-center space-x-2.5 cursor-pointer group">
               <input
                 type="checkbox"

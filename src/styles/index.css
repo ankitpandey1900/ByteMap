@@ -116,6 +116,27 @@ svg text {
 }
 
 /* =============================================
+   VIBRANT COMIC TEXT SELECTION HIGHLIGHT
+   ============================================= */
+::selection {
+  background-color: #facc15;
+  color: #0f172a;
+  text-shadow: none;
+}
+
+::-moz-selection {
+  background-color: #facc15;
+  color: #0f172a;
+  text-shadow: none;
+}
+
+/* Prevent accidental text highlight on interactive buttons and mascots */
+button, [role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* =============================================
    COMIC / POP-ART ADVENTURE STYLE SYSTEM
    ============================================= */
 
@@ -135,34 +156,14 @@ svg text {
   background-size: 8px 8px;
 }
 
-/* Retro diagonal screentone stripes */
+/* Retro diagonal screentone stripes - Cleaned up per user request */
 .bg-comic-stripes {
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 10px,
-    rgba(15, 23, 42, 0.05) 10px,
-    rgba(15, 23, 42, 0.05) 20px
-  );
+  background-image: none !important;
 }
 
-/* Cross-hatch comic texture */
+/* Cross-hatch comic texture - Cleaned up per user request */
 .bg-comic-crosshatch {
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 6px,
-      rgba(15, 23, 42, 0.04) 6px,
-      rgba(15, 23, 42, 0.04) 7px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 6px,
-      rgba(15, 23, 42, 0.04) 6px,
-      rgba(15, 23, 42, 0.04) 7px
-    );
+  background-image: none !important;
 }
 
 
@@ -303,14 +304,9 @@ svg text {
   background-size: 10px 10px;
 }
 
-/* Retro comic speed lines overlay */
+/* Retro comic speed lines overlay - Neutralized */
 .comic-speed-lines {
-  background: repeating-conic-gradient(
-    transparent 0deg,
-    transparent 8deg,
-    rgba(15, 23, 42, 0.03) 8deg,
-    rgba(15, 23, 42, 0.03) 10deg
-  );
+  background: none !important;
 }
 
 /* Progress bar with comic candy-stripe animation */

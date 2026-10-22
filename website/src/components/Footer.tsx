@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
               BYTEMAP
             </span>
             <span className="text-[11px] font-comicNeue font-bold text-slate-500 block mt-0.5">
-              Desktop Storage Intelligence for Windows & macOS • v1.0.7
+              Desktop Storage Intelligence for Windows & macOS • v1.0.8
             </span>
           </div>
         </a>

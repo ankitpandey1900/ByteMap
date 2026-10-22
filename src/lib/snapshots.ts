@@ -179,3 +179,105 @@ export function computeStorageDiff(
     folder_diffs,
   };
 }
+
+export function filterSnapshotsByDate(
+  snapshots: StorageSnapshot[],
+  fromDate?: string,
+  toDate?: string
+): StorageSnapshot[] {
+  if (!fromDate && !toDate) return snapshots;
+
+  const startMs = fromDate ? new Date(`${fromDate}T00:00:00`).getTime() : -Infinity;
+  const endMs = toDate ? new Date(`${toDate}T23:59:59.999`).getTime() : Infinity;
+
+  return snapshots.filter((snap) => {
+    const snapMs = new Date(snap.timestamp).getTime();
+    if (isNaN(snapMs)) return true;
+    return snapMs >= startMs && snapMs <= endMs;
+  });
+}
+
+export function computeSnapshotToSnapshotDiff(
+  older: StorageSnapshot,
+  newer: StorageSnapshot
+): StorageDiffResult {
+  const delta_bytes = newer.total_bytes - older.total_bytes;
+  const delta_files = newer.total_files - older.total_files;
+
+  // Category Diffs
+  const newerCategoryMap = new Map<FileCategory, number>();
+  for (const c of newer.categories) {
+    newerCategoryMap.set(c.category, c.total_bytes);
+  }
+
+  const olderCategoryMap = new Map<FileCategory, number>();
+  for (const c of older.categories) {
+    olderCategoryMap.set(c.category, c.total_bytes);
+  }
+
+  const allCategories = Array.from(
+    new Set([...newerCategoryMap.keys(), ...olderCategoryMap.keys()])
+  );
+
+  const category_diffs: CategoryDiff[] = allCategories
+    .map((category) => {
+      const current_bytes = newerCategoryMap.get(category) || 0;
+      const previous_bytes = olderCategoryMap.get(category) || 0;
+      const cat_delta = current_bytes - previous_bytes;
+      const percentage_change =
+        previous_bytes > 0 ? (cat_delta / previous_bytes) * 100 : current_bytes > 0 ? 100 : 0;
+
+      return {
+        category,
+        previous_bytes,
+        current_bytes,
+        delta_bytes: cat_delta,
+        percentage_change,
+      };
+    })
+    .sort((a, b) => Math.abs(b.delta_bytes) - Math.abs(a.delta_bytes));
+
+  // Folder Diffs
+  const newerFolderMap = new Map<string, { name: string; size: number }>();
+  for (const f of newer.top_folders || []) {
+    newerFolderMap.set(f.path, { name: f.name, size: f.size_bytes });
+  }
+
+  const olderFolderMap = new Map<string, { name: string; size: number }>();
+  for (const f of older.top_folders || []) {
+    olderFolderMap.set(f.path, { name: f.name, size: f.size_bytes });
+  }
+
+  const allFolderPaths = Array.from(
+    new Set([...newerFolderMap.keys(), ...olderFolderMap.keys()])
+  );
+
+  const folder_diffs: FolderDiff[] = allFolderPaths
+    .map((path) => {
+      const cur = newerFolderMap.get(path);
+      const prev = olderFolderMap.get(path);
+      const curSize = cur?.size || 0;
+      const prevSize = prev?.size || 0;
+      const fDelta = curSize - prevSize;
+      const name = cur?.name || prev?.name || path.split(/[\\/]/).pop() || path;
+
+      return {
+        path,
+        name,
+        previous_bytes: prevSize,
+        current_bytes: curSize,
+        delta_bytes: fDelta,
+      };
+    })
+    .filter((f) => Math.abs(f.delta_bytes) > 5 * 1024 * 1024)
+    .sort((a, b) => b.delta_bytes - a.delta_bytes);
+
+  return {
+    snapshot: older,
+    current_total_bytes: newer.total_bytes,
+    delta_bytes,
+    delta_files,
+    category_diffs,
+    folder_diffs,
+  };
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Code2,
   ExternalLink,
@@ -34,6 +34,14 @@ export const DevArtifactsCard: React.FC<DevArtifactsCardProps> = ({
   unit,
   onCleanupComplete,
 }) => {
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isCleaning, setIsCleaning] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -158,7 +166,9 @@ export const DevArtifactsCard: React.FC<DevArtifactsCardProps> = ({
     } catch (err) {
       console.error('Failed to purge dev artifacts:', err);
     } finally {
-      setIsCleaning(false);
+      if (isMountedRef.current) {
+        setIsCleaning(false);
+      }
     }
   };
 

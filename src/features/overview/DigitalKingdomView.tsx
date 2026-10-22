@@ -6,6 +6,8 @@ import {
   FileSpreadsheet,
   Compass,
   CornerUpLeft,
+  Palette,
+  Flame,
 } from 'lucide-react';
 import {
   ComicKingdomIcon,
@@ -28,6 +30,10 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
 } from 'recharts';
 import { useAppStore } from '@/lib/store';
 import { formatBytes, formatNumber, getCategoryColor, cleanDisplayPath, findDriveForPath } from '@/lib/utils';
@@ -36,6 +42,7 @@ import { ScoutMascot, ScoutAvatar } from '@/components/ScoutMascot';
 import { ComicStorageBar } from '@/components/ComicStorageBar';
 import { StorageDiffModal } from '@/components/StorageDiffModal';
 import { exportStorageAuditHtml } from '@/lib/exportAuditReport';
+import { getSavedSnapshots } from '@/lib/snapshots';
 import { api } from '@/lib/api';
 import { FileCategory } from '@/types';
 
@@ -172,6 +179,42 @@ function inferFolderCategory(
   return 'other';
 }
 
+const VIBRANT_MAP_COLORS = [
+  '#f59e0b', // Sunburst Amber
+  '#10b981', // Electric Emerald
+  '#3b82f6', // Dodger Blue
+  '#ec4899', // Bubblegum Pink
+  '#8b5cf6', // Electric Violet
+  '#06b6d4', // Cyber Cyan
+  '#f97316', // Tangerine Orange
+  '#14b8a6', // Mint Teal
+  '#f43f5e', // Crimson Coral
+  '#84cc16', // Neon Lime
+  '#a855f7', // Vivid Purple
+  '#38bdf8', // Sky Blue
+  '#eab308', // Comic Goldenrod
+  '#6366f1', // Royal Indigo
+  '#d946ef', // Neon Magenta
+  '#0ea5e9', // Deep Sky
+];
+
+function getVibrantCellColor(
+  name: string,
+  index: number,
+  category: FileCategory | string,
+  mode: 'rainbow' | 'category'
+): string {
+  if (mode === 'rainbow') {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = (hash * 31 + name.charCodeAt(i)) & 0xffffffff;
+    }
+    const colorIdx = Math.abs((hash ^ (index * 7)) % VIBRANT_MAP_COLORS.length);
+    return VIBRANT_MAP_COLORS[colorIdx];
+  }
+  return getCategoryColor(category);
+}
+
 export interface DigitalKingdomViewProps {
   onOpenScanModal?: () => void;
 }
@@ -199,6 +242,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   const [hoveredNode, setHoveredNode] = useState<RectNode | null>(null);
   const [showTimeMachine, setShowTimeMachine] = useState<boolean>(false);
   const [highlightCategory, setHighlightCategory] = useState<FileCategory | 'all'>('all');
+  const [mapColorMode, setMapColorMode] = useState<'rainbow' | 'category'>('rainbow');
 
   const handleDrilldownExtension = (extName: string) => {
     setSearchQuery(extName.startsWith('.') ? extName : `.${extName}`);
@@ -261,6 +305,62 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
     }
     return [];
   }, [scanSummary]);
+
+  // Storage Trajectory & Burn Rate Calculation
+  const burnRateData = useMemo(() => {
+    const snaps = getSavedSnapshots();
+    const currentBytes = scanSummary?.total_bytes || (activeDrive?.used_bytes || 0);
+    const capacityBytes = activeDrive?.total_bytes || (currentBytes * 1.35 || 1);
+
+    let dailyRateBytes = 150 * 1024 * 1024; // baseline +150 MB/day
+    if (snaps.length >= 2) {
+      const sorted = [...snaps].sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+      const oldest = sorted[0];
+      const newest = sorted[sorted.length - 1];
+      const diffDays = Math.max(
+        0.5,
+        (new Date(newest.timestamp).getTime() - new Date(oldest.timestamp).getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+      const diffBytes = newest.total_bytes - oldest.total_bytes;
+      if (Math.abs(diffBytes) > 0) {
+        dailyRateBytes = diffBytes / diffDays;
+      }
+    }
+
+    const points = [
+      { day: 'Now', bytes: currentBytes, gb: Number((currentBytes / (1024 ** 3)).toFixed(1)) },
+      {
+        day: '+15d',
+        bytes: Math.max(0, currentBytes + dailyRateBytes * 15),
+        gb: Number((Math.max(0, currentBytes + dailyRateBytes * 15) / (1024 ** 3)).toFixed(1)),
+      },
+      {
+        day: '+30d',
+        bytes: Math.max(0, currentBytes + dailyRateBytes * 30),
+        gb: Number((Math.max(0, currentBytes + dailyRateBytes * 30) / (1024 ** 3)).toFixed(1)),
+      },
+      {
+        day: '+60d',
+        bytes: Math.max(0, currentBytes + dailyRateBytes * 60),
+        gb: Number((Math.max(0, currentBytes + dailyRateBytes * 60) / (1024 ** 3)).toFixed(1)),
+      },
+    ];
+
+    const daysTo90Percent =
+      dailyRateBytes > 0 && currentBytes < capacityBytes * 0.9
+        ? Math.max(1, Math.round((capacityBytes * 0.9 - currentBytes) / dailyRateBytes))
+        : null;
+
+    return {
+      dailyRateBytes,
+      points,
+      daysTo90Percent,
+      isExpanding: dailyRateBytes > 0,
+    };
+  }, [scanSummary, activeDrive]);
 
   // Real Treemap Current Path and Items
   const cleanRootPath = useMemo(() => {
@@ -427,7 +527,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   }, [scanProgress, scanSummary]);
 
   return (
-    <div className="flex flex-col min-h-full space-y-3.5 pb-6 select-none font-sans text-slate-900">
+    <div className="flex flex-col min-h-full space-y-3.5 pb-6 font-sans text-slate-900">
       {/* Live Storage Reclaim Celebration Banner */}
       {lastCleanupSummary && (
         <div className="p-3.5 bg-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between text-xs font-fredoka font-bold text-slate-900 animate-in fade-in slide-in-from-top-2">
@@ -459,9 +559,6 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
         <div className="col-span-12 lg:col-span-3 flex flex-col space-y-3">
           {/* 1. DRIVE OVERVIEW CARD */}
           <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3.5 shadow-comic relative flex flex-col justify-between comic-card-hover overflow-hidden">
-            {/* Subtle crosshatch texture */}
-            <div className="absolute inset-0 bg-comic-crosshatch pointer-events-none rounded-2xl" />
-
             {/* Yellow Header Pill */}
             <div className="relative inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 w-fit mb-2">
               <ComicDrivesIcon className="w-4 h-4" />
@@ -662,15 +759,88 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
               </p>
             )}
           </div>
+
+          {/* 4. STORAGE BURN RATE & TRAJECTORY FORECAST CARD */}
+          <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic comic-card-hover overflow-hidden relative">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-[11px] uppercase tracking-wide text-slate-900">
+                <Flame className="w-3.5 h-3.5 text-slate-900" />
+                <span>Burn Velocity</span>
+              </div>
+              <span
+                className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-slate-900 ${
+                  burnRateData.isExpanding
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-emerald-100 text-emerald-800'
+                }`}
+              >
+                {burnRateData.isExpanding ? '+' : ''}
+                {formatBytes(burnRateData.dailyRateBytes, settings.unit)}/day
+              </span>
+            </div>
+
+            <div className="h-24 w-full my-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={burnRateData.points} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor={burnRateData.isExpanding ? '#f43f5e' : '#10b981'}
+                        stopOpacity={0.6}
+                      />
+                      <stop offset="95%" stopColor="#fef08a" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="day"
+                    tick={{ fill: '#0f172a', fontSize: 9, fontWeight: 'bold' }}
+                    axisLine={{ stroke: '#0f172a' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: '#0f172a', fontSize: 9, fontWeight: 'bold' }}
+                    axisLine={{ stroke: '#0f172a' }}
+                    tickLine={false}
+                    unit="G"
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const d = payload[0].payload;
+                        return (
+                          <div className="p-1.5 bg-yellow-50 border-2 border-slate-900 rounded-lg shadow-comic text-[10px] font-fredoka font-bold text-slate-900">
+                            <p className="font-comic uppercase text-[9px] text-amber-700">{d.day} Projection</p>
+                            <p className="font-mono text-xs">{formatBytes(d.bytes, settings.unit)}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="gb"
+                    stroke="#0f172a"
+                    strokeWidth={2}
+                    fill="url(#burnGrad)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            <p className="text-[10px] font-fredoka font-bold text-slate-600 leading-tight">
+              {burnRateData.daysTo90Percent && burnRateData.daysTo90Percent > 0
+                ? `Est. 90% drive fill in ~${burnRateData.daysTo90Percent} days at current velocity.`
+                : 'Storage consumption velocity is steady and well-controlled.'}
+            </p>
+          </div>
         </div>
 
         {/* =========================================
             CENTER COLUMN (Your Digital Kingdom - Treemap)
            ========================================= */}
         <div className="col-span-12 lg:col-span-6 flex flex-col bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic overflow-hidden p-4 relative">
-          {/* Subtle background texture */}
-          <div className="absolute inset-0 bg-comic-crosshatch pointer-events-none rounded-2xl" />
-
           {/* Treemap Top Bar with Title, Breadcrumbs, Actions & Legend */}
           <div className="relative pb-3 border-b-2.5 border-slate-900 mb-3 space-y-2.5">
             {/* Row 1: Left = Badge + Big Title | Right = Action Buttons Bar */}
@@ -830,6 +1000,18 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                     Reset
                   </button>
                 )}
+
+                {/* Map Color Palette Toggle: Rainbow vs Categorical */}
+                <div className="h-4 w-[1.5px] bg-slate-300 mx-0.5" />
+                <button
+                  type="button"
+                  onClick={() => setMapColorMode(mapColorMode === 'rainbow' ? 'category' : 'rainbow')}
+                  className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md border border-slate-900 bg-amber-200 hover:bg-amber-300 text-[10px] font-comic uppercase tracking-wider text-slate-900 shadow-[1px_1px_0px_#0f172a] transition-all cursor-pointer"
+                  title="Toggle between vibrant rainbow palette and category colors"
+                >
+                  <Palette className="w-3 h-3 text-slate-900" />
+                  <span>{mapColorMode === 'rainbow' ? '🌈 Vibrant Map' : '🏷️ Category Map'}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -844,7 +1026,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
               >
                 {rects.map((node, idx) => {
                   const cat = (node.category || getCategoryFromNameOrExt(node.name) || 'other') as FileCategory;
-                  const fill = getCategoryColor(cat);
+                  const fill = getVibrantCellColor(node.name, idx, cat, mapColorMode);
                   const isHovered = hoveredNode?.id === node.id;
                   const isHugeFile = idx === 0 && node.size > 50 * 1024 * 1024; // Only badge the largest genuine file
                   const isHighlighted = highlightCategory === 'all' || cat === highlightCategory;
@@ -877,6 +1059,20 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                           filter: isHovered ? 'brightness(1.1)' : isHighlighted ? 'none' : 'grayscale(0.6)',
                         }}
                       />
+
+                      {/* Comic Glossy Top Sheen on cell */}
+                      {node.w > 14 && node.h > 12 && (
+                        <rect
+                          x={node.x + 4}
+                          y={node.y + 4}
+                          width={Math.max(0, node.w - 8)}
+                          height={Math.min(5, Math.max(0, (node.h - 8) / 3))}
+                          rx={2.5}
+                          fill="#ffffff"
+                          opacity={isHighlighted ? 0.38 : 0.08}
+                          pointerEvents="none"
+                        />
+                      )}
 
                       {/* Halftone / Comic dots texture on block */}
                       <rect
@@ -922,7 +1118,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
 
                               {isHugeFile && node.w > 110 && node.h > 65 && (
                                 <div className="px-2 py-0.5 rounded-md bg-amber-400 border border-slate-900 shadow-[1px_1px_0px_#0f172a] flex items-center space-x-1 animate-pulse-subtle ml-auto">
-                                  <span className="text-[10px] leading-none">⚡</span>
+                                  <ComicZapIcon className="w-2.5 h-2.5 text-slate-900" />
                                   <span className="font-bangers text-[10px] uppercase text-slate-900 tracking-wider leading-none">
                                     Top Hog
                                   </span>
@@ -1038,8 +1234,11 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                   <span
                     className="w-2.5 h-2.5 rounded-sm border border-slate-900 shrink-0"
                     style={{
-                      backgroundColor: getCategoryColor(
-                        hoveredNode.category || getCategoryFromNameOrExt(hoveredNode.name) || 'other'
+                      backgroundColor: getVibrantCellColor(
+                        hoveredNode.name,
+                        0,
+                        hoveredNode.category || getCategoryFromNameOrExt(hoveredNode.name) || 'other',
+                        mapColorMode
                       ),
                     }}
                   />
@@ -1067,8 +1266,6 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
         <div className="col-span-12 lg:col-span-3 flex flex-col space-y-3">
           {/* 1. LARGE FILES FOUND CARD (Compact, no empty space) */}
           <div className="bg-white rounded-2xl border-2.5 border-slate-900 p-3 shadow-comic comic-card-hover overflow-hidden relative">
-            <div className="absolute inset-0 bg-comic-stripes opacity-20 pointer-events-none rounded-2xl" />
-
             <div className="relative">
               {/* Header */}
               <div className="flex items-center justify-between mb-1.5">
@@ -1267,9 +1464,6 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
           BOTTOM RESPONSIVE FOOTER DOCK
          ========================================= */}
       <footer className="mt-4 py-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs font-fredoka font-bold text-slate-700 border-2.5 border-slate-900 bg-white rounded-2xl shadow-comic shrink-0 relative overflow-hidden">
-        {/* Stripe texture */}
-        <div className="absolute inset-0 bg-comic-stripes pointer-events-none rounded-2xl" />
-
         <div className="relative flex items-center space-x-2 flex-wrap gap-2">
           <button
             onClick={() => setActiveTab('settings')}
