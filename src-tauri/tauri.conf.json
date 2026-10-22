@@ -28,7 +28,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDBDQUMwMkFBNDZCNjM0OUIKUldTYk5MWkdxZ0tzREdyNTcrZkw1Wk91K3o1WVdPR2RQbmorc3hxS2phNUNad00yTU9kNTVwS2YK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEIyOEE3ODVDNzUwQkQwQTQKUldTazBBdDFYSGlLc3NlYlFtTHNjQ2hraytueHJCTEF6OW9MRE1aTXA2RjJvS3FBaXRnZjJVYlAK",
       "endpoints": [
         "https://github.com/ankitpandey1900/ByteMap/releases/latest/download/latest.json"
       ]
@@ -37,6 +37,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "copyright": "Copyright © 2026 Ankit Pandey",
     "shortDescription": "Desktop Storage Intelligence",
     "longDescription": "A fast, offline desktop storage intelligence tool with a vibrant comic-book visualizer.",

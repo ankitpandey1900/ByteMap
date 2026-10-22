@@ -18,3 +18,7 @@ Thumbs.db
 # Test output
 coverage/
 playwright-report/
+
+# Signing keys
+*.key
+*.key.pub
