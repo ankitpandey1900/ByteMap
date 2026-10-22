@@ -2,6 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { initAnalytics } from './lib/analytics';
+
+// Initialize Google Analytics 4
+initAnalytics();
 
 // Ensure visitors who installed or previously cached the page immediately get updated assets
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {

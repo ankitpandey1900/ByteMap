@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, ShieldCheck, Zap, HardDrive, CheckCircle2, Sparkles, Apple, Eye } from 'lucide-react';
 import { GithubIcon } from './GithubIcon';
+import { trackDownloadClick } from '../lib/analytics';
 
 export const HeroSection: React.FC = () => {
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
@@ -141,6 +142,7 @@ export const HeroSection: React.FC = () => {
           {/* Windows Download */}
           <a
             href={exeUrl}
+            onClick={() => trackDownloadClick(exeUrl.split('/').pop() || 'ByteMap_1.0.8_x64-setup.exe', 'windows_exe', exeUrl)}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-7 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 border-3 border-slate-900 font-bangers text-xl uppercase tracking-wider text-slate-900 shadow-comic-lg hover:-translate-y-1 hover:shadow-comic-xl active:translate-y-0.5 active:shadow-comic transition-all cursor-pointer group"
           >
             <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
@@ -155,6 +157,7 @@ export const HeroSection: React.FC = () => {
           {/* macOS Download - Direct .dmg Download */}
           <a
             href={dmgUrl}
+            onClick={() => trackDownloadClick(dmgUrl.split('/').pop() || 'ByteMap_1.0.8_universal.dmg', 'mac_dmg', dmgUrl)}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-7 py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 border-3 border-slate-900 font-bangers text-xl uppercase tracking-wider text-slate-900 shadow-comic-lg hover:-translate-y-1 hover:shadow-comic-xl active:translate-y-0.5 active:shadow-comic transition-all cursor-pointer group"
           >
             <Apple className="w-6 h-6 group-hover:scale-110 transition-transform text-slate-900" />
@@ -169,6 +172,7 @@ export const HeroSection: React.FC = () => {
           {/* All Formats / MSI */}
           <a
             href={msiUrl}
+            onClick={() => trackDownloadClick(msiUrl.split('/').pop() || 'ByteMap_1.0.8_x64_en-US.msi', 'windows_msi', msiUrl)}
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-3 border-slate-900 font-bangers text-lg uppercase tracking-wide text-slate-900 shadow-comic hover:-translate-y-1 hover:shadow-comic-lg active:translate-y-0.5 transition-all cursor-pointer"
           >
             <span>MSI Installer</span>

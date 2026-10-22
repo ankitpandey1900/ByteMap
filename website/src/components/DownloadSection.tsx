@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, ShieldCheck, Check, Copy, ExternalLink, HardDrive, Terminal, Apple } from 'lucide-react';
+import { trackDownloadClick } from '../lib/analytics';
 
 export const DownloadSection: React.FC = () => {
   const [copiedWinget, setCopiedWinget] = useState(false);
@@ -120,6 +121,7 @@ export const DownloadSection: React.FC = () => {
 
             <a
               href={exeUrl}
+              onClick={() => trackDownloadClick(exeUrl.split('/').pop() || 'ByteMap_1.0.8_x64-setup.exe', 'windows_exe', exeUrl)}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-amber-400 hover:bg-amber-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />
@@ -153,6 +155,7 @@ export const DownloadSection: React.FC = () => {
 
             <a
               href={dmgUrl}
+              onClick={() => trackDownloadClick(dmgUrl.split('/').pop() || 'ByteMap_1.0.8_universal.dmg', 'mac_dmg', dmgUrl)}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Apple className="w-5 h-5 text-slate-900" />
@@ -186,6 +189,7 @@ export const DownloadSection: React.FC = () => {
 
             <a
               href={msiUrl}
+              onClick={() => trackDownloadClick(msiUrl.split('/').pop() || 'ByteMap_1.0.8_x64_en-US.msi', 'windows_msi', msiUrl)}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />
