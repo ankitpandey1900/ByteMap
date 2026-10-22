@@ -17,28 +17,13 @@ Most disk space analyzers fall into one of two traps:
 
 I built ByteMap to be fast, beautiful, and completely respectful of your machine:
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        BYTEMAP'S 5 CORE RULES                          │
-├────────────────────────────────────────────────────────────────────────┤
-│ 1. Zero Database Policy     │ All scan data lives strictly in RAM.    │
-│                             │ Close the app, and everything vanishes. │
-│                             │ No disk caches, no ghost files.        │
-├─────────────────────────────┼──────────────────────────────────────────┤
-│ 2. Native Rust Performance  │ Scans run on native OS threads using     │
-│                             │ compiled Rust. Scans a 1TB drive in      │
-│                             │ ~4 seconds on NVMe.                      │
-├─────────────────────────────┼──────────────────────────────────────────┤
-│ 3. 80ms Throttled IPC       │ Rust batches updates every 80ms (~12/sec)│
-│                             │ so the UI stays silky smooth at 60 FPS. │
-├─────────────────────────────┼──────────────────────────────────────────┤
-│ 4. Smart Duplicate Funnel   │ We don't hash every file. A 3-stage      │
-│                             │ funnel filters out 99% before hashing.   │
-├─────────────────────────────┼──────────────────────────────────────────┤
-│ 5. Safe By Default          │ Deletions always default to the Recycle  │
-│                             │ Bin / Trash. System paths are protected. │
-└─────────────────────────────┴──────────────────────────────────────────┘
-```
+| Principle | How We Enforce It |
+| :--- | :--- |
+| **1. Zero Database Policy** | All scan data lives strictly in RAM. Close the app, and everything vanishes. No disk caches, no ghost files. |
+| **2. Native Rust Performance** | Scans run on native OS threads using compiled Rust. Scans a 1TB drive in ~4 seconds on NVMe. |
+| **3. 80ms Throttled IPC** | Rust batches updates every 80ms (~12/sec) so the UI stays silky smooth at 60 FPS. |
+| **4. Smart Duplicate Funnel** | We don't hash every file. A 3-stage funnel filters out 99% before reading byte streams. |
+| **5. Safe By Default** | Deletions always default to the Recycle Bin / Trash. System paths are protected. |
 
 ---
 
@@ -46,42 +31,37 @@ I built ByteMap to be fast, beautiful, and completely respectful of your machine
 
 ByteMap is split into three main layers: the **React UI**, the **Tauri IPC Bridge**, and the **Rust Core Engine**.
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                           REACT 19 FRONTEND                            │
-│                                                                        │
-│   [Header & Mascot]      [Drive Cards]          [Treemap Visualizer]   │
-│   [Time Machine Diff]    [Large Files Table]    [Duplicate Finder]     │
-│   [Dev Bloat Sweeper]    [Interactive Charts]   [HTML Audit Exporter]  │
-│                                                                        │
-│   State: Zustand store (100% ephemeral in-memory, resets on app exit)  │
-└───────────────────────────────────▲────────────────────────────────────┘
-                                    │
-           Tauri 2 IPC Bridge (Bidirectional message passing)
-           - UI calls commands: invoke("start_scan", { ... })
-           - Rust streams events: emit("scan_progress", ...) every 80ms
-                                    │
-┌───────────────────────────────────▼────────────────────────────────────┐
-│                           RUST CORE ENGINE                             │
-│                                                                        │
-│   scanner::traversal         duplicates::detector    drives::discovery │
-│   - Single-pass WalkDir      - 3-tier BLAKE3 funnel  - sysinfo::Disks  │
-│   - Prefix size rollup map   - Zero-read size match  - Partition stats │
-│   - Top-100 Min-Heap         - 4KB header check      - Mount geometry  │
-│   - 80ms progress batcher    - Streamed full hash    - Non-blocking    │
-│                                                                        │
-│   security::path_validator   cleanup::executor       updater           │
-│   - Scanned root jail        - Dev cache sweeper     - Ed25519 Minisign│
-│   - System folder blocklist  - Non-blocking purge    - latest.json     │
-│   - TOCTOU size validation   - Native OS Trash call  - Verified assets │
-└───────────────────────────────────▲────────────────────────────────────┘
-                                    │
-                           Native OS Syscalls
-                                    │
-┌───────────────────────────────────▼────────────────────────────────────┐
-│                              HOST OS                                   │
-│    Windows (Win32 / NTFS)   macOS (APFS / Cocoa)    Linux (ext4 / POSIX)│
-└────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph UI ["1. Presentation Layer (React 19 SPA)"]
+        A["Dashboard, Squarified Treemap & Interactive Charts"]
+        B["Zustand Store (100% In-Memory RAM, wipes on exit)"]
+    end
+
+    subgraph Bridge ["2. Tauri 2 IPC Bridge"]
+        C["Async Commands: invoke('start_scan', { ... })"]
+        D["Event Stream: emit('scan_progress', ...) every 80ms"]
+    end
+
+    subgraph Core ["3. Rust Engine"]
+        E["Single-Pass Traversal (WalkDir + Min-Heap)"]
+        F["3-Tier Duplicate Finder (BLAKE3)"]
+        G["PathValidator & Native OS Trash Dispatch"]
+        H["Drive Discovery (sysinfo::Disks)"]
+    end
+
+    subgraph OS ["4. Operating System"]
+        I["Windows (NTFS / Win32) • macOS (APFS / Cocoa) • Linux (ext4 / POSIX)"]
+    end
+
+    UI <--> Bridge
+    Bridge <--> Core
+    Core <--> OS
+
+    style UI fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1
+    style Bridge fill:#fef08a,stroke:#ca8a04,stroke-width:2px,color:#854d0e
+    style Core fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
+    style OS fill:#f1f5f9,stroke:#64748b,stroke-width:2px,color:#334155
 ```
 
 ---
@@ -95,23 +75,21 @@ When people think about calculating folder sizes, they usually imagine recursive
 In ByteMap, I use a **single-pass prefix rollup**:
 When the scanner hits a file on disk, that file's size immediately bubbles up to all its parent folders in our in-memory hash map. We only read each file's metadata **once**.
 
-#### Here's how it works with a real example:
+```mermaid
+graph BT
+    File["hero.png (50 MB)<br/>Discovered on disk"] --> Textures["assets/textures<br/>(+50 MB)"]
+    Textures --> Assets["game/assets<br/>(+50 MB)"]
+    Assets --> Game["game<br/>(+50 MB)"]
+    Game --> Root["C:/Projects<br/>(+50 MB)"]
 
-Imagine the scanner encounters `C:\Projects\game\assets\hero.png` (50 MB):
-
-```
-                       HOW SIZES BUBBLE UP TO PARENTS
-                       
-     [ C:\Projects ]              <-- Gets +50 MB (Total: 50 MB, 1 file)
-           │
-           └── [ game ]           <-- Gets +50 MB (Total: 50 MB, 1 file)
-                 │
-                 └── [ assets ]   <-- Gets +50 MB (Total: 50 MB, 1 file)
-                       │
-                       └── hero.png (50 MB)  <── Scanned from disk
+    style File fill:#fef08a,stroke:#ca8a04,stroke-width:2px,color:#854d0e
+    style Textures fill:#e0f2fe,stroke:#0284c7,color:#0369a1
+    style Assets fill:#e0f2fe,stroke:#0284c7,color:#0369a1
+    style Game fill:#e0f2fe,stroke:#0284c7,color:#0369a1
+    style Root fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
 ```
 
-In memory, we simply maintain a `HashMap<PathBuf, DirectoryStats>`:
+In memory, we maintain a flat `HashMap<PathBuf, DirectoryStats>`:
 
 ```
   "C:\Projects"               =>  size: 50 MB,  files: 1
@@ -137,45 +115,23 @@ Scanning 500,000 files for byte-exact duplicates by computing cryptographic hash
 
 ByteMap solves this with an **elimination funnel** that throws out 99.9% of files before reading full byte streams:
 
-```
-                  THE 3-STAGE DUPLICATE FUNNEL
-                  
-  [ 100,000 Scanned Files ]
-              │
-              ▼
-  ┌──────────────────────────────────────────────────────────┐
-  │ STAGE 1: Exact File Size Match                           │
-  │ Check file sizes in memory. 95,000 files have unique     │
-  │ byte sizes (e.g. 14,203 bytes vs 14,204 bytes).          │
-  └───────────────────────────┬──────────────────────────────┘
-                              │
-          Discard 95,000 files (0 bytes read from disk!)
-                              │
-                              ▼
-  [ 5,000 Candidate Files with Identical Sizes ]
-              │
-              ▼
-  ┌──────────────────────────────────────────────────────────┐
-  │ STAGE 2: 4KB Header Hash Check                           │
-  │ Read ONLY the first 4,096 bytes of each candidate.       │
-  │ Hash that small prefix with BLAKE3.                      │
-  │ If headers differ (e.g. different JPEG headers), skip.   │
-  └───────────────────────────┬──────────────────────────────┘
-                              │
-          Discard 4,800 files (Only 4KB read per file!)
-                              │
-                              ▼
-  [ 200 True Collision Candidates ]
-              │
-              ▼
-  ┌──────────────────────────────────────────────────────────┐
-  │ STAGE 3: Full-File Streamed BLAKE3 Hash                  │
-  │ Stream remaining candidate files in 64KB chunks.         │
-  │ Compute full BLAKE3 hash. Confirm exact duplicates.      │
-  └───────────────────────────┬──────────────────────────────┘
-                              │
-                              ▼
-  [ Confirmed Duplicate Groups: Star Original, Queue Copies ]
+```mermaid
+flowchart TD
+    All["All Scanned Files (e.g. 100,000 files)"] --> Tier1["Tier 1: In-Memory Exact Size Match"]
+    Tier1 --> S1{"Size is identical?"}
+    S1 -- NO --> Drop1["Skip file<br/>(95,000 discarded • 0 bytes read from disk)"]
+    S1 -- YES --> Tier2["Tier 2: Read First 4KB Header"]
+    Tier2 --> S2{"4KB BLAKE3 matches?"}
+    S2 -- NO --> Drop2["Skip file<br/>(4,800 discarded • only 4KB read per file)"]
+    S2 -- YES --> Tier3["Tier 3: Full-File Streamed BLAKE3"]
+    Tier3 --> Dupes["Confirmed Duplicate Groups<br/>(200 true copies • star original, queue duplicates)"]
+
+    style Drop1 fill:#f8fafc,stroke:#94a3b8,color:#64748b
+    style Drop2 fill:#f8fafc,stroke:#94a3b8,color:#64748b
+    style Dupes fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
+    style Tier1 fill:#e0f2fe,stroke:#0284c7,color:#0369a1
+    style Tier2 fill:#fef08a,stroke:#ca8a04,color:#854d0e
+    style Tier3 fill:#fed7aa,stroke:#ea580c,color:#9a3412
 ```
 
 #### Why BLAKE3?
@@ -212,29 +168,18 @@ ByteMap implements the **Squarified algorithm** (*Bruls, Huizing, van Wijk*):
 
 How do you answer *"Where did 20 GB vanish overnight?"* without running a heavy background database?
 
-```
-  Oct 10 (Baseline Scan)                 Oct 23 (Current Scan)
-  ┌─────────────────────────┐            ┌─────────────────────────┐
-  │ "Save Baseline Snapshot"│            │ User scans C:\ again    │
-  │ Creates tiny JSON file  │            │ Current tree in RAM     │
-  │ (~35 KB on disk)        │            │                         │
-  └───────────┬─────────────┘            └────────────┬────────────┘
-              │                                       │
-              └───────────────────┬───────────────────┘
-                                  │
-                                  ▼
-                    [ IN-MEMORY DIFF COMPARATOR ]
-                    - Compares folder sizes between dates
-                    - Identifies folders with > 5MB change
-                    - Computes delta: current_size - baseline_size
-                                  │
-                                  ▼
-  ┌────────────────────────────────────────────────────────────────┐
-  │ TIME MACHINE MODAL:                                            │
-  │ • Storage Timeline Area Chart (visualizes growth curve)        │
-  │ • Diverging Delta Bar Chart (red for growth, green for shrunk) │
-  │ • Date Filter Presets (Today, Last 7 Days, Last 30 Days)       │
-  └────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    Snap1["Baseline Snapshot (Oct 10)<br/>Tiny 35KB JSON file"] --> Diff["In-Memory Diff Engine"]
+    Snap2["Current Scan (Oct 23)<br/>Active RAM Directory Tree"] --> Diff
+    Diff --> Filter{Change > 5MB?}
+    Filter -- YES --> UI["Time Machine Dashboard<br/>- Storage Evolution Chart<br/>- Diverging Delta Bars<br/>- Date Range Filters"]
+    Filter -- NO --> Ignored["Hidden<br/>(Ignored as minor noise)"]
+
+    style Snap1 fill:#fef9c3,stroke:#ca8a04,color:#854d0e
+    style Snap2 fill:#e0f2fe,stroke:#0284c7,color:#0369a1
+    style UI fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
+    style Ignored fill:#f8fafc,stroke:#94a3b8,color:#64748b
 ```
 
 - **Tiny Signature File**: A baseline snapshot doesn't save file lists or personal data. It only stores folder path strings and their byte sizes. A scan of 300,000 files compresses into a ~35KB signature file.
@@ -244,70 +189,34 @@ How do you answer *"Where did 20 GB vanish overnight?"* without running a heavy 
 
 ### 3.5 How the Cryptographic Auto-Updater Works
 
-I wanted updates to be automatic, seamless, and mathematically secure against tampering or malicious network injection. Here is how the two-phase pipeline works:
+I wanted updates to be automatic, seamless, and mathematically secure against tampering or malicious network injection. Here is the simplified two-phase flow:
 
-```
-  PHASE 1: RELEASE & SIGNING (In GitHub Actions CI/CD)
-  
-  [ Developer pushes Git tag (v1.0.8) ]
-                 │
-                 ▼
-  [ GitHub Actions Pipeline ]
-    1. Compiles Windows setup (.exe, .msi) and macOS (.dmg)
-    2. Takes the compiled binary
-    3. Signs the binary using my private Ed25519 Minisign key (stored in GitHub Secrets)
-    4. Generates signature string: "RWT..."
-    5. Packages everything into latest.json manifest:
-       {
-         "version": "1.0.8",
-         "pub_date": "2026-10-23T02:00:00Z",
-         "url": "https://github.com/.../ByteMap_1.0.8_x64-setup.exe",
-         "signature": "RWT..."
-       }
-    6. Uploads installers and latest.json to GitHub Releases
+```mermaid
+flowchart TD
+    subgraph Phase1 ["Phase 1: Release & Signing (GitHub Actions CI)"]
+        Tag["Push Git Tag: v1.0.8"] --> Build["Compile .exe & .dmg installers"]
+        Build --> Sign["Sign binary with Private Key (Ed25519)"]
+        Sign --> Release["Upload installer + signature to latest.json"]
+    end
+
+    subgraph Phase2 ["Phase 2: Check & Verify (On User's PC)"]
+        Open["User opens ByteMap"] --> Fetch["Check latest.json from GitHub"]
+        Fetch --> Download["Download ByteMap_1.0.8_x64-setup.exe"]
+        Download --> Verify{"Verify signature with<br/>embedded Public Key"}
+        Verify -- MATCHES --> Install["Safe to install!<br/>Stage binary, swap executable, restart"]
+        Verify -- FAILS --> Block["STOP IMMEDIATELY!<br/>Corrupt or tampered file, alert user"]
+    end
+
+    Release -.-> Fetch
+
+    style Install fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
+    style Block fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b
+    style Sign fill:#fef08a,stroke:#ca8a04,color:#854d0e
+    style Verify fill:#fed7aa,stroke:#ea580c,color:#9a3412
 ```
 
-```
-  PHASE 2: VERIFICATION & INSTALL (On User's Machine)
-  
-  [ User opens ByteMap Desktop App ]
-                 │
-                 ▼
-  [ App fetches latest.json from GitHub Releases ]
-                 │
-                 ▼
-  [ Is version (1.0.8) newer than installed version (1.0.7)? ]
-                 │
-         YES ────┴──── NO ──► Do nothing
-         │
-         ▼
-  [ Show "New Episode Alert!" banner in App ]
-         │
-  [ User clicks "Update & Restart" ]
-         │
-         ▼
-  [ App downloads ByteMap_1.0.8_x64-setup.exe ]
-         │
-         ▼
-  ┌────────────────────────────────────────────────────────────┐
-  │ CRYPTOGRAPHIC INTEGRITY CHECK                              │
-  │ The app has my public key baked into tauri.conf.json:      │
-  │ "dWNTcDNk..."                                              │
-  │                                                            │
-  │ Tauri verifies the downloaded binary against the signature │
-  │ using this public key before touching the filesystem.      │
-  └──────────────────────────────┬─────────────────────────────┘
-                                 │
-           ┌─────────────────────┴─────────────────────┐
-           │                                           │
-    Signature MATCHES                           Signature FAILS
-           │                                           │
-           ▼                                           ▼
-  [ Safe to install! ]                     [ STOP IMMEDIATELY! ]
-  App stages binary,                       Corrupt or tampered download.
-  swaps executable,                        Payload deleted, user alerted.
-  and restarts client.                     Never execute untrusted code.
-```
+1. **At build time (CI/CD)**: GitHub Actions builds the binaries and signs them with an Ed25519 Minisign private key. The resulting signature is saved in `latest.json`.
+2. **At run time (User's PC)**: When the app checks for updates, it compares the downloaded binary against the signature using the public key embedded in `tauri.conf.json`. If even a single byte was altered, the cryptographic verification fails and the update is immediately blocked.
 
 ---
 
@@ -315,46 +224,20 @@ I wanted updates to be automatic, seamless, and mathematically secure against ta
 
 Deleting files can be dangerous if software makes assumptions. Before ByteMap moves a single file to the Recycle Bin or purges a dev cache, it passes the target through **four strict security gates**:
 
-```
-  User clicks "Clean Selected Files"
-                 │
-                 ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ GATE 1: Path Normalization (Canonicalization)                    │
-  │ Resolve symlinks and normalize path separators.                  │
-  │ Block directory traversal attempts (e.g. "../../../Windows").    │
-  └──────────────────────────────┬───────────────────────────────────┘
-                                 │ PASS
-                                 ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ GATE 2: Scanned Root Jail Check                                  │
-  │ Did the user scan D:\Projects? If so, the target MUST sit        │
-  │ inside D:\Projects. Any target outside that folder is rejected.  │
-  └──────────────────────────────┬───────────────────────────────────┘
-                                 │ PASS
-                                 ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ GATE 3: Protected System Folder Check                            │
-  │ Compare against system blocklist:                                │
-  │ - Windows: C:\Windows, C:\Program Files, C:\Recovery             │
-  │ - macOS: /System, /Library, /usr, /bin, /Applications            │
-  │ If target is a system directory -> REJECT IMMEDIATELY.           │
-  └──────────────────────────────┬───────────────────────────────────┘
-                                 │ PASS
-                                 ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ GATE 4: Pre-Flight TOCTOU Check (Time Of Check to Time Of Use)   │
-  │ Does the file still exist? Has it changed on disk since the      │
-  │ scan completed 10 minutes ago? If size/time changed -> REJECT.   │
-  └──────────────────────────────┬───────────────────────────────────┘
-                                 │ PASS
-                                 ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ SAFE EXECUTION: Native OS Recycle Bin Dispatch                   │
-  │ Use the native OS trash API (Win32 IFileOperation / Cocoa Trash).│
-  │ Files are NOT permanently deleted unless explicitly requested.   │
-  │ You can restore them from your desktop Recycle Bin anytime.      │
-  └──────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Start["User clicks 'Clean Selected Files'"] --> Gate1["Gate 1: Path Normalization<br/>Resolve symlinks, block '../' traversal"]
+    Gate1 --> Gate2["Gate 2: Scanned Root Jail<br/>Target must sit inside the scanned directory"]
+    Gate2 --> Gate3["Gate 3: System Blocklist<br/>Block Windows, System32, /System, /usr"]
+    Gate3 --> Gate4["Gate 4: TOCTOU Sanity Check<br/>Verify file size on disk matches scan size"]
+    Gate4 --> Trash["Safe Execution: Dispatch to OS Recycle Bin / Trash<br/>(Files can be restored anytime from your desktop)"]
+
+    style Start fill:#fef9c3,stroke:#ca8a04,color:#854d0e
+    style Gate1 fill:#e0f2fe,stroke:#0284c7,color:#0369a1
+    style Gate2 fill:#e0f2fe,stroke:#0284c7,color:#0369a1
+    style Gate3 fill:#fed7aa,stroke:#ea580c,color:#9a3412
+    style Gate4 fill:#fed7aa,stroke:#ea580c,color:#9a3412
+    style Trash fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d
 ```
 
 ---
@@ -363,24 +246,19 @@ Deleting files can be dangerous if software makes assumptions. Before ByteMap mo
 
 ByteMap maintains strict thread isolation so that UI interactions, charts, and animations never stutter during disk-heavy operations:
 
-```
-  THREAD 1: OS Main Thread (WebView UI & Animation Loop)
-  - Runs React 19, Tailwind styling, SVG Treemap renders
-  - Processes clicks, hover tooltips, and tab switches at 60 FPS
-  - Never touches filesystem syscalls directly
-         │
-         ▼ (Async message passing via Tauri IPC)
-  THREAD 2: Tauri IPC Event Reactor (Tokio Runtime)
-  - Receives serialized JSON command payloads from frontend
-  - Routes requests to background worker threadpools
-  - Streams throttled progress events back to frontend
-         │
-         ▼
-  THREADPOOL: Background Worker Threads (spawn_blocking)
-  ├── Traversal Worker: Runs WalkDir directory crawl & rollup maps
-  ├── Duplicate Worker: Streams 64KB blocks through BLAKE3
-  ├── Dev Cache Purge: Safely unlinks targeted build caches
-  └── Drive Discovery: Queries sysinfo partition geometry
+```mermaid
+flowchart TD
+    UI["OS Main Thread (WebView UI)<br/>React 19, 60 FPS animations, click handlers"] -->|Tauri IPC Commands| Tokio["Tokio Async Runtime<br/>Routes commands, dispatches JSON payloads"]
+    Tokio --> Pool["Background Worker Threadpool (spawn_blocking)"]
+    Pool --> T1["Traversal Worker: Single-pass WalkDir scan"]
+    Pool --> T2["Duplicate Worker: 64KB chunked BLAKE3 hashing"]
+    Pool --> T3["Cleanup Worker: Unlinks stale dev caches to Trash"]
+    Pool --> T4["Drive Worker: sysinfo partition polling"]
+    T1 -.->|80ms throttled progress events| UI
+
+    style UI fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1
+    style Tokio fill:#fef08a,stroke:#ca8a04,color:#854d0e
+    style Pool fill:#dcfce7,stroke:#16a34a,color:#15803d
 ```
 
 ---
