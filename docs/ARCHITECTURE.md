@@ -61,7 +61,9 @@ I deliberately chose **not** to use SQLite, RocksDB, IndexedDB, or LocalStorage 
 - **Privacy**: When you close the app, your file paths, folder names, and directory structure disappear from memory. Nothing is left on disk.
 - **Disk Overhead**: A full drive index can easily take 500MB–2GB of database storage on disk. A disk cleaning tool shouldn't waste the space it's trying to recover.
 
-The only file ByteMap writes to disk is a small preferences file at `%APPDATA%\ByteMap\config.json`, which only stores non-sensitive settings (theme, binary vs. decimal units, and default ignore patterns).
+The only data ByteMap persists to disk are:
+1. User preferences at `%APPDATA%\ByteMap\config.json` (theme, binary vs. decimal units, and default ignore patterns).
+2. Optional Time Machine baseline signatures (~35KB lightweight JSON files of folder path hashes and sizes) only when you explicitly click "Save Baseline Snapshot".
 
 ---
 
