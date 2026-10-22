@@ -138,10 +138,14 @@ impl Scanner {
 
             if metadata.is_dir() {
                 scanned_directories += 1;
-                direct_dir_sizes.entry(path.to_path_buf()).or_insert((0, 0, 0));
+                direct_dir_sizes
+                    .entry(path.to_path_buf())
+                    .or_insert((0, 0, 0));
 
                 if let Some(parent) = path.parent() {
-                    let p_entry = direct_dir_sizes.entry(parent.to_path_buf()).or_insert((0, 0, 0));
+                    let p_entry = direct_dir_sizes
+                        .entry(parent.to_path_buf())
+                        .or_insert((0, 0, 0));
                     p_entry.2 += 1; // Increment direct subdir count
                 }
             } else if metadata.is_file() {
@@ -186,7 +190,9 @@ impl Scanner {
 
                 // Add size to immediate parent directory ONLY (O(1), zero multi-level allocations)
                 if let Some(parent) = path.parent() {
-                    let d_entry = direct_dir_sizes.entry(parent.to_path_buf()).or_insert((0, 0, 0));
+                    let d_entry = direct_dir_sizes
+                        .entry(parent.to_path_buf())
+                        .or_insert((0, 0, 0));
                     d_entry.0 += size;
                     d_entry.1 += 1;
                 }
@@ -239,11 +245,9 @@ impl Scanner {
                         || file_name.ends_with(".old");
 
                     let is_installer = ext == "iso" || ext == "dmg" || ext == "msi";
-                    let is_large_archive = (ext == "zip"
-                        || ext == "tar"
-                        || ext == "gz"
-                        || ext == "7z")
-                        && size > one_hundred_mb;
+                    let is_large_archive =
+                        (ext == "zip" || ext == "tar" || ext == "gz" || ext == "7z")
+                            && size > one_hundred_mb;
                     let is_download = path_lower.contains("downloads") && size > fifty_mb;
 
                     if is_temp {
@@ -298,9 +302,12 @@ impl Scanner {
                             id: format!("clean_arch_{}_{}", scanned_files, size),
                             r#type: CleanupType::LargeArchive,
                             title: format!("Large archive: {}", file_name),
-                            description: "Large compressed archive consuming substantial space.".to_string(),
+                            description: "Large compressed archive consuming substantial space."
+                                .to_string(),
                             risk_level: RiskLevel::Moderate,
-                            risk_explanation: "Ensure contents are extracted or backed up before deletion.".to_string(),
+                            risk_explanation:
+                                "Ensure contents are extracted or backed up before deletion."
+                                    .to_string(),
                             file: ScannedFile {
                                 id: format!("{}_{}", scanned_files, size),
                                 name: file_name,
@@ -321,7 +328,8 @@ impl Scanner {
                             title: format!("Large download: {}", file_name),
                             description: "Large file in Downloads folder.".to_string(),
                             risk_level: RiskLevel::Low,
-                            risk_explanation: "Check whether you still need this downloaded asset.".to_string(),
+                            risk_explanation: "Check whether you still need this downloaded asset."
+                                .to_string(),
                             file: ScannedFile {
                                 id: format!("{}_{}", scanned_files, size),
                                 name: file_name,
@@ -366,10 +374,8 @@ impl Scanner {
         });
 
         // Convert Min-Heap into sorted top 100 largest files (descending order)
-        let mut largest_files: Vec<ScannedFile> = largest_files_heap
-            .into_iter()
-            .map(|c| c.file)
-            .collect();
+        let mut largest_files: Vec<ScannedFile> =
+            largest_files_heap.into_iter().map(|c| c.file).collect();
         largest_files.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
 
         // Bottom-up hierarchical rollup: compute recursive folder sizes in one quick pass

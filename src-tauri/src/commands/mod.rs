@@ -303,5 +303,8 @@ pub fn clean_dev_caches(
     target_ids: Vec<String>,
     prefer_trash: bool,
 ) -> Result<DevCacheCleanSummary, AppError> {
-    Ok(DevCacheScanner::clean_cache_targets(&target_ids, prefer_trash))
+    Ok(DevCacheScanner::clean_cache_targets(
+        &target_ids,
+        prefer_trash,
+    ))
 }

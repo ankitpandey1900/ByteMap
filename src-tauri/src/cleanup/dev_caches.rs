@@ -1,8 +1,6 @@
-use std::path::{Path, PathBuf};
-use serde::{Deserialize, Serialize};
-use crate::errors::{AppError, AppResult};
 use crate::models::RiskLevel;
-use crate::security::PathValidator;
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DevCacheItem {
@@ -67,7 +65,10 @@ impl DevCacheScanner {
             }
 
             // Antigravity Browser Profile & AI Model Weights
-            let ag_profile_model = h.join(".gemini").join("antigravity-browser-profile").join("OptGuideOnDeviceModel");
+            let ag_profile_model = h
+                .join(".gemini")
+                .join("antigravity-browser-profile")
+                .join("OptGuideOnDeviceModel");
             if ag_profile_model.exists() {
                 if let Some(item) = Self::inspect_cache_dir(
                     "antigravity_model",
@@ -84,7 +85,11 @@ impl DevCacheScanner {
             }
 
             // Antigravity Browser Profile Chromium Web Cache
-            let ag_profile_cache = h.join(".gemini").join("antigravity-browser-profile").join("Default").join("Cache");
+            let ag_profile_cache = h
+                .join(".gemini")
+                .join("antigravity-browser-profile")
+                .join("Default")
+                .join("Cache");
             if ag_profile_cache.exists() {
                 if let Some(item) = Self::inspect_cache_dir(
                     "antigravity_browser_cache",
@@ -429,7 +434,8 @@ impl DevCacheScanner {
     /// Purges the specified cache targets safely.
     pub fn clean_cache_targets(target_ids: &[String], prefer_trash: bool) -> DevCacheCleanSummary {
         let all_available = Self::scan_system_caches();
-        let target_set: std::collections::HashSet<&str> = target_ids.iter().map(|s| s.as_str()).collect();
+        let target_set: std::collections::HashSet<&str> =
+            target_ids.iter().map(|s| s.as_str()).collect();
 
         let mut total_freed_bytes = 0;
         let mut successful_count = 0;
@@ -471,7 +477,8 @@ impl DevCacheScanner {
             let op_res = if prefer_trash {
                 trash::delete(&path).map_err(|e| format!("Recycle bin deletion failed: {}", e))
             } else {
-                std::fs::remove_dir_all(&path).map_err(|e| format!("Directory removal failed: {}", e))
+                std::fs::remove_dir_all(&path)
+                    .map_err(|e| format!("Directory removal failed: {}", e))
             };
 
             match op_res {

@@ -151,14 +151,16 @@ impl PathValidator {
             )));
         }
 
-        if let Some(exp_size) = expected_size {
-            if metadata.len() != exp_size {
-                return Err(AppError::TargetChanged(format!(
-                    "File size has changed since scan (expected {} bytes, found {} bytes): {}",
-                    exp_size,
-                    metadata.len(),
-                    canonical_target.display()
-                )));
+        if metadata.is_file() {
+            if let Some(exp_size) = expected_size {
+                if metadata.len() != exp_size {
+                    return Err(AppError::TargetChanged(format!(
+                        "File size has changed since scan (expected {} bytes, found {} bytes): {}",
+                        exp_size,
+                        metadata.len(),
+                        canonical_target.display()
+                    )));
+                }
             }
         }
 
