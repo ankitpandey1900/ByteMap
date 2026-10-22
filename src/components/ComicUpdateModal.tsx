@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ScoutAvatar } from './ScoutMascot';
 import { ComicZapIcon } from './icons/ComicIcons';
+import { api } from '../lib/api';
 
 interface UpdateInfo {
   version: string;
@@ -17,8 +18,12 @@ export const ComicUpdateModal: React.FC = () => {
   const [updateHandle, setUpdateHandle] = useState<any>(null);
 
   useEffect(() => {
-    // Only check if running inside Tauri
-    if (typeof window === 'undefined' || !(window as any).__TAURI_INTERNALS__) {
+    // Only check in packaged production builds — disable in local dev mode so it never pops up
+    if (
+      typeof window === 'undefined' ||
+      !(window as any).__TAURI_INTERNALS__ ||
+      Boolean((import.meta as any)?.env?.DEV)
+    ) {
       return;
     }
 
@@ -54,6 +59,14 @@ export const ComicUpdateModal: React.FC = () => {
   const handleInstallAndRestart = async () => {
     if (!updateHandle) return;
 
+    // In local development, in-place binary swapping is disabled by Tauri
+    if (Boolean((import.meta as any)?.env?.DEV)) {
+      setErrorMsg(
+        'Automatic in-place update is disabled while running in Development Mode. Download the production installer below to test.'
+      );
+      return;
+    }
+
     try {
       setIsDownloading(true);
       setErrorMsg(null);
@@ -80,7 +93,7 @@ export const ComicUpdateModal: React.FC = () => {
     } catch (err: any) {
       console.error('Update installation failed:', err);
       setIsDownloading(false);
-      setErrorMsg(err?.message || 'Failed to download update. Please try again later.');
+      setErrorMsg(err?.message || 'Failed to download update automatically.');
     }
   };
 
@@ -144,10 +157,51 @@ export const ComicUpdateModal: React.FC = () => {
           </div>
         )}
 
-        {/* Error message */}
+        {/* Error message with direct manual download buttons */}
         {errorMsg && (
-          <div className="p-2 mb-4 bg-red-100 border-2 border-red-500 rounded-lg text-xs font-comicNeue font-bold text-red-700">
-            ⚠️ {errorMsg}
+          <div className="p-3 mb-4 bg-red-50 border-2 border-red-500 rounded-xl text-xs font-comicNeue text-red-900 space-y-2.5">
+            <div className="font-bold flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>{errorMsg}</span>
+            </div>
+            <p className="text-[11px] text-slate-700 leading-normal">
+              You can grab the official <strong>v{updateAvailable.version}</strong> installer directly from GitHub Releases or the website:
+            </p>
+            <div className="flex flex-wrap gap-2 pt-0.5">
+              <button
+                type="button"
+                onClick={() =>
+                  api.openExternalUrl(
+                    `https://github.com/ankitpandey1900/ByteMap/releases/download/v${updateAvailable.version}/ByteMap_${updateAvailable.version}_x64-setup.exe`
+                  )
+                }
+                className="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 active:translate-y-0.5 border-2 border-slate-900 rounded-lg text-slate-900 font-bangers text-xs uppercase tracking-wide shadow-comic-sm transition-all"
+              >
+                📥 Download Windows (.exe)
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  api.openExternalUrl(
+                    `https://github.com/ankitpandey1900/ByteMap/releases/download/v${updateAvailable.version}/ByteMap_${updateAvailable.version}_universal.dmg`
+                  )
+                }
+                className="px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 active:translate-y-0.5 border-2 border-slate-900 rounded-lg text-slate-900 font-bangers text-xs uppercase tracking-wide shadow-comic-sm transition-all"
+              >
+                🍏 Download macOS (.dmg)
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  api.openExternalUrl(
+                    `https://github.com/ankitpandey1900/ByteMap/releases/tag/v${updateAvailable.version}`
+                  )
+                }
+                className="px-3 py-1.5 bg-sky-300 hover:bg-sky-200 active:translate-y-0.5 border-2 border-slate-900 rounded-lg text-slate-900 font-bangers text-xs uppercase tracking-wide shadow-comic-sm transition-all"
+              >
+                🌐 View on GitHub
+              </button>
+            </div>
           </div>
         )}
 
