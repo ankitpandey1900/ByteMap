@@ -27,7 +27,9 @@ pub fn run() {
             commands::execute_cleanup,
             commands::reveal_in_folder,
             commands::load_settings,
-            commands::save_settings
+            commands::save_settings,
+            commands::scan_dev_caches,
+            commands::clean_dev_caches
         ])
         .run(tauri::generate_context!())
         .expect("error while running ByteMap application");

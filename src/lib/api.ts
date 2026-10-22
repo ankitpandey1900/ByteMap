@@ -3,6 +3,8 @@ import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import {
   AppSettings,
+  DevCacheCleanSummary,
+  DevCacheItem,
   DriveInfo,
   DuplicateGroup,
   ScanOptions,
@@ -277,6 +279,121 @@ export const api = {
     } catch {
       // ignore
     }
+  },
+
+  // Scan coding and IDE caches (Antigravity, VS Code, Cursor, npm, pnpm, Cargo, pip, gradle, etc.)
+  async scanDevCaches(): Promise<DevCacheItem[]> {
+    if (isTauri) {
+      return await invoke<DevCacheItem[]>('scan_dev_caches');
+    }
+    // Web mock preview
+    return [
+      {
+        id: 'antigravity_brain',
+        tool: 'Antigravity IDE',
+        tool_icon: 'brain',
+        name: 'Session Brain & Recordings',
+        description: 'Temporary subagent recordings, video logs, and scratch files.',
+        path: 'C:\\Users\\User\\.gemini\\antigravity-ide\\brain',
+        size_bytes: 12008 * 1024 * 1024,
+        file_count: 8420,
+        safety_level: 'safe',
+        safety_explanation: '100% safe to clear. Temp logs and session scratch.',
+      },
+      {
+        id: 'antigravity_model',
+        tool: 'Antigravity IDE',
+        tool_icon: 'sparkles',
+        name: 'AI Model Weights (weights.bin)',
+        description: 'On-device model cache for browser subagents.',
+        path: 'C:\\Users\\User\\.gemini\\antigravity-browser-profile\\OptGuideOnDeviceModel',
+        size_bytes: 4798 * 1024 * 1024,
+        file_count: 3,
+        safety_level: 'safe',
+        safety_explanation: 'Safe to remove. Weights will re-download if needed.',
+      },
+      {
+        id: 'npm_cache',
+        tool: 'npm',
+        tool_icon: 'package',
+        name: 'Global Package Tarball Cache',
+        description: 'Cached .tgz package downloads.',
+        path: 'C:\\Users\\User\\AppData\\Local\\npm-cache',
+        size_bytes: 13275 * 1024 * 1024,
+        file_count: 42300,
+        safety_level: 'safe',
+        safety_explanation: '100% safe to purge (npm cache clean).',
+      },
+      {
+        id: 'vscode_cache',
+        tool: 'VS Code',
+        tool_icon: 'code',
+        name: 'V8 AST & Extension Web Cache',
+        description: 'Cached editor runtime data and workspaceStorage.',
+        path: 'C:\\Users\\User\\AppData\\Roaming\\Code\\Cache',
+        size_bytes: 735 * 1024 * 1024,
+        file_count: 1420,
+        safety_level: 'safe',
+        safety_explanation: 'Safe to clear. Rebuilds on editor launch.',
+      },
+      {
+        id: 'cursor_cache',
+        tool: 'Cursor AI',
+        tool_icon: 'sparkles',
+        name: 'Cursor AI Embeddings & Cache',
+        description: 'Temporary AI model completions and AST storage.',
+        path: 'C:\\Users\\User\\AppData\\Roaming\\Cursor\\Cache',
+        size_bytes: 170 * 1024 * 1024,
+        file_count: 450,
+        safety_level: 'safe',
+        safety_explanation: 'Safe to purge. Re-indexes when opened.',
+      },
+      {
+        id: 'pnpm_cache',
+        tool: 'pnpm',
+        tool_icon: 'package',
+        name: 'pnpm Download Metadata Cache',
+        description: 'HTTP response metadata for pnpm installs.',
+        path: 'C:\\Users\\User\\AppData\\Local\\pnpm-cache',
+        size_bytes: 734 * 1024 * 1024,
+        file_count: 2200,
+        safety_level: 'safe',
+        safety_explanation: '100% safe to clear.',
+      },
+      {
+        id: 'gradle_cache',
+        tool: 'Gradle',
+        tool_icon: 'coffee',
+        name: 'Gradle Wrapper & Dependency Jars',
+        description: 'Cached distribution jars and build daemon hashes.',
+        path: 'C:\\Users\\User\\.gradle\\caches',
+        size_bytes: 1094 * 1024 * 1024,
+        file_count: 6700,
+        safety_level: 'safe',
+        safety_explanation: 'Safe to purge. Re-downloads on project build.',
+      },
+    ];
+  },
+
+  // Purge selected coding caches
+  async cleanDevCaches(targetIds: string[], preferTrash: boolean): Promise<DevCacheCleanSummary> {
+    if (isTauri) {
+      return await invoke<DevCacheCleanSummary>('clean_dev_caches', {
+        targetIds,
+        preferTrash,
+      });
+    }
+    return {
+      total_freed_bytes: targetIds.length * 1024 * 1024 * 500,
+      successful_count: targetIds.length,
+      failed_count: 0,
+      results: targetIds.map((id) => ({
+        id,
+        path: `C:\\Mock\\${id}`,
+        success: true,
+        bytes_freed: 1024 * 1024 * 500,
+      })),
+    };
   },
 
   // Event listener for scan progress

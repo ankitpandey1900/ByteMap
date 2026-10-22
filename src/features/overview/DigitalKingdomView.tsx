@@ -191,6 +191,8 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
     selectedCleanupIds,
     toggleCleanupSelection,
     setSearchQuery,
+    lastCleanupSummary,
+    clearLastCleanupSummary,
   } = useAppStore();
 
   const [minThresholdMB, setMinThresholdMB] = useState<number>(10);
@@ -426,6 +428,29 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
 
   return (
     <div className="flex flex-col min-h-full space-y-3.5 pb-6 select-none font-sans text-slate-900">
+      {/* Live Storage Reclaim Celebration Banner */}
+      {lastCleanupSummary && (
+        <div className="p-3.5 bg-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between text-xs font-fredoka font-bold text-slate-900 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center space-x-3">
+            <span className="text-xl">🎉</span>
+            <div>
+              <span className="font-comic text-sm uppercase text-slate-900">
+                Storage Reclaimed: {formatBytes(lastCleanupSummary.freedBytes, settings.unit)}!
+              </span>
+              <span className="text-slate-700 ml-2 font-medium">
+                {lastCleanupSummary.count} targets pruned. Active drive capacity updated in real time.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={clearLastCleanupSummary}
+            className="px-2.5 py-1 rounded-lg border border-slate-900 bg-white hover:bg-slate-50 font-comic text-[10px] uppercase shadow-comic-sm cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* 3-Column Comic Pop-Art Dashboard Layout */}
       <div className="grid grid-cols-12 gap-3.5 w-full">
         {/* =========================================

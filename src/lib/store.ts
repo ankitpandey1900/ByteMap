@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/api';
 import {
   ActiveTab,
   AppSettings,
@@ -45,11 +46,15 @@ interface AppState {
   minSizeBytes: number;
   setMinSizeBytes: (bytes: number) => void;
 
-  // Cleanup selection
+  // Cleanup selection & Live Storage Synchronizer
   selectedCleanupIds: Set<string>;
   toggleCleanupSelection: (id: string) => void;
   selectAllCleanup: (ids?: string[]) => void;
   clearCleanupSelection: () => void;
+  applyCleanupResult: (freedBytes: number, deletedPaths: string[]) => void;
+  refreshDrives: () => Promise<void>;
+  lastCleanupSummary: { freedBytes: number; count: number; timestamp: number } | null;
+  clearLastCleanupSummary: () => void;
 
   // Settings
   settings: AppSettings;
@@ -158,6 +163,172 @@ export const useAppStore = create<AppState>((set) => ({
       };
     }),
   clearCleanupSelection: () => set({ selectedCleanupIds: new Set() }),
+
+  lastCleanupSummary: null,
+  clearLastCleanupSummary: () => set({ lastCleanupSummary: null }),
+
+  refreshDrives: async () => {
+    try {
+      const freshDrives = await api.getDrives();
+      set((state) => {
+        let updatedSelected = state.selectedDrive;
+        if (state.selectedDrive) {
+          const found = freshDrives.find(
+            (d) =>
+              d.id === state.selectedDrive?.id ||
+              d.mount_point.toLowerCase() === state.selectedDrive?.mount_point.toLowerCase()
+          );
+          if (found) updatedSelected = found;
+        }
+        return { drives: freshDrives, selectedDrive: updatedSelected };
+      });
+    } catch (err) {
+      console.error('Failed to refresh system drives:', err);
+    }
+  },
+
+  applyCleanupResult: (freedBytes: number, deletedPaths: string[]) => {
+    if (freedBytes <= 0 && deletedPaths.length === 0) return;
+
+    set((state) => {
+      const deletedSet = new Set(deletedPaths.map((p) => p.toLowerCase()));
+      const isPathDeleted = (path: string) => {
+        const lower = path.toLowerCase();
+        if (deletedSet.has(lower)) return true;
+        for (const dp of deletedSet) {
+          if (lower.startsWith(dp + '\\') || lower.startsWith(dp + '/')) return true;
+        }
+        return false;
+      };
+
+      // 1. Instantly update drive metrics in local state (0ms latency UI update)
+      const updatedDrives = state.drives.map((d) => {
+        const driveMount = d.mount_point.toLowerCase();
+        const driveIsAffected =
+          state.selectedDrive?.id === d.id ||
+          deletedPaths.some((p) => p.toLowerCase().startsWith(driveMount));
+
+        if (driveIsAffected) {
+          const newAvail = Math.min(d.total_bytes, d.available_bytes + freedBytes);
+          const newUsed = Math.max(0, d.total_bytes - newAvail);
+          return {
+            ...d,
+            available_bytes: newAvail,
+            used_bytes: newUsed,
+          };
+        }
+        return d;
+      });
+
+      let updatedSelectedDrive = state.selectedDrive;
+      if (updatedSelectedDrive) {
+        const match = updatedDrives.find((d) => d.id === updatedSelectedDrive?.id);
+        if (match) updatedSelectedDrive = match;
+      }
+
+      // 2. Filter scanSummary if present
+      let updatedSummary = state.scanSummary;
+      if (updatedSummary) {
+        const newTotalBytes = Math.max(0, updatedSummary.total_bytes - freedBytes);
+        const newLargestFiles = updatedSummary.largest_files.filter(
+          (f) => !isPathDeleted(f.path)
+        );
+        const newCleanupCandidates = updatedSummary.cleanup_candidates.filter(
+          (c) => !isPathDeleted(c.file.path)
+        );
+        const newLargestFolders = updatedSummary.largest_folders.filter(
+          (f) => !isPathDeleted(f.path)
+        );
+        const newDuplicateGroups = updatedSummary.duplicate_groups
+          .map((g) => {
+            const remainingFiles = g.files.filter((f) => !isPathDeleted(f.path));
+            const newReclaimable =
+              remainingFiles.length > 1
+                ? (remainingFiles.length - 1) * remainingFiles[0].size_bytes
+                : 0;
+            return {
+              ...g,
+              files: remainingFiles,
+              reclaimable_bytes: newReclaimable,
+            };
+          })
+          .filter((g) => g.files.length > 1);
+
+        // Recalculate categories
+        const newCategories = updatedSummary.categories.map((cat) => {
+          const catRatio =
+            updatedSummary!.total_bytes > 0
+              ? cat.total_bytes / updatedSummary!.total_bytes
+              : 0;
+          const adjustedCatBytes = Math.max(
+            0,
+            Math.round(cat.total_bytes - freedBytes * catRatio)
+          );
+          const adjustedPct =
+            newTotalBytes > 0
+              ? Math.round((adjustedCatBytes / newTotalBytes) * 100)
+              : 0;
+          return {
+            ...cat,
+            total_bytes: adjustedCatBytes,
+            percentage: adjustedPct,
+          };
+        });
+
+        updatedSummary = {
+          ...updatedSummary,
+          total_bytes: newTotalBytes,
+          total_files: Math.max(0, updatedSummary.total_files - deletedPaths.length),
+          largest_files: newLargestFiles,
+          cleanup_candidates: newCleanupCandidates,
+          largest_folders: newLargestFolders,
+          duplicate_groups: newDuplicateGroups,
+          categories: newCategories,
+        };
+      }
+
+      // 3. Clear selected IDs that were deleted
+      const updatedSelectedCleanupIds = new Set(
+        Array.from(state.selectedCleanupIds).filter(
+          (id) => !deletedSet.has(id.toLowerCase())
+        )
+      );
+
+      return {
+        drives: updatedDrives,
+        selectedDrive: updatedSelectedDrive,
+        scanSummary: updatedSummary,
+        selectedCleanupIds: updatedSelectedCleanupIds,
+        lastCleanupSummary: {
+          freedBytes,
+          count: deletedPaths.length,
+          timestamp: Date.now(),
+        },
+      };
+    });
+
+    // 4. Background re-query real OS drives via sysinfo for bit-perfect accuracy
+    api
+      .getDrives()
+      .then((freshDrives) => {
+        useAppStore.setState((state) => {
+          let matchedSelected = state.selectedDrive;
+          if (state.selectedDrive) {
+            const match = freshDrives.find(
+              (d) =>
+                d.id === state.selectedDrive?.id ||
+                d.mount_point.toLowerCase() === state.selectedDrive?.mount_point.toLowerCase()
+            );
+            if (match) matchedSelected = match;
+          }
+          return {
+            drives: freshDrives,
+            selectedDrive: matchedSelected,
+          };
+        });
+      })
+      .catch((err) => console.error('Background drive refresh error:', err));
+  },
 
   settings: defaultSettings,
   updateSettings: (newSettings) =>

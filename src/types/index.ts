@@ -163,3 +163,31 @@ export type ActiveTab =
   | 'duplicates'
   | 'cleanup'
   | 'settings';
+
+export interface DevCacheItem {
+  id: string;
+  tool: string;
+  tool_icon: string;
+  name: string;
+  description: string;
+  path: string;
+  size_bytes: number;
+  file_count: number;
+  safety_level: RiskLevel;
+  safety_explanation: string;
+}
+
+export interface DevCacheCleanResult {
+  id: string;
+  path: string;
+  success: boolean;
+  bytes_freed: number;
+  error?: string;
+}
+
+export interface DevCacheCleanSummary {
+  total_freed_bytes: number;
+  successful_count: number;
+  failed_count: number;
+  results: DevCacheCleanResult[];
+}

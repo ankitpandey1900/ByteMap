@@ -3,7 +3,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, State};
 
-use crate::cleanup::{CleanupExecutionSummary, CleanupExecutor};
+use crate::cleanup::{
+    CleanupExecutionSummary, CleanupExecutor, DevCacheCleanSummary, DevCacheItem, DevCacheScanner,
+};
 use crate::drives::DriveDiscovery;
 use crate::duplicates::DuplicateDetector;
 use crate::errors::AppError;
@@ -289,4 +291,17 @@ pub fn save_settings(settings: AppSettings) -> Result<(), AppError> {
             "Could not determine user config directory".to_string(),
         ))
     }
+}
+
+#[tauri::command]
+pub fn scan_dev_caches() -> Vec<DevCacheItem> {
+    DevCacheScanner::scan_system_caches()
+}
+
+#[tauri::command]
+pub fn clean_dev_caches(
+    target_ids: Vec<String>,
+    prefer_trash: bool,
+) -> Result<DevCacheCleanSummary, AppError> {
+    Ok(DevCacheScanner::clean_cache_targets(&target_ids, prefer_trash))
 }

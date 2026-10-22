@@ -144,9 +144,9 @@ impl PathValidator {
 
         let metadata = std::fs::metadata(&canonical_target).map_err(|e| AppError::Io(e))?;
 
-        if !metadata.is_file() {
+        if !metadata.is_file() && !metadata.is_dir() {
             return Err(AppError::InvalidPath(format!(
-                "Target is not a regular file: {}",
+                "Target is neither a regular file nor a directory: {}",
                 canonical_target.display()
             )));
         }

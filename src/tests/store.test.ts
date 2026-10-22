@@ -81,4 +81,103 @@ describe('useAppStore ephemeral state store', () => {
     useAppStore.getState().clearScan();
     expect(useAppStore.getState().scanSummary).toBeNull();
   });
+
+  it('instantly updates drive metrics and prunes deleted paths via applyCleanupResult', () => {
+    const mockDrive: DriveInfo = {
+      id: 'C:\\',
+      name: 'OS Disk (C:)',
+      mount_point: 'C:\\',
+      filesystem: 'NTFS',
+      total_bytes: 500000,
+      available_bytes: 200000,
+      used_bytes: 300000,
+      is_removable: false,
+      is_read_only: false,
+    };
+    useAppStore.getState().setDrives([mockDrive]);
+    useAppStore.getState().setSelectedDrive(mockDrive);
+
+    const mockSummary: ScanSummary = {
+      root_path: 'C:\\',
+      total_bytes: 100000,
+      total_files: 5,
+      total_directories: 2,
+      scan_duration_ms: 120,
+      error_count: 0,
+      errors: [],
+      largest_files: [
+        {
+          id: 'f1',
+          name: 'large_cache.tmp',
+          path: 'C:\\Users\\user\\large_cache.tmp',
+          size_bytes: 40000,
+          category: 'other',
+          extension: 'tmp',
+          modified_at: 1000,
+          is_hidden: false,
+          is_system: false,
+        },
+        {
+          id: 'f2',
+          name: 'safe_document.pdf',
+          path: 'C:\\Users\\user\\safe_document.pdf',
+          size_bytes: 60000,
+          category: 'document',
+          extension: 'pdf',
+          modified_at: 1000,
+          is_hidden: false,
+          is_system: false,
+        },
+      ],
+      largest_folders: [],
+      categories: [
+        { category: 'other', total_bytes: 40000, file_count: 1, percentage: 40 },
+        { category: 'document', total_bytes: 60000, file_count: 1, percentage: 60 },
+      ],
+      extensions: [],
+      duplicate_groups: [],
+      cleanup_candidates: [
+        {
+          id: 'c1',
+          type: 'temp_file',
+          title: 'Temp Cache',
+          description: 'Temporary junk file',
+          file: {
+            id: 'f1',
+            name: 'large_cache.tmp',
+            path: 'C:\\Users\\user\\large_cache.tmp',
+            size_bytes: 40000,
+            category: 'other',
+            extension: 'tmp',
+            modified_at: 1000,
+            is_hidden: false,
+            is_system: false,
+          },
+          risk_level: 'safe',
+          risk_explanation: 'Completely safe to delete',
+          suggested_action: 'trash',
+        },
+      ],
+      timestamp: new Date().toISOString(),
+    };
+    useAppStore.getState().setScanSummary(mockSummary);
+
+    // Act: apply cleanup of 40,000 bytes
+    useAppStore.getState().applyCleanupResult(40000, ['C:\\Users\\user\\large_cache.tmp']);
+
+    const state = useAppStore.getState();
+    // 1. Storage available increases by 40,000 bytes immediately
+    expect(state.selectedDrive?.available_bytes).toBe(240000);
+    expect(state.selectedDrive?.used_bytes).toBe(260000);
+
+    // 2. ScanSummary is pruned
+    expect(state.scanSummary?.total_bytes).toBe(60000);
+    expect(state.scanSummary?.largest_files.length).toBe(1);
+    expect(state.scanSummary?.largest_files[0].id).toBe('f2');
+    expect(state.scanSummary?.cleanup_candidates.length).toBe(0);
+
+    // 3. Last cleanup summary is recorded
+    expect(state.lastCleanupSummary?.freedBytes).toBe(40000);
+    expect(state.lastCleanupSummary?.count).toBe(1);
+  });
 });

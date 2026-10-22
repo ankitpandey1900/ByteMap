@@ -56,14 +56,21 @@ impl CleanupExecutor {
                 }
             };
 
-            let file_size = std::fs::metadata(&validated_path)
-                .map(|m| m.len())
-                .unwrap_or(0);
+            let is_directory = validated_path.is_dir();
+            let file_size = if is_directory {
+                crate::cleanup::dev_caches::DevCacheScanner::calculate_dir_stats(&validated_path).0
+            } else {
+                std::fs::metadata(&validated_path)
+                    .map(|m| m.len())
+                    .unwrap_or(0)
+            };
 
             let operation_res = if prefer_trash {
                 trash::delete(&validated_path).map_err(|e| {
-                    AppError::TrashFailed(format!("Failed to move file to trash: {}", e))
+                    AppError::TrashFailed(format!("Failed to move target to trash: {}", e))
                 })
+            } else if is_directory {
+                std::fs::remove_dir_all(&validated_path).map_err(AppError::Io)
             } else {
                 std::fs::remove_file(&validated_path).map_err(AppError::Io)
             };

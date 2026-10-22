@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Trash2,
   AlertTriangle,
-  ShieldCheck,
   CheckCircle2,
   ExternalLink,
   Info,
@@ -15,6 +14,7 @@ import {
   Square,
   Code2,
   FolderMinus,
+  Sparkles,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBytes, cleanDisplayPath } from '@/lib/utils';
@@ -22,6 +22,7 @@ import { api, CleanupExecutionResult } from '@/lib/api';
 import { RiskLevel } from '@/types';
 import { DevArtifactsCard } from './DevArtifactsCard';
 import { EmptyFoldersCard } from './EmptyFoldersCard';
+import { DevCachesCard } from './DevCachesCard';
 
 export const CleanupTab: React.FC = () => {
   const {
@@ -31,9 +32,10 @@ export const CleanupTab: React.FC = () => {
     toggleCleanupSelection,
     selectAllCleanup,
     clearCleanupSelection,
+    applyCleanupResult,
   } = useAppStore();
 
-  const [cleanupView, setCleanupView] = useState<'junk' | 'dev' | 'empty'>('junk');
+  const [cleanupView, setCleanupView] = useState<'dev_caches' | 'junk' | 'dev' | 'empty'>('dev_caches');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [isExecuting, setIsExecuting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -70,6 +72,10 @@ export const CleanupTab: React.FC = () => {
       const res = await api.executeCleanup(targets, settings.prefer_trash);
       setLastResult(res);
       clearCleanupSelection();
+
+      // LIVE STORAGE SYNCHRONIZER: Update storage gauges & metrics immediately!
+      const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
+      applyCleanupResult(res.total_freed_bytes, successPaths);
     } catch (err) {
       console.error('Cleanup execution failed:', err);
     } finally {
@@ -123,25 +129,6 @@ export const CleanupTab: React.FC = () => {
     }
   };
 
-  if (!scanSummary) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
-        <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
-          <Trash2 className="w-8 h-8 text-slate-900" />
-        </div>
-        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
-          Cleanup Station Idle
-        </div>
-        <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
-          No Storage Scouted Yet
-        </h3>
-        <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
-          Click <strong>ANALYZE</strong> to scout your drive and detect safe reclaimable files, obsolete installers, and temp files.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4 w-full select-none font-sans text-slate-900">
       {/* Top Banner Card */}
@@ -149,23 +136,23 @@ export const CleanupTab: React.FC = () => {
         <div>
           <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 mb-1">
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Safe Cleanup Intelligence</span>
+            <span>Safe Cleanup Intelligence Hub</span>
           </div>
           <h2 className="font-bangers text-2xl text-slate-900 uppercase tracking-wider mt-1">
             Reclaim Valuable Disk Space
           </h2>
           <p className="text-xs font-comicNeue font-bold text-slate-600">
-            Conservative recommendations for space recovery. Zero automated deletion; files go to OS Recycle Bin.
+            Conservative recommendations for space recovery. Clear coding & IDE caches, project builds, and temporary junk safely.
           </p>
         </div>
 
-        {cleanupView === 'junk' && (
+        {cleanupView === 'junk' && scanSummary && (
           <div className="flex items-center space-x-3">
             {selectedCleanupIds.size > 0 ? (
               <button
                 onClick={() => setShowConfirmModal(true)}
                 disabled={isExecuting}
-                className="flex items-center space-x-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-sm uppercase tracking-wider border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+                className="flex items-center space-x-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-sm uppercase tracking-wider border-2.5 border-slate-900 rounded-xl shadow-comic transition-all hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>
@@ -175,7 +162,7 @@ export const CleanupTab: React.FC = () => {
             ) : (
               <button
                 onClick={() => selectAllCleanup()}
-                className="px-4 py-2 bg-amber-300 hover:bg-amber-400 border-2 border-slate-900 font-bangers text-sm uppercase tracking-wider text-slate-900 rounded-xl shadow-comic-sm transition-all"
+                className="px-4 py-2 bg-amber-300 hover:bg-amber-400 border-2 border-slate-900 font-bangers text-sm uppercase tracking-wider text-slate-900 rounded-xl shadow-comic-sm transition-all cursor-pointer"
               >
                 Select All Recommendations
               </button>
@@ -188,7 +175,7 @@ export const CleanupTab: React.FC = () => {
       {lastResult && (
         <div className="p-4 bg-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between text-xs font-fredoka font-bold">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-400 border-2 border-slate-900 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-400 border-2 border-slate-900 flex items-center justify-center shrink-0 shadow-comic-sm">
               <CheckCircle2 className="w-5 h-5 text-slate-900" />
             </div>
             <div>
@@ -204,7 +191,7 @@ export const CleanupTab: React.FC = () => {
           </div>
           <button
             onClick={() => setLastResult(null)}
-            className="px-2.5 py-1 rounded-lg border border-slate-900 bg-white font-comic text-[10px] uppercase shadow-comic-sm"
+            className="px-2.5 py-1 rounded-lg border border-slate-900 bg-white hover:bg-slate-50 font-comic text-[10px] uppercase shadow-comic-sm cursor-pointer"
           >
             Dismiss
           </button>
@@ -214,8 +201,20 @@ export const CleanupTab: React.FC = () => {
       {/* Cleanup Sub-Station Selector Tabs */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border-2.5 border-slate-900 shadow-comic-sm">
         <button
+          onClick={() => setCleanupView('dev_caches')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all cursor-pointer ${
+            cleanupView === 'dev_caches'
+              ? 'bg-sky-400 text-slate-900 shadow-comic -translate-y-0.5'
+              : 'bg-white hover:bg-sky-100 text-slate-700 shadow-comic-sm'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-sky-800" />
+          <span>⚡ Coding & IDE Caches</span>
+        </button>
+
+        <button
           onClick={() => setCleanupView('junk')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all cursor-pointer ${
             cleanupView === 'junk'
               ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5'
               : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
@@ -227,7 +226,7 @@ export const CleanupTab: React.FC = () => {
 
         <button
           onClick={() => setCleanupView('dev')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all cursor-pointer ${
             cleanupView === 'dev'
               ? 'bg-purple-400 text-slate-900 shadow-comic -translate-y-0.5'
               : 'bg-white hover:bg-purple-100 text-slate-700 shadow-comic-sm'
@@ -239,7 +238,7 @@ export const CleanupTab: React.FC = () => {
 
         <button
           onClick={() => setCleanupView('empty')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all cursor-pointer ${
             cleanupView === 'empty'
               ? 'bg-emerald-400 text-slate-900 shadow-comic -translate-y-0.5'
               : 'bg-white hover:bg-emerald-100 text-slate-700 shadow-comic-sm'
@@ -250,28 +249,75 @@ export const CleanupTab: React.FC = () => {
         </button>
       </div>
 
-      {/* Developer Artifacts Sweeper View */}
-      {cleanupView === 'dev' && (
+      {/* 1. Dedicated Coding & IDE Caches Sweeper (Available Immediately) */}
+      {cleanupView === 'dev_caches' && (
+        <DevCachesCard
+          preferTrash={settings.prefer_trash}
+          unit={settings.unit}
+          onCleanupComplete={(summary) => {
+            setLastResult({
+              total_freed_bytes: summary.total_freed_bytes,
+              successful_count: summary.successful_count,
+              failed_count: summary.failed_count,
+              results: summary.results.map((r) => ({
+                path: r.path,
+                success: r.success,
+                bytes_freed: r.bytes_freed,
+                error: r.error,
+              })),
+            });
+          }}
+        />
+      )}
+
+      {/* For views requiring a scanned drive inventory */}
+      {cleanupView !== 'dev_caches' && !scanSummary && (
+        <div className="flex flex-col items-center justify-center h-full min-h-[380px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
+          <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
+            <Trash2 className="w-8 h-8 text-slate-900" />
+          </div>
+          <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
+            Drive Scan Required
+          </div>
+          <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
+            Drive Scout Not Performed
+          </h3>
+          <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
+            Click <strong>ANALYZE</strong> to scout your drive and detect safe reclaimable files, obsolete installers, and temp files. Or switch to <strong>⚡ Coding & IDE Caches</strong> above to purge developer caches right away.
+          </p>
+        </div>
+      )}
+
+      {/* 2. Developer Artifacts Sweeper View */}
+      {cleanupView === 'dev' && scanSummary && (
         <DevArtifactsCard
           folders={scanSummary.largest_folders}
           preferTrash={settings.prefer_trash}
           unit={settings.unit}
-          onCleanupComplete={(res) => setLastResult(res)}
+          onCleanupComplete={(res) => {
+            setLastResult(res);
+            const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
+            applyCleanupResult(res.total_freed_bytes, successPaths);
+          }}
         />
       )}
 
-      {/* Empty Folders & Zero-Byte Ghosts View */}
-      {cleanupView === 'empty' && (
+      {/* 3. Empty Folders & Zero-Byte Ghosts View */}
+      {cleanupView === 'empty' && scanSummary && (
         <EmptyFoldersCard
           folders={scanSummary.largest_folders}
           largestFiles={scanSummary.largest_files}
           preferTrash={settings.prefer_trash}
-          onCleanupComplete={(res) => setLastResult(res)}
+          onCleanupComplete={(res) => {
+            setLastResult(res);
+            const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
+            applyCleanupResult(res.total_freed_bytes, successPaths);
+          }}
         />
       )}
 
-      {/* Safe Junk & Cache Recommendations View */}
-      {cleanupView === 'junk' && (
+      {/* 4. Safe Junk & Cache Recommendations View */}
+      {cleanupView === 'junk' && scanSummary && (
         <>
           {/* Filter Tabs */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
@@ -279,7 +325,7 @@ export const CleanupTab: React.FC = () => {
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`px-3 py-1.5 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all ${
+                className={`px-3 py-1.5 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all cursor-pointer ${
                   activeFilter === f
                     ? 'bg-amber-400 text-slate-900 shadow-comic translate-y-[-1px]'
                     : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
@@ -292,7 +338,7 @@ export const CleanupTab: React.FC = () => {
             {selectedCleanupIds.size > 0 && (
               <button
                 onClick={clearCleanupSelection}
-                className="text-xs font-comic uppercase text-slate-700 hover:text-rose-600 underline ml-auto shrink-0"
+                className="text-xs font-comic uppercase text-slate-700 hover:text-rose-600 underline ml-auto shrink-0 cursor-pointer"
               >
                 Clear selection ({selectedCleanupIds.size})
               </button>
@@ -316,7 +362,7 @@ export const CleanupTab: React.FC = () => {
                   <div className="flex items-start space-x-3 truncate">
                     <button
                       type="button"
-                      className="mt-0.5 text-slate-900 shrink-0"
+                      className="mt-0.5 text-slate-900 shrink-0 cursor-pointer"
                     >
                       {isSelected ? (
                         <CheckSquare className="w-5 h-5 text-amber-600 fill-amber-300" />
@@ -328,7 +374,7 @@ export const CleanupTab: React.FC = () => {
                     <div className="truncate">
                       <div className="flex items-center space-x-2">
                         {getTypeIcon(candidate.type)}
-                        <h4 className="font-comic text-xs uppercase tracking-wide text-slate-900 truncate">
+                        <h4 className="font-comic text-xs uppercase tracking-wide text-slate-900 truncate font-bold">
                           {candidate.title}
                         </h4>
                         {getRiskBadge(candidate.risk_level)}
@@ -348,21 +394,16 @@ export const CleanupTab: React.FC = () => {
                   </div>
 
                   <div className="flex items-center space-x-4 shrink-0 pl-8 md:pl-0">
-                    <div className="text-right">
-                      <span className="font-comic text-sm text-slate-900">
-                        {formatBytes(candidate.file.size_bytes, settings.unit)}
-                      </span>
-                      <p className="text-[10px] font-fredoka font-bold text-slate-500 capitalize">
-                        {settings.prefer_trash ? 'Recycle Bin' : 'Permanent'}
-                      </p>
-                    </div>
+                    <span className="font-comic text-sm font-bold text-slate-900">
+                      {formatBytes(candidate.file.size_bytes, settings.unit)}
+                    </span>
 
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleReveal(candidate.file.path);
                       }}
-                      className="p-1.5 rounded-lg border border-slate-900 bg-white hover:bg-amber-200 text-slate-900 shadow-comic-sm transition-colors"
+                      className="p-1 rounded-lg border border-slate-900 bg-white hover:bg-amber-200 text-slate-900 shadow-comic-sm transition-colors cursor-pointer"
                       title="Reveal in native file explorer"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -373,13 +414,11 @@ export const CleanupTab: React.FC = () => {
             })}
 
             {filteredCandidates.length === 0 && (
-              <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border-2 border-slate-900 shadow-comic">
-                <ShieldCheck className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
-                <h4 className="font-comic text-sm uppercase text-slate-900">
-                  No cleanup candidates in this category
-                </h4>
-                <p className="text-xs font-fredoka font-semibold text-slate-600 mt-1">
-                  Your scanned storage does not contain obsolete temporary files or leftover archives.
+              <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic">
+                <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+                <h4 className="font-comic text-sm uppercase text-slate-900">No candidates found</h4>
+                <p className="text-xs font-fredoka font-semibold text-slate-600">
+                  No {activeFilter === 'all' ? 'cleanup' : activeFilter.replace('_', ' ')} candidates detected in the current scan.
                 </p>
               </div>
             )}
@@ -389,54 +428,48 @@ export const CleanupTab: React.FC = () => {
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none">
-          <div className="bg-white border-2.5 border-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-comic-xl font-sans text-slate-900 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center space-x-3 text-red-600">
-              <div className="w-10 h-10 rounded-xl bg-red-100 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border-3 border-slate-900 rounded-3xl p-6 max-w-md w-full shadow-comic space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0">
+                <AlertTriangle className="w-6 h-6 text-slate-900" />
               </div>
               <div>
-                <span className="font-comic text-[10px] uppercase text-red-600">Safety Check</span>
-                <h3 className="font-comic text-base uppercase text-slate-900">
-                  Confirm Safe Cleanup
+                <h3 className="font-comic text-xl uppercase tracking-wide text-slate-900">
+                  Confirm Cleanup
                 </h3>
+                <p className="text-xs font-fredoka font-semibold text-slate-600">
+                  {settings.prefer_trash
+                    ? 'Selected files will be moved to OS Recycle Bin.'
+                    : 'WARNING: Files will be permanently deleted!'}
+                </p>
               </div>
             </div>
 
-            <p className="text-xs font-fredoka font-semibold text-slate-700 leading-relaxed">
-              You are about to process{' '}
-              <strong className="text-slate-900">{selectedCandidates.length} files</strong>{' '}
-              recovering{' '}
-              <strong className="font-comic text-sm text-slate-900">
-                {formatBytes(totalSelectedBytes, settings.unit)}
-              </strong>{' '}
-              of disk storage.
-            </p>
-
-            <div className="p-3 bg-amber-50 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold space-y-1.5">
-              <div className="flex justify-between text-slate-700">
-                <span>Destination:</span>
-                <span className="text-slate-900 font-comic uppercase">
-                  {settings.prefer_trash ? 'OS Recycle Bin (Safe)' : 'Permanent Delete'}
+            <div className="p-3 bg-amber-50 border-2 border-slate-900 rounded-xl space-y-1 text-xs font-fredoka">
+              <div className="flex justify-between font-bold text-slate-900">
+                <span>Selected files:</span>
+                <span className="font-comic">{selectedCandidates.length}</span>
+              </div>
+              <div className="flex justify-between font-bold text-slate-900">
+                <span>Total space to recover:</span>
+                <span className="font-comic text-emerald-700">
+                  {formatBytes(totalSelectedBytes, settings.unit)}
                 </span>
               </div>
-              <div className="flex justify-between text-slate-700">
-                <span>Target validation:</span>
-                <span className="text-emerald-700 font-comic uppercase">Strict Path Verified</span>
-              </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-3 pt-2 border-t-2 border-slate-900">
+            <div className="flex items-center justify-end space-x-3 pt-2">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-slate-200 font-comic text-xs uppercase shadow-comic-sm"
+                className="px-4 py-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-slate-200 font-comic text-xs uppercase shadow-comic-sm cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleExecute}
                 disabled={isExecuting}
-                className="flex items-center space-x-1.5 px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-comic text-xs uppercase border-2 border-slate-900 shadow-comic"
+                className="flex items-center space-x-1.5 px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-comic text-xs uppercase border-2 border-slate-900 shadow-comic cursor-pointer"
               >
                 {isExecuting ? (
                   <>

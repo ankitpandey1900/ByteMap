@@ -45,18 +45,19 @@ Here is the overall layout of ByteMap and how the layers talk to each other:
                     - Commands: invoke("start_scan", { ... })
                     - Events: listen("scan_progress", ...) every 80ms
                                         │
-+---------------------------------------▼---------------------------------------+
++-------------------------------------------------------------------------------+
 |                            RUST CORE BACKEND                                  |
 |                                                                               |
 |   Scanner Worker               Duplicate Detector         Drive Discovery     |
-|   - WalkDir traversal          - Tier 1: File size match  - sysinfo::Disks    |
-|   - In-memory rollup           - Tier 2: 4KB prefix hash  - Mount points      |
-|   - 80ms progress batcher      - Tier 3: Streamed BLAKE3  - Free / used space |
+|   - Zero-handle entry walk     - Tier 1: File size match  - sysinfo::Disks    |
+|   - Flat dir size accumulation - Tier 2: 4KB prefix hash  - Mount points      |
+|   - Streaming Top-100 Min-Heap - Tier 3: Streamed BLAKE3  - Free / used space |
+|   - 150ms throttled batcher    - Reclaimable calculator   - Real-time refresh |
 |                                                                               |
-|   PathValidator Guard          Safe File Removal          Auto-Updater        |
-|   - Canonical path check       - trash::delete API        - Checks latest.json|
-|   - System folder blocklist    - Size recheck (TOCTOU)    - Minisign verify   |
-|   - Strips \\?\ NT prefixes    - Optional hard delete     - Pop-up alert      |
+|   PathValidator & Cleanup      Dev Caches Engine          Auto-Updater        |
+|   - File & Directory support   - Antigravity IDE & Model  - Checks latest.json|
+|   - System folder blocklist    - VS Code / Cursor caches  - Minisign verify   |
+|   - trash::delete / recursive  - npm / pnpm / Cargo / pip - Pop-up alert      |
 +---------------------------------------▲---------------------------------------+
                                         │
                            Operating System APIs
@@ -191,7 +192,7 @@ To answer *"Where did my disk space go overnight?"*:
 ByteMap includes a built-in cryptographic updater so you get notified when a new version drops:
 
 ```
-[ New Git Tag pushed (v1.0.6) ]
+[ New Git Tag pushed (v1.0.7) ]
               │
               ▼
 [ GitHub Actions Workflow ]
