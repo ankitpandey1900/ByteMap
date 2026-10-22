@@ -1,4 +1,5 @@
 use crate::models::RiskLevel;
+use crate::security::PathValidator;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 

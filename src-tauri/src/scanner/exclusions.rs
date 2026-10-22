@@ -38,7 +38,7 @@ impl ExclusionFilter {
     }
 }
 
-pub fn is_file_hidden(path: &Path, metadata: Option<&std::fs::Metadata>) -> bool {
+pub fn is_file_hidden(path: &Path, _metadata: Option<&std::fs::Metadata>) -> bool {
     // Unix-style hidden check: starts with '.' (zero syscalls)
     if let Some(file_name) = path.file_name() {
         if file_name.to_string_lossy().starts_with('.') {
@@ -49,7 +49,7 @@ pub fn is_file_hidden(path: &Path, metadata: Option<&std::fs::Metadata>) -> bool
     #[cfg(windows)]
     {
         use std::os::windows::fs::MetadataExt;
-        if let Some(meta) = metadata {
+        if let Some(meta) = _metadata {
             const FILE_ATTRIBUTE_HIDDEN: u32 = 0x2;
             const FILE_ATTRIBUTE_SYSTEM: u32 = 0x4;
             let attrs = meta.file_attributes();

@@ -37,7 +37,9 @@ impl PathValidator {
 
     /// Verifies if a path is considered a critical system path that must be protected.
     pub fn is_protected_system_path(path: &Path) -> bool {
-        let path_str = path.to_string_lossy().to_lowercase();
+        let raw_str = path.to_string_lossy().to_lowercase();
+        let path_str_slash = raw_str.replace('\\', "/");
+        let path_str_backslash = raw_str.replace('/', "\\");
 
         // Windows protected directories
         let protected_windows = [
@@ -51,7 +53,9 @@ impl PathValidator {
         ];
 
         for protected in &protected_windows {
-            if path_str == *protected || path_str.starts_with(&format!("{}\\", protected)) {
+            if path_str_backslash == *protected
+                || path_str_backslash.starts_with(&format!("{}\\", protected))
+            {
                 return true;
             }
         }
@@ -79,7 +83,9 @@ impl PathValidator {
         ];
 
         for protected in &protected_unix {
-            if path_str == *protected || path_str.starts_with(&format!("{}/", protected)) {
+            if path_str_slash == *protected
+                || path_str_slash.starts_with(&format!("{}/", protected))
+            {
                 return true;
             }
         }

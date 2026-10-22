@@ -59,7 +59,7 @@ pub struct ScanProgress {
     pub error_count: u64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ScannedFile {
     pub id: String,
     pub name: String,
