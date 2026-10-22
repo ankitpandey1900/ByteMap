@@ -63,12 +63,33 @@ jobs:
       - name: Run Quality Gate Tests
         run: pnpm test
 
+      - name: Sanitize Signing Key and Secrets
+        shell: bash
+        env:
+          RAW_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          RAW_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if [ -n "$RAW_KEY" ]; then
+            # Strip any carriage returns, newlines, or spaces that cause base64 decoding errors (e.g. invalid symbol 10)
+            CLEAN_KEY=$(printf '%s' "$RAW_KEY" | tr -d '\r\n[:space:]')
+            echo "CLEAN_SIGNING_KEY=$CLEAN_KEY" >> $GITHUB_ENV
+          else
+            echo "CLEAN_SIGNING_KEY=" >> $GITHUB_ENV
+          fi
+
+          if [ -n "$RAW_PASSWORD" ]; then
+            CLEAN_PASS=$(printf '%s' "$RAW_PASSWORD" | tr -d '\r\n')
+            echo "CLEAN_SIGNING_PASSWORD=$CLEAN_PASS" >> $GITHUB_ENV
+          else
+            echo "CLEAN_SIGNING_PASSWORD=" >> $GITHUB_ENV
+          fi
+
       - name: Build Tauri Application
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ env.CLEAN_SIGNING_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ env.CLEAN_SIGNING_PASSWORD }}
         with:
           tagName: v__VERSION__
           releaseName: 'ByteMap v__VERSION__'
