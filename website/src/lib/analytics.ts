@@ -18,7 +18,7 @@ export function initAnalytics() {
   }
 
   // Avoid injecting script multiple times
-  if (document.getElementById('ga-script')) {
+  if (document.getElementById('ga-script') || (typeof window !== 'undefined' && typeof (window as any).gtag === 'function')) {
     return;
   }
 
