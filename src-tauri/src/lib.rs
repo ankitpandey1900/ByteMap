@@ -26,6 +26,7 @@ pub fn run() {
             commands::find_duplicates,
             commands::execute_cleanup,
             commands::reveal_in_folder,
+            commands::open_recycle_bin,
             commands::load_settings,
             commands::save_settings,
             commands::scan_dev_caches,

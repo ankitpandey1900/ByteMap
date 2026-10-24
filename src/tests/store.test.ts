@@ -202,4 +202,102 @@ describe('useAppStore ephemeral state store', () => {
     useAppStore.getState().applyCleanupResult(1024000, ['C:\\Users\\user\\AppData\\Local\\npm-cache']);
     expect(useAppStore.getState().devCaches?.length).toBe(0);
   });
+
+  it('recursively rolls down parent folder sizes and prunes deleted folders via applyCleanupResult', () => {
+    const mockSummary: ScanSummary = {
+      root_path: 'C:\\Projects',
+      total_bytes: 100000,
+      total_files: 10,
+      total_directories: 3,
+      scan_duration_ms: 50,
+      error_count: 0,
+      errors: [],
+      largest_files: [
+        {
+          id: 'f1',
+          name: 'bundle.js',
+          path: 'C:\\Projects\\app\\dist\\bundle.js',
+          size_bytes: 30000,
+          category: 'dev',
+          extension: 'js',
+          modified_at: 1000,
+          is_hidden: false,
+          is_system: false,
+        },
+      ],
+      largest_folders: [
+        {
+          id: 'dir-projects',
+          name: 'Projects',
+          path: 'C:\\Projects',
+          size_bytes: 100000,
+          file_count: 10,
+          dir_count: 3,
+        },
+        {
+          id: 'dir-app',
+          name: 'app',
+          path: 'C:\\Projects\\app',
+          size_bytes: 60000,
+          file_count: 5,
+          dir_count: 2,
+        },
+        {
+          id: 'dir-dist',
+          name: 'dist',
+          path: 'C:\\Projects\\app\\dist',
+          size_bytes: 30000,
+          file_count: 1,
+          dir_count: 0,
+        },
+      ],
+      categories: [
+        { category: 'dev', total_bytes: 30000, file_count: 1, percentage: 30 },
+      ],
+      extensions: [],
+      duplicate_groups: [],
+      cleanup_candidates: [],
+      timestamp: new Date().toISOString(),
+    };
+
+    useAppStore.getState().setScanSummary(mockSummary);
+    useAppStore.getState().setTreemapCurrentPath('C:\\Projects\\app\\dist');
+
+    // Delete dist folder completely (30,000 bytes)
+    useAppStore.getState().applyCleanupResult(
+      30000,
+      ['C:\\Projects\\app\\dist'],
+      { 'C:\\Projects\\app\\dist': 30000 },
+      false // permanent deletion
+    );
+
+    const state = useAppStore.getState();
+    const folders = state.scanSummary?.largest_folders || [];
+
+    // 1. C:\Projects\app\dist was deleted, so it must be pruned
+    expect(folders.find((f) => f.path === 'C:\\Projects\\app\\dist')).toBeUndefined();
+
+    // 2. Parent folder C:\Projects\app must be reduced from 60,000 to 30,000
+    const appFolder = folders.find((f) => f.path === 'C:\\Projects\\app');
+    expect(appFolder).toBeDefined();
+    expect(appFolder?.size_bytes).toBe(30000);
+    expect(appFolder?.file_count).toBe(4);
+
+    // 3. Grandparent folder C:\Projects must be reduced from 100,000 to 70,000
+    const projectsFolder = folders.find((f) => f.path === 'C:\\Projects');
+    expect(projectsFolder).toBeDefined();
+    expect(projectsFolder?.size_bytes).toBe(70000);
+    expect(projectsFolder?.file_count).toBe(9);
+
+    // 4. Treemap current drilldown path was C:\Projects\app\dist (now deleted), so it stepped back to parent
+    expect(state.treemapCurrentPath).toBe('C:\\Projects\\app');
+
+    // 5. Category recalculation: dev category should drop by 30,000 bytes
+    const devCat = state.scanSummary?.categories.find((c) => c.category === 'dev');
+    expect(devCat).toBeDefined();
+    expect(devCat?.total_bytes).toBe(0);
+
+    // 6. lastCleanupSummary recorded preferTrash = false
+    expect(state.lastCleanupSummary?.preferTrash).toBe(false);
+  });
 });

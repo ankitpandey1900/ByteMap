@@ -3,7 +3,7 @@
 A practical, no-nonsense walkthrough of how to use ByteMap to analyze and reclaim storage on your computer.
 
 - **Author**: Ankit Pandey
-- **Version**: 1.0.8
+- **Version**: 1.0.9
 - **Website**: [bytemap.alltracker.online](https://bytemap.alltracker.online/)
 
 ---

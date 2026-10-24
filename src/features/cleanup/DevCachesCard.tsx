@@ -174,7 +174,11 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
         .map((r) => r.path);
 
       // LIVE STORAGE SYNCHRONIZER: Instantly update store drives, scan metrics, and caches (0ms latency!)
-      applyCleanupResult(summary.total_freed_bytes, successfulPaths);
+      const pathBytesMap: Record<string, number> = {};
+      summary.results.filter((r) => r.success).forEach((r) => {
+        pathBytesMap[r.path] = r.bytes_freed;
+      });
+      applyCleanupResult(summary.total_freed_bytes, successfulPaths, pathBytesMap, preferTrash);
 
       // Remove purged IDs from current selection
       setSelectedIds((prev) => {
@@ -384,25 +388,49 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
 
       {/* Celebration Notification when purged */}
       {lastPurged && (
-        <div className="p-3.5 bg-emerald-100 border-2 border-slate-900 rounded-xl shadow-comic flex items-center justify-between text-xs font-fredoka font-bold text-slate-900 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center space-x-2.5">
-            <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0" />
+        <div className="p-3.5 bg-emerald-100 border-2 border-slate-900 rounded-xl shadow-comic flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-fredoka font-bold text-slate-900 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-start sm:items-center space-x-2.5">
+            <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5 sm:mt-0" />
             <div>
-              <span>
-                🎉 Reclaimed {formatBytes(lastPurged.total_freed_bytes, unit)} across{' '}
-                {lastPurged.successful_count} developer caches!
-              </span>
-              <span className="text-slate-600 ml-1 font-medium">
+              <div className="flex items-center space-x-2 flex-wrap gap-1">
+                <span>
+                  🎉 Reclaimed {formatBytes(lastPurged.total_freed_bytes, unit)} across{' '}
+                  {lastPurged.successful_count} developer caches!
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-comic uppercase border border-slate-900 shadow-comic-sm ${
+                    preferTrash ? 'bg-amber-300 text-slate-900' : 'bg-emerald-300 text-slate-900'
+                  }`}
+                >
+                  {preferTrash ? 'Moved to Recycle Bin' : 'Permanently Deleted'}
+                </span>
+              </div>
+              <p className="text-slate-600 font-medium mt-0.5">
                 Drive gauges and storage metrics updated instantly.
-              </span>
+                {preferTrash &&
+                  ' Note: Physical OS free space updates when you empty the Recycle Bin.'}
+              </p>
             </div>
           </div>
-          <button
-            onClick={() => setLastPurged(null)}
-            className="text-xs font-comic uppercase text-slate-600 hover:text-slate-900 ml-2 cursor-pointer"
-          >
-            Dismiss
-          </button>
+          <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+            {preferTrash && (
+              <button
+                type="button"
+                onClick={() => api.openRecycleBin()}
+                className="px-2.5 py-1 rounded-lg border border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-[10px] uppercase shadow-comic-sm transition-all flex items-center space-x-1 cursor-pointer"
+                title="Open system Recycle Bin / Trash folder"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>Open Recycle Bin</span>
+              </button>
+            )}
+            <button
+              onClick={() => setLastPurged(null)}
+              className="px-2 py-1 rounded-lg border border-slate-900 bg-white hover:bg-slate-100 text-xs font-comic uppercase text-slate-600 hover:text-slate-900 cursor-pointer shadow-comic-sm"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 

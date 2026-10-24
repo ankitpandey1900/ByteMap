@@ -6,9 +6,9 @@ export const DownloadSection: React.FC = () => {
   const [copiedWinget, setCopiedWinget] = useState(false);
   const [copiedMac, setCopiedMac] = useState(false);
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
-  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.8/ByteMap_1.0.8_x64-setup.exe');
-  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.8/ByteMap_1.0.8_universal.dmg');
-  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.8/ByteMap_1.0.8_x64_en-US.msi');
+  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64-setup.exe');
+  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_universal.dmg');
+  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64_en-US.msi');
 
   useEffect(() => {
     fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
@@ -77,7 +77,7 @@ export const DownloadSection: React.FC = () => {
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-12">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900 mb-3">
-            <span>Official Releases • v1.0.8</span>
+            <span>Official Releases • v1.0.9</span>
             {downloadCount !== null && (
               <>
                 <span>•</span>
@@ -114,14 +114,14 @@ export const DownloadSection: React.FC = () => {
                 Standard Windows user-mode installer. Includes automatic update checks and desktop shortcuts. No admin required.
               </p>
               <div className="p-3 bg-slate-50 rounded-xl border-2 border-slate-900 text-xs font-mono font-bold text-slate-600 space-y-1 mb-6">
-                <div>File: ByteMap_1.0.8_x64-setup.exe</div>
+                <div>File: ByteMap_1.0.9_x64-setup.exe</div>
                 <div>Size: ~4.5 MB • Windows 10/11 64-bit</div>
               </div>
             </div>
 
             <a
               href={exeUrl}
-              onClick={() => trackDownloadClick(exeUrl.split('/').pop() || 'ByteMap_1.0.8_x64-setup.exe', 'windows_exe', exeUrl)}
+              onClick={() => trackDownloadClick(exeUrl.split('/').pop() || 'ByteMap_1.0.9_x64-setup.exe', 'windows_exe', exeUrl)}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-amber-400 hover:bg-amber-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />
@@ -155,7 +155,7 @@ export const DownloadSection: React.FC = () => {
 
             <a
               href={dmgUrl}
-              onClick={() => trackDownloadClick(dmgUrl.split('/').pop() || 'ByteMap_1.0.8_universal.dmg', 'mac_dmg', dmgUrl)}
+              onClick={() => trackDownloadClick(dmgUrl.split('/').pop() || 'ByteMap_1.0.9_universal.dmg', 'mac_dmg', dmgUrl)}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Apple className="w-5 h-5 text-slate-900" />
@@ -182,14 +182,14 @@ export const DownloadSection: React.FC = () => {
                 Ideal for system administrators, computer labs, and scripted silent enterprise deployment via msiexec.
               </p>
               <div className="p-3 bg-slate-50 rounded-xl border-2 border-slate-900 text-xs font-mono font-bold text-slate-600 space-y-1 mb-6">
-                <div>File: ByteMap_1.0.8_x64_en-US.msi</div>
+                <div>File: ByteMap_1.0.9_x64_en-US.msi</div>
                 <div>Size: ~5.5 MB • Windows 10/11 64-bit</div>
               </div>
             </div>
 
             <a
               href={msiUrl}
-              onClick={() => trackDownloadClick(msiUrl.split('/').pop() || 'ByteMap_1.0.8_x64_en-US.msi', 'windows_msi', msiUrl)}
+              onClick={() => trackDownloadClick(msiUrl.split('/').pop() || 'ByteMap_1.0.9_x64_en-US.msi', 'windows_msi', msiUrl)}
               className="w-full inline-flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 border-2.5 border-slate-900 font-bangers text-lg uppercase tracking-wider text-slate-900 shadow-comic hover:-translate-y-0.5 hover:shadow-comic-lg active:translate-y-0 transition-all text-center"
             >
               <Download className="w-5 h-5" />

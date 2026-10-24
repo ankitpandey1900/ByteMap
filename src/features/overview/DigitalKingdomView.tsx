@@ -528,26 +528,51 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
 
   return (
     <div className="flex flex-col min-h-full space-y-3.5 pb-6 font-sans text-slate-900">
-      {/* Live Storage Reclaim Celebration Banner */}
+      {/* Live Storage Reclaim Celebration Banner with Recycle Bin Clarification */}
       {lastCleanupSummary && (
-        <div className="p-3.5 bg-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between text-xs font-fredoka font-bold text-slate-900 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center space-x-3">
-            <span className="text-xl">🎉</span>
+        <div className="p-3.5 bg-emerald-50 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-fredoka font-bold text-slate-900 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-start sm:items-center space-x-3">
+            <span className="text-xl shrink-0">🎉</span>
             <div>
-              <span className="font-comic text-sm uppercase text-slate-900">
-                Storage Reclaimed: {formatBytes(lastCleanupSummary.freedBytes, settings.unit)}!
-              </span>
-              <span className="text-slate-700 ml-2 font-medium">
-                {lastCleanupSummary.count} targets pruned. Active drive capacity updated in real time.
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                  Storage Reclaimed: {formatBytes(lastCleanupSummary.freedBytes, settings.unit)}!
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-comic uppercase border border-slate-900 shadow-comic-sm ${
+                    lastCleanupSummary.preferTrash
+                      ? 'bg-amber-300 text-slate-900'
+                      : 'bg-emerald-300 text-slate-900'
+                  }`}
+                >
+                  {lastCleanupSummary.preferTrash ? 'Moved to Recycle Bin' : 'Permanently Deleted'}
+                </span>
+              </div>
+              <p className="text-slate-600 font-medium mt-0.5 leading-snug">
+                {lastCleanupSummary.count} targets pruned. Treemap and folder tree dynamically rolled down.
+                {lastCleanupSummary.preferTrash &&
+                  ' Note: Windows hardware capacity updates once your Recycle Bin is emptied.'}
+              </p>
             </div>
           </div>
-          <button
-            onClick={clearLastCleanupSummary}
-            className="px-2.5 py-1 rounded-lg border border-slate-900 bg-white hover:bg-slate-50 font-comic text-[10px] uppercase shadow-comic-sm cursor-pointer"
-          >
-            Dismiss
-          </button>
+          <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+            {lastCleanupSummary.preferTrash && (
+              <button
+                onClick={() => api.openRecycleBin()}
+                className="px-2.5 py-1 rounded-lg border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-[10px] uppercase shadow-comic-sm transition-all flex items-center space-x-1 cursor-pointer"
+                title="Open system Recycle Bin / Trash folder"
+              >
+                <ComicTrashIcon className="w-3 h-3" />
+                <span>Open Recycle Bin</span>
+              </button>
+            )}
+            <button
+              onClick={clearLastCleanupSummary}
+              className="px-2.5 py-1 rounded-lg border border-slate-900 bg-white hover:bg-slate-50 font-comic text-[10px] uppercase shadow-comic-sm cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 

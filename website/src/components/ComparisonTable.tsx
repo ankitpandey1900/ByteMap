@@ -115,7 +115,7 @@ export const ComparisonTable: React.FC = () => {
                   <th className="p-4 sm:p-5 w-1/3 bg-amber-400 border-x-2.5 border-slate-900 relative">
                     <div className="flex items-center space-x-2">
                       <span className="text-xl">⭐</span>
-                      <span>ByteMap (v1.0.8)</span>
+                      <span>ByteMap (v1.0.9)</span>
                     </div>
                   </th>
                   <th className="p-4 sm:p-5 w-1/5 text-slate-800">Legacy WinDirStat</th>

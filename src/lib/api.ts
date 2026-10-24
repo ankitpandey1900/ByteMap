@@ -218,6 +218,18 @@ export const api = {
     console.log('Reveal in explorer (web preview):', path);
   },
 
+  // Open native OS Recycle Bin / Trash folder
+  async openRecycleBin(): Promise<void> {
+    if (isTauri) {
+      try {
+        return await invoke<void>('open_recycle_bin');
+      } catch (err) {
+        console.error('Failed to open recycle bin:', err);
+      }
+    }
+    console.log('Open recycle bin (web preview)');
+  },
+
   // Open external URL in system browser
   async openExternalUrl(url: string): Promise<void> {
     if (isTauri) {

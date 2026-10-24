@@ -5,7 +5,7 @@ How ByteMap works under the hood: architecture, threading, algorithms, data flow
 - **Author**: Ankit Pandey
 - **Repository**: [github.com/ankitpandey1900/ByteMap](https://github.com/ankitpandey1900/ByteMap)
 - **Live Site**: [bytemap.alltracker.online](https://bytemap.alltracker.online/)
-- **Version**: 1.0.8
+- **Version**: 1.0.9
 
 ---
 

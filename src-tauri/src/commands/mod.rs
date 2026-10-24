@@ -216,9 +216,102 @@ pub async fn execute_cleanup(
         scan_summary.total_bytes = scan_summary
             .total_bytes
             .saturating_sub(summary.total_freed_bytes);
+        scan_summary.total_files = scan_summary
+            .total_files
+            .saturating_sub(summary.successful_count as u64);
+
+        // Recursively roll down sizes for largest_folders in Rust in-memory snapshot
+        fn update_scanned_folder(
+            folder: &mut crate::models::ScannedFolder,
+            successful_paths: &std::collections::HashSet<String>,
+            results: &[crate::cleanup::executor::CleanupItemResult],
+        ) -> bool {
+            let norm_folder = folder.path.trim_end_matches(['\\', '/']).to_lowercase();
+            if successful_paths
+                .iter()
+                .any(|p| p.trim_end_matches(['\\', '/']).to_lowercase() == norm_folder)
+            {
+                return false;
+            }
+
+            let mut bytes_inside: u64 = 0;
+            let mut files_inside: u64 = 0;
+            for r in results {
+                if r.success {
+                    let norm_path = r.path.trim_end_matches(['\\', '/']).to_lowercase();
+                    if norm_path.starts_with(&format!("{}\\", norm_folder))
+                        || norm_path.starts_with(&format!("{}/", norm_folder))
+                    {
+                        bytes_inside = bytes_inside.saturating_add(r.bytes_freed);
+                        files_inside = files_inside.saturating_add(1);
+                    }
+                }
+            }
+
+            if let Some(ref mut children) = folder.children_dirs {
+                children.retain_mut(|child| update_scanned_folder(child, successful_paths, results));
+            }
+
+            folder.size_bytes = folder.size_bytes.saturating_sub(bytes_inside);
+            folder.file_count = folder.file_count.saturating_sub(files_inside);
+            folder.size_bytes > 0 || folder.file_count > 0
+        }
+
+        scan_summary
+            .largest_folders
+            .retain_mut(|folder| update_scanned_folder(folder, &successful_paths, &summary.results));
+        scan_summary
+            .largest_folders
+            .sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
+
+        // Prune duplicate groups in Rust in-memory snapshot
+        scan_summary.duplicate_groups.retain_mut(|group| {
+            group.files.retain(|f| !successful_paths.contains(&f.path));
+            if group.files.len() > 1 {
+                let single_size = group.files[0].size_bytes;
+                group.reclaimable_bytes = (group.files.len() as u64 - 1).saturating_mul(single_size);
+                true
+            } else {
+                false
+            }
+        });
     }
 
     Ok(summary)
+}
+
+#[tauri::command]
+pub fn open_recycle_bin() -> Result<(), AppError> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::process::Command;
+        Command::new("explorer")
+            .arg("shell:RecycleBinFolder")
+            .spawn()
+            .map_err(AppError::Io)?;
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        let home = std::env::var("HOME").unwrap_or_else(|_| "~".to_string());
+        let trash_path = format!("{}/.Trash", home);
+        Command::new("open")
+            .arg(&trash_path)
+            .spawn()
+            .map_err(AppError::Io)?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::process::Command;
+        Command::new("xdg-open")
+            .arg("trash:///")
+            .spawn()
+            .map_err(AppError::Io)?;
+    }
+
+    Ok(())
 }
 
 #[tauri::command]

@@ -85,7 +85,11 @@ export const CleanupTab: React.FC = () => {
 
       // LIVE STORAGE SYNCHRONIZER: Update storage gauges & metrics immediately!
       const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
-      applyCleanupResult(res.total_freed_bytes, successPaths);
+      const pathBytesMap: Record<string, number> = {};
+      res.results.filter((r) => r.success).forEach((r) => {
+        pathBytesMap[r.path] = r.bytes_freed;
+      });
+      applyCleanupResult(res.total_freed_bytes, successPaths, pathBytesMap, settings.prefer_trash);
     } catch (err) {
       console.error('Cleanup execution failed:', err);
     } finally {
@@ -183,30 +187,51 @@ export const CleanupTab: React.FC = () => {
         )}
       </div>
 
-      {/* Execution Feedback Banner */}
+      {/* Execution Feedback Banner with Recycle Bin Clarification & Shortcut */}
       {lastResult && (
-        <div className="p-4 bg-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between text-xs font-fredoka font-bold">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-400 border-2 border-slate-900 flex items-center justify-center shrink-0 shadow-comic-sm">
+        <div className="p-4 bg-emerald-50 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-fredoka font-bold">
+          <div className="flex items-start sm:items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-400 border-2 border-slate-900 flex items-center justify-center shrink-0 shadow-comic-sm">
               <CheckCircle2 className="w-5 h-5 text-slate-900" />
             </div>
             <div>
-              <p className="font-comic text-sm text-slate-900 uppercase">
-                Cleanup completed: {formatBytes(lastResult.total_freed_bytes, settings.unit)} recovered!
-              </p>
-              <p className="text-slate-700">
-                Processed {lastResult.successful_count} targets
-                {lastResult.failed_count > 0 && ` (${lastResult.failed_count} failed)`}
-                {settings.prefer_trash ? ' • Moved safely to Recycle Bin' : ' • Deleted'}
+              <div className="flex items-center space-x-2">
+                <span className="font-bangers text-base tracking-wide text-slate-900 uppercase">
+                  Cleanup Done: {formatBytes(lastResult.total_freed_bytes, settings.unit)} Recovered!
+                </span>
+                <span className={`px-2 py-0.5 rounded-md text-[10px] font-comic uppercase border border-slate-900 shadow-comic-sm ${
+                  settings.prefer_trash ? 'bg-amber-300 text-slate-900' : 'bg-emerald-300 text-slate-900'
+                }`}>
+                  {settings.prefer_trash ? 'Moved to Recycle Bin' : 'Permanent Deletion'}
+                </span>
+              </div>
+              <p className="text-slate-600 mt-0.5 leading-snug">
+                Processed {lastResult.successful_count} targets{lastResult.failed_count > 0 && ` (${lastResult.failed_count} failed)`}.
+                {settings.prefer_trash
+                  ? ' Note: On Windows/macOS, physical drive free space updates after you empty the Recycle Bin.'
+                  : ' Physical SSD space was freed immediately.'}
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setLastResult(null)}
-            className="px-2.5 py-1 rounded-lg border border-slate-900 bg-white hover:bg-slate-50 font-comic text-[10px] uppercase shadow-comic-sm cursor-pointer"
-          >
-            Dismiss
-          </button>
+
+          <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+            {settings.prefer_trash && (
+              <button
+                onClick={() => api.openRecycleBin()}
+                className="px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 text-slate-900 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all flex items-center space-x-1 cursor-pointer"
+                title="Open system Recycle Bin / Trash folder"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Open Recycle Bin</span>
+              </button>
+            )}
+            <button
+              onClick={() => setLastResult(null)}
+              className="px-2.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-slate-100 font-comic text-xs uppercase shadow-comic-sm cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -309,7 +334,11 @@ export const CleanupTab: React.FC = () => {
           onCleanupComplete={(res) => {
             setLastResult(res);
             const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
-            applyCleanupResult(res.total_freed_bytes, successPaths);
+            const pathBytesMap: Record<string, number> = {};
+            res.results.filter((r) => r.success).forEach((r) => {
+              pathBytesMap[r.path] = r.bytes_freed;
+            });
+            applyCleanupResult(res.total_freed_bytes, successPaths, pathBytesMap, settings.prefer_trash);
           }}
         />
       )}
@@ -323,7 +352,11 @@ export const CleanupTab: React.FC = () => {
           onCleanupComplete={(res) => {
             setLastResult(res);
             const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
-            applyCleanupResult(res.total_freed_bytes, successPaths);
+            const pathBytesMap: Record<string, number> = {};
+            res.results.filter((r) => r.success).forEach((r) => {
+              pathBytesMap[r.path] = r.bytes_freed;
+            });
+            applyCleanupResult(res.total_freed_bytes, successPaths, pathBytesMap, settings.prefer_trash);
           }}
         />
       )}

@@ -1,7 +1,7 @@
 {
   "name": "bytemap",
   "private": true,
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "Ankit Pandey <ankit1pandey11@gmail.com>",
   "homepage": "https://bytemap.alltracker.online/",
   "type": "module",
