@@ -1,57 +1,144 @@
-# ByteMap
+<p align="center">
+  <img src="./website/public/logo.png" width="130" alt="ByteMap Logo" />
+</p>
 
-A fast, private desktop app to see where your disk space actually went. Built with Tauri 2, Rust, React, and Tailwind.
+<h1 align="center">ByteMap</h1>
 
-🌐 **Website & Downloads**: [https://bytemap.alltracker.online/](https://bytemap.alltracker.online/)
+<p align="center">
+  <strong>Desktop Storage Intelligence for Windows & macOS</strong><br />
+  A blazing fast, offline, and beautifully animated visualizer to see where your disk space <em>actually</em> went.
+</p>
 
-Most disk analyzers either feel like Windows 98 software or Electron bloatware that writes gigabytes of SQLite caches to your SSD. ByteMap is built differently: it traverses your filesystem with native Rust threads, keeps all scan results in memory, renders an interactive squarified treemap, and wipes everything the moment you close the window. Zero database, zero telemetry, 100% offline.
+<p align="center">
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.9-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
+  <a href="https://bytemap.alltracker.online/"><img src="https://img.shields.io/badge/website-bytemap.alltracker.online-4F46E5?style=flat-square&logo=googlechrome&logoColor=white" alt="Website" /></a>
+  <img src="https://img.shields.io/badge/platforms-Windows_%7C_macOS-0284C7?style=flat-square" alt="Platforms" />
+  <img src="https://img.shields.io/badge/built_with-Rust_2021_+_Tauri_2-DEA584?style=flat-square&logo=rust" alt="Rust Tauri" />
+  <img src="https://img.shields.io/badge/frontend-React_19_+_Vite-61DAFB?style=flat-square&logo=react" alt="React Vite" />
+  <img src="https://img.shields.io/badge/telemetry-zero_%2F_100%25_offline-10B981?style=flat-square" alt="Zero Telemetry" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-64748B?style=flat-square" alt="License" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
+</p>
+
+---
+
+<p align="center">
+  <img src="./website/public/screenshots/overview.png" width="950" alt="ByteMap Interactive Pop-Art Dashboard" style="border-radius: 16px; border: 2px solid #0f172a;" />
+</p>
 
 ---
 
 ## Why I Built This
 
-I wanted a utility that answers basic questions quickly:
-- Which folders are hogging my drive?
-- What file types take up the most space?
-- Where are the 2GB+ video files and old zip archives I forgot about?
-- Are there duplicate files eating up space that I can safely delete?
-- Can I safely move junk to the Recycle Bin instead of running a permanent `rm`?
+Most disk space analyzers fall into one of two traps:
+1. **The 90s tools** (like WinDirStat): They freeze your UI while scanning, run on a single thread, and look like Windows 98 software.
+2. **The modern commercial bloatware**: Sluggish Electron wrappers that quietly dump a 3GB SQLite database or hidden cache on your SSD just to tell you that you have 3GB of temp files... and then nag you for a $39/year subscription.
 
-And I wanted it to run fast without leaving stale indexes or tracking databases on my machine.
+I wanted something different:
+- **Native Rust Parallel Threads**: Chews through 100,000+ files in seconds without stuttering or dropping frames.
+- **Vibrant Pop-Art Interactive Map**: Squarified Treemap with category spotlighting instead of drab grey tables.
+- **Zero-DB Volatile Memory Architecture**: All scan metadata lives strictly in RAM while the app is running. The millisecond you close the window, **poof — zero databases, zero SQLite files, zero leftover cache**.
+- **Safe by Default**: Moves files to your OS Recycle Bin / Trash with instant parent folder size roll-down and a 1-click shortcut to empty the trash.
 
 ---
 
-## What It Does
+## Visual Feature Tour
 
-- **Real Drive Discovery**: Reads actual system partitions using native OS APIs (`sysinfo`), showing total, used, and free capacity for NTFS, FAT32, APFS, and ext4 drives.
-- **Fast Traversal Engine**: Walks directories asynchronously on a worker thread with `walkdir`. Throttles progress events to ~80ms intervals so the UI never stutters or drops frames.
-- **Interactive Squarified Treemap**: Visualizes directory hierarchies as nested rectangles with one-click category spotlighting. Click into any folder to drill down, use breadcrumbs to jump back, and spotlight specific file types directly from the legend.
-- **"Where Did My Space Go?" (Time Machine)**: Saves lightweight baseline snapshots of directory sizes and compares them over time. Caught 20GB vanishing overnight? ByteMap flags every swollen folder with >5MB delta.
-- **Developer Bloat & Ghost Sweeper**: Detects and groups stale build artifacts (`node_modules`, `target`, `.venv`, `.next`, `.gradle`, `dist`) and empty 0-byte ghost directories while keeping source code 100% untouched.
-- **One-Click Standalone HTML Audit Report**: Exports a self-contained, offline HTML report with interactive charts, top 20 storage hogs, and print-ready PDF styling to send to IT or colleagues.
-- **Interactive Survival Guide (User Manual)**: Built-in handbook ([USER_MANUAL.md](USER_MANUAL.md)) written directly by creator Ankit Pandey explaining 6 step-by-step everyday fixes with zero technical jargon.
-- **Explorer & Large Files View**: Browse files in a sortable, paginated table (50 items/page) or filter large files by configurable thresholds (10MB to 5GB+). Includes a button to reveal the file in Explorer/Finder.
-- **File Type Analytics**: Groups files into categories (video, audio, image, documents, code, archives, apps, games) and shows top extensions by byte size.
-- **3-Stage Duplicate Finder**: Compares files by exact size first, then hashes the first 4KB prefix, and only runs a full BLAKE3 cryptographic hash on genuine collision candidates. Doesn't guess based on filename alone.
-- **Safe Cleanup**: Flags common candidates (old installers, temp files, large archives, duplicates) with risk indicators. Never deletes anything automatically. Every cleanup action asks for confirmation and defaults to moving files to your OS Recycle Bin / Trash.
-- **No Database Policy**: No SQLite, no IndexedDB, no LocalStorage cache. Scan data lives strictly in RAM while the app is open. When you quit, it's gone.
-- **System Design & Architecture Specifications**: Complete technical diagrams, sequence flows, and threat models available in [docs/SYSTEM_DESIGN.md](docs/SYSTEM_DESIGN.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+### 1. Interactive Digital Kingdom (Squarified Treemap)
+Visualize your entire filesystem as responsive, nested comic rectangles. Drill down into subfolders with zero latency, spotlight specific categories (Videos, Code, Archives), and jump back using breadcrumbs.
+
+<p align="center">
+  <img src="./website/public/screenshots/proof-treemap.png" width="880" alt="ByteMap Treemap View" style="border-radius: 12px; border: 2px solid #0f172a;" />
+</p>
+
+---
+
+### 2. Time Machine ("Where Did My Space Go?")
+Caught 20GB vanishing mysteriously overnight? ByteMap saves lightweight, private baseline snapshots and compares directory sizes over time, pinpointing every swollen directory with a delta breakdown.
+
+<p align="center">
+  <img src="./website/public/screenshots/proof-timemachine.png" width="880" alt="ByteMap Time Machine Snapshot Diff" style="border-radius: 12px; border: 2px solid #0f172a;" />
+</p>
+
+---
+
+### 3. Cryptographic BLAKE3 Duplicate Detector
+Never guess based on filename alone. ByteMap uses a staged 3-tier engine:
+1. Exact file size match.
+2. 4KB header hash prefix check.
+3. Cryptographic **BLAKE3 full-file hash** only on genuine collision candidates.
+
+<p align="center">
+  <img src="./website/public/screenshots/proof-duplicates.png" width="880" alt="ByteMap Duplicate Detector" style="border-radius: 12px; border: 2px solid #0f172a;" />
+</p>
+
+---
+
+### 4. Developer Build Bloat & Ghost Sweeper
+Reclaim gigabytes from hidden AI caches, IDE session artifacts, package managers (`npm`, `pnpm`, `Cargo`, `pip`, `Gradle`, `Go`), and stale build folders (`node_modules`, `target`, `.venv`, `.next`, `dist`). Also prunes 0-byte ghost folders while keeping your source code 100% untouched.
+
+---
+
+### 5. Live Folder Hierarchy Rollup & Native Trash Shortcut *(New in v1.0.9)*
+When you clean files or directories:
+- **Instant Roll-down**: Ancestor folders dynamically recalculate their sizes (`size_bytes`) and file counts in memory with 0ms latency.
+- **Smart Treemap Stepback**: If you were drilled down into a deleted directory, the Treemap gracefully steps back to the closest surviving parent folder.
+- **Recycle Bin Clarification & Quick-Action**: Clearly explains why Windows OS disk capacity frees up after emptying the Recycle Bin, and provides a 1-click native shortcut to open the OS Recycle Bin / Trash.
+
+---
+
+### 6. Storage Analytics & Standalone HTML Reports
+Get an instant category donut breakdown, inspect the top large files from 10MB to 5GB+ monsters, and export a self-contained, offline HTML audit report with interactive charts for IT or colleagues.
+
+<p align="center">
+  <img src="./website/public/screenshots/proof-categories.png" width="880" alt="ByteMap Category Analytics" style="border-radius: 12px; border: 2px solid #0f172a;" />
+</p>
+
+---
+
+## Feature Comparison
+
+| Capability | ByteMap (v1.0.9) | Legacy WinDirStat | Commercial Cleaners |
+| :--- | :---: | :---: | :---: |
+| **Engine Speed** | Native Multi-Threaded Rust | Single-threaded Win32 | Heavy Node.js / Electron |
+| **Storage Architecture** | Zero Database (Volatile RAM) | In-Memory (No snapshots) | Persistent SQLite / Registry |
+| **Time Machine Snapshots** | Lightweight Historical Diffs | ❌ Not available | ❌ Not available |
+| **Duplicate Engine** | Cryptographic BLAKE3 | ❌ Not available | Filename matching only |
+| **Developer Caches Sweeper** | Built-in (`node_modules`, `target`, `venv`) | ❌ Not available | Paid Add-on |
+| **Telemetry & Tracking** | Zero Outbound Telemetry | Offline | Telemetry / Account required |
+| **Safety Guard** | Recycle Bin Default + System Protection | Permanent delete by default | Black-box deletion |
+| **Pricing** | **100% Free & Open Source (MIT)** | Free | $29–$49/year |
+
+---
+
+## Safety, Privacy & Security Rules
+
+1. **Path Boundary Validation**: Before any deletion, the backend canonicalizes the target path and confirms it sits strictly inside the authorized directory you chose to scan. Path traversal attacks (`../`) are blocked.
+2. **System Root Guard**: Hardcoded safety rules protect critical operating system folders (`C:\Windows`, `C:\Program Files`, `/usr`, `/bin`, root drives).
+3. **Pre-Deletion Sanity Check**: Immediately before deleting or trashing an item, ByteMap re-verifies that the target exists and that its byte length matches the scan snapshot. If the file was changed in the background, ByteMap refuses to touch it.
+4. **Recycle Bin by Default**: Deletions use the native system trash API (`trash` crate on Windows/macOS/Linux) so you can easily restore any accidental deletion.
+5. **Zero Outbound Traffic**: The desktop app contains zero telemetry, analytics, or background internet pings.
 
 ---
 
 ## Tech Stack
 
-- **Backend**: Rust 2021, Tauri 2, `walkdir`, `blake3`, `sysinfo`, `trash`, `rayon`
-- **Frontend**: React 19, TypeScript (strict mode), Vite, Tailwind CSS, Recharts, Zustand, Lucide icons
-- **Testing**: Vitest, React Testing Library
+* **Core Desktop Framework**: [Tauri 2](https://v2.tauri.app/) (native OS webview, minimal memory footprint)
+* **Backend Engine**: Rust 2021, `walkdir`, `blake3`, `sysinfo`, `trash`, `rayon`
+* **Frontend**: React 19, TypeScript (strict mode), Vite, Tailwind CSS, Recharts, Zustand, Lucide Icons
+* **Testing & Quality**: Vitest, React Testing Library, `cargo fmt`, `clippy`
 
 ---
 
-## Development Setup
+## Getting Started (Developers)
 
 ### Prerequisites
-
-1. **Node.js** (v20+ recommended) and **pnpm**:
+1. **Node.js** (v20+) & **pnpm**:
    ```bash
    corepack enable
    corepack prepare pnpm@latest --activate
@@ -59,73 +146,60 @@ And I wanted it to run fast without leaving stale indexes or tracking databases 
 2. **Rust**:
    Install via [rustup.rs](https://rustup.rs).
 3. **C++ Build Tools**:
-   - **Windows**: Visual Studio C++ Build Tools (or LLVM + Windows SDK).
-   - **macOS**: `xcode-select --install`
-   - **Linux**: `libwebkit2gtk-4.1-dev`, `build-essential`, `curl`, `wget`
+   * **Windows**: Visual Studio C++ Build Tools (or LLVM + Windows SDK).
+   * **macOS**: `xcode-select --install`
+   * **Linux**: `libwebkit2gtk-4.1-dev`, `build-essential`, `curl`, `wget`
 
-### Installation
+### Installation & Local Run
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/ankitpandey1900/ByteMap.git
 cd ByteMap
 
-# Install frontend packages
+# 2. Install dependencies
 pnpm install
-```
 
-### Running Locally
-
-```bash
-# Start Vite and launch the Tauri desktop window
+# 3. Launch desktop app in development mode
 pnpm tauri dev
-```
 
-### Running Tests
-
-```bash
-# Run Vitest unit & component tests
+# 4. Run automated test suite
 pnpm test
-```
 
-### Building the Standalone App
-
-```bash
-# Builds frontend assets and outputs native installer (.msi / .exe on Windows)
+# 5. Build native production installer
 pnpm tauri build
 ```
 
 ---
 
-## How It Handles Safety & Privacy
+## Documentation & Architecture
 
-1. **Path Validation**: Before any deletion, the backend canonicalizes the target path and confirms it sits strictly inside the directory you chose to scan. You cannot traverse out with `../`.
-2. **System Guard**: Hardcoded rules block destructive actions against `C:\Windows`, `C:\Program Files`, `/usr`, `/bin`, root drives, and other OS directories.
-3. **Target Recheck**: Right before deleting or trashing a file, the backend verifies that the file still exists and that its byte length matches the scan snapshot. If the file was modified in the background, ByteMap refuses to touch it.
-4. **Recycle Bin by Default**: Deletions use the native system trash API via the `trash` crate so you can undo mistakes.
-5. **Zero Outbound Traffic**: The app doesn't send telemetry, analytics, or file metadata anywhere. Local scanning works completely offline.
-
----
-
-## Known Quirks & Limitations
-
-- **System Volume Information & Permission Errors**: On Windows, scanning `C:\` will encounter restricted system folders like `System Volume Information`. ByteMap catches these `PermissionDenied` errors without crashing and lists them under scan errors. To scan system folders, run the app as Administrator.
-- **Memory Usage on Massive Drives**: Because all file metadata lives in RAM during a scan, scanning a drive with over 1,000,000 files will take around 150MB–250MB of RAM. Once you clear the scan, that memory is freed.
+* 📖 **[User Guide (Survival Manual)](docs/USER_GUIDE.md)**: Plain-English walkthrough of common fixes and workflows.
+* 🏗️ **[System Design & Architecture](docs/SYSTEM_DESIGN.md)**: Deep dive into threading models, volatile RAM policies, and sequence flows.
+* 📋 **[Architecture Decision Records (ADRs)](docs/ADR/)**: Why we chose Tauri 2 over Electron, BLAKE3 over MD5/SHA256, and volatile memory over SQLite.
 
 ---
 
 ## Author
 
-**Ankit Pandey**
-> *"I build products. Life? Still in debugging mode."*
-
-- Website: [https://bytemap.alltracker.online/](https://bytemap.alltracker.online/)
-- Portfolio: [https://ankitpandey19.vercel.app/](https://ankitpandey19.vercel.app/)
-- GitHub: [@ankitpandey1900](https://github.com/ankitpandey1900)
-- Email: [ankit1pandey11@gmail.com](mailto:ankit1pandey11@gmail.com)
+<table>
+  <tr>
+    <td width="100" align="center">
+      <img src="./website/public/ankit.jpg" width="85" style="border-radius: 50%; border: 2px solid #0f172a;" alt="Ankit Pandey" />
+    </td>
+    <td>
+      <strong>Ankit Pandey</strong><br />
+      <em>"I build products. Life? Still in debugging mode."</em><br /><br />
+      🌐 <a href="https://bytemap.alltracker.online/">ByteMap Website</a> &nbsp;•&nbsp;
+      💼 <a href="https://ankitpandey19.vercel.app/">Personal Portfolio</a> &nbsp;•&nbsp;
+      🐙 <a href="https://github.com/ankitpandey1900">GitHub Profile</a> &nbsp;•&nbsp;
+      ✉️ <a href="mailto:ankit1pandey11@gmail.com">ankit1pandey11@gmail.com</a>
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## License
 
-MIT
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
