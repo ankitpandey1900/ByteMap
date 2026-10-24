@@ -249,7 +249,8 @@ pub async fn execute_cleanup(
             }
 
             if let Some(ref mut children) = folder.children_dirs {
-                children.retain_mut(|child| update_scanned_folder(child, successful_paths, results));
+                children
+                    .retain_mut(|child| update_scanned_folder(child, successful_paths, results));
             }
 
             folder.size_bytes = folder.size_bytes.saturating_sub(bytes_inside);
@@ -257,9 +258,9 @@ pub async fn execute_cleanup(
             folder.size_bytes > 0 || folder.file_count > 0
         }
 
-        scan_summary
-            .largest_folders
-            .retain_mut(|folder| update_scanned_folder(folder, &successful_paths, &summary.results));
+        scan_summary.largest_folders.retain_mut(|folder| {
+            update_scanned_folder(folder, &successful_paths, &summary.results)
+        });
         scan_summary
             .largest_folders
             .sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
@@ -269,7 +270,8 @@ pub async fn execute_cleanup(
             group.files.retain(|f| !successful_paths.contains(&f.path));
             if group.files.len() > 1 {
                 let single_size = group.files[0].size_bytes;
-                group.reclaimable_bytes = (group.files.len() as u64 - 1).saturating_mul(single_size);
+                group.reclaimable_bytes =
+                    (group.files.len() as u64 - 1).saturating_mul(single_size);
                 true
             } else {
                 false
