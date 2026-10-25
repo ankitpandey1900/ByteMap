@@ -1,0 +1,24 @@
+# ByteMap
+> Desktop Storage Intelligence for Windows and macOS. A blazing fast, 100% offline, and privacy-first disk space visualizer built with Rust 2021 and Tauri 2.
+
+## Project Information
+- **Name**: ByteMap
+- **Author**: Ankit Pandey
+- **Website**: https://bytemap.alltracker.online/
+- **Repository**: https://github.com/ankitpandey1900/ByteMap
+- **Version**: 1.0.9
+- **License**: MIT
+- **Platforms**: Windows (x64 NSIS Setup .exe, MSI) and macOS (Universal Apple Silicon / Intel .dmg)
+
+## Core Capabilities
+- **Squarified Treemap**: Real-time pop-art nested rectangle visualization of disk usage with 0ms drilldown and category spotlighting.
+- **Time Machine Storage Diffs**: Compares directory snapshots over time to pinpoint exact directories where gigabytes vanished overnight.
+- **Cryptographic Duplicate Finder**: 3-stage duplicate pipeline using exact size matching, 4KB prefix check, and BLAKE3 cryptographic hash verification.
+- **Developer Bloat & Ghost Sweeper**: Scans and batches stale `node_modules`, `target`, `.gradle`, `.venv`, `.next`, and 0-byte orphan directories without touching source code.
+- **Live Memory Synchronizer**: All scan metadata resides exclusively in volatile RAM. Instant recursive folder size roll-down on deletion, with safe Recycle Bin defaults and native 1-click trash access.
+- **Zero-DB Policy**: No SQLite, no background telemetry, 100% offline.
+
+## Documentation
+- [User Guide](https://github.com/ankitpandey1900/ByteMap/blob/main/docs/USER_GUIDE.md): Plain-English usage walkthrough.
+- [System Design](https://github.com/ankitpandey1900/ByteMap/blob/main/docs/SYSTEM_DESIGN.md): Technical architecture and thread models.
+- [Architecture Decision Records](https://github.com/ankitpandey1900/ByteMap/tree/main/docs/ADR): Architectural choices and trade-offs.

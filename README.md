@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./website/public/logo.png" width="130" alt="ByteMap Logo" />
+  <img src="./website/public/logo.webp" width="130" alt="ByteMap Logo" />
 </p>
 
 <h1 align="center">ByteMap</h1>
@@ -28,7 +28,7 @@
 ---
 
 <p align="center">
-  <img src="./website/public/screenshots/overview.png" width="950" alt="ByteMap Interactive Pop-Art Dashboard" style="border-radius: 16px; border: 2px solid #0f172a;" />
+  <img src="./website/public/screenshots/overview.webp" width="950" alt="ByteMap Interactive Pop-Art Dashboard" style="border-radius: 16px; border: 2px solid #0f172a;" />
 </p>
 
 ---
@@ -53,7 +53,7 @@ I wanted something different:
 Visualize your entire filesystem as responsive, nested comic rectangles. Drill down into subfolders with zero latency, spotlight specific categories (Videos, Code, Archives), and jump back using breadcrumbs.
 
 <p align="center">
-  <img src="./website/public/screenshots/proof-treemap.png" width="880" alt="ByteMap Treemap View" style="border-radius: 12px; border: 2px solid #0f172a;" />
+  <img src="./website/public/screenshots/proof-treemap.webp" width="880" alt="ByteMap Treemap View" style="border-radius: 12px; border: 2px solid #0f172a;" />
 </p>
 
 ---
@@ -62,7 +62,7 @@ Visualize your entire filesystem as responsive, nested comic rectangles. Drill d
 Caught 20GB vanishing mysteriously overnight? ByteMap saves lightweight, private baseline snapshots and compares directory sizes over time, pinpointing every swollen directory with a delta breakdown.
 
 <p align="center">
-  <img src="./website/public/screenshots/proof-timemachine.png" width="880" alt="ByteMap Time Machine Snapshot Diff" style="border-radius: 12px; border: 2px solid #0f172a;" />
+  <img src="./website/public/screenshots/proof-timemachine.webp" width="880" alt="ByteMap Time Machine Snapshot Diff" style="border-radius: 12px; border: 2px solid #0f172a;" />
 </p>
 
 ---
@@ -74,7 +74,7 @@ Never guess based on filename alone. ByteMap uses a staged 3-tier engine:
 3. Cryptographic **BLAKE3 full-file hash** only on genuine collision candidates.
 
 <p align="center">
-  <img src="./website/public/screenshots/proof-duplicates.png" width="880" alt="ByteMap Duplicate Detector" style="border-radius: 12px; border: 2px solid #0f172a;" />
+  <img src="./website/public/screenshots/proof-duplicates.webp" width="880" alt="ByteMap Duplicate Detector" style="border-radius: 12px; border: 2px solid #0f172a;" />
 </p>
 
 ---
@@ -96,7 +96,7 @@ When you clean files or directories:
 Get an instant category donut breakdown, inspect the top large files from 10MB to 5GB+ monsters, and export a self-contained, offline HTML audit report with interactive charts for IT or colleagues.
 
 <p align="center">
-  <img src="./website/public/screenshots/proof-categories.png" width="880" alt="ByteMap Category Analytics" style="border-radius: 12px; border: 2px solid #0f172a;" />
+  <img src="./website/public/screenshots/proof-categories.webp" width="880" alt="ByteMap Category Analytics" style="border-radius: 12px; border: 2px solid #0f172a;" />
 </p>
 
 ---
@@ -185,7 +185,7 @@ pnpm tauri build
 <table>
   <tr>
     <td width="100" align="center">
-      <img src="./website/public/ankit.jpg" width="85" style="border-radius: 50%; border: 2px solid #0f172a;" alt="Ankit Pandey" />
+      <img src="./website/public/ankit.webp" width="85" style="border-radius: 50%; border: 2px solid #0f172a;" alt="Ankit Pandey" />
     </td>
     <td>
       <strong>Ankit Pandey</strong><br />

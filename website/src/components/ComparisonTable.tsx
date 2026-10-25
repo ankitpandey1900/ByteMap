@@ -151,7 +151,7 @@ export const ComparisonTable: React.FC = () => {
                           </div>
                         ) : (
                           <div className="w-4 h-4 rounded-full bg-rose-100 border border-slate-900 flex items-center justify-center shrink-0 mt-0.5">
-                            <X className="w-3 h-3 text-rose-600" />
+                            <X className="w-3 h-3 text-rose-800" />
                           </div>
                         )}
                         <span>{row.windirstat}</span>
@@ -167,7 +167,7 @@ export const ComparisonTable: React.FC = () => {
                           </div>
                         ) : (
                           <div className="w-4 h-4 rounded-full bg-rose-100 border border-slate-900 flex items-center justify-center shrink-0 mt-0.5">
-                            <X className="w-3 h-3 text-rose-600" />
+                            <X className="w-3 h-3 text-rose-800" />
                           </div>
                         )}
                         <span>{row.commercial}</span>

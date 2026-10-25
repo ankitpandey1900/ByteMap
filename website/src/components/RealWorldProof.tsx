@@ -42,7 +42,7 @@ const proofTabs: ProofTab[] = [
     title: 'Real-Time Squarified Treemap on Windows-SSD (C:)',
     subtitle:
       'Actual unedited run scanning a 300GB NVMe SSD at 91% capacity. Traversed over 1.3 million files at 2,891 files/second without freezing the desktop.',
-    imageSrc: '/screenshots/proof-treemap.png',
+    imageSrc: '/screenshots/proof-treemap.webp',
     imageAlt: 'ByteMap 1.3M Files Scanned Real Desktop Run',
     metrics: [
       {
@@ -87,7 +87,7 @@ const proofTabs: ProofTab[] = [
     title: 'Aggregated Storage Breakdown Across 9 Categories',
     subtitle:
       'ByteMap maps file extensions into 9 distinct buckets. Every single byte is accounted for without dumping heavy cache databases on your machine.',
-    imageSrc: '/screenshots/proof-categories.png',
+    imageSrc: '/screenshots/proof-categories.webp',
     imageAlt: 'ByteMap 9 Category Storage Analytics Breakdown',
     metrics: [
       {
@@ -132,7 +132,7 @@ const proofTabs: ProofTab[] = [
     title: '3-Tier Cryptographic BLAKE3 Duplicate Detector',
     subtitle:
       'ByteMap found 14 identical duplicate groups totaling 21.40 GB reclaimable. Files are verified byte-for-byte using size filters, prefix hashes, and full BLAKE3 hashes.',
-    imageSrc: '/screenshots/proof-duplicates.png',
+    imageSrc: '/screenshots/proof-duplicates.webp',
     imageAlt: 'ByteMap Duplicate Detector 21.4GB Reclaimable Run',
     metrics: [
       {
@@ -177,7 +177,7 @@ const proofTabs: ProofTab[] = [
     title: 'Time Machine: Where Did My Space Go?',
     subtitle:
       'Compared against a baseline snapshot taken on 19 Oct. ByteMap immediately revealed a massive +205.5 GB expansion across 245,318 new files.',
-    imageSrc: '/screenshots/proof-timemachine.png',
+    imageSrc: '/screenshots/proof-timemachine.webp',
     imageAlt: 'ByteMap Time Machine Storage Delta Comparison Modal',
     aspectRatioClass: 'max-w-2xl mx-auto',
     metrics: [
@@ -306,8 +306,12 @@ export const RealWorldProof: React.FC = () => {
                 <img
                   src={currentTab.imageSrc}
                   alt={currentTab.imageAlt}
+                  width={1920}
+                  height={988}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-auto object-contain block hover:scale-[1.008] transition-transform duration-200"
-                  style={{ imageRendering: '-webkit-optimize-contrast' }}
+                  style={{ imageRendering: '-webkit-optimize-contrast', aspectRatio: '1920 / 988' }}
                 />
                 {/* Hover overlay hint */}
                 <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">

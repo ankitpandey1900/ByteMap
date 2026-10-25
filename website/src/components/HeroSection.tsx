@@ -4,8 +4,8 @@ import { GithubIcon } from './GithubIcon';
 import { trackDownloadClick } from '../lib/analytics';
 
 export const HeroSection: React.FC = () => {
-  const [downloadCount, setDownloadCount] = useState<number | null>(null);
-  const [visitorCount, setVisitorCount] = useState<number | null>(null);
+  const [downloadCount, setDownloadCount] = useState<number>(57);
+  const [visitorCount, setVisitorCount] = useState<number>(330);
   const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64-setup.exe');
   const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_universal.dmg');
   const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64_en-US.msi');
@@ -102,24 +102,20 @@ export const HeroSection: React.FC = () => {
       <div className="absolute inset-0 bg-comic-dots opacity-40 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative z-10 text-center">
-        {/* Top Tagline Badge & Live Counters */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+        {/* Top Tagline Badge & Live Counters (Fixed height to eliminate CLS) */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 min-h-[38px]">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
             <Sparkles className="w-4 h-4 text-slate-900 animate-spin" style={{ animationDuration: '6s' }} />
             <span>Windows & macOS Desktop Storage Intelligence • v1.0.9</span>
           </div>
-          {visitorCount !== null && (
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 hover:-translate-y-0.5 transition-transform cursor-default" title="Total visitors who explored ByteMap">
-              <Eye className="w-3.5 h-3.5 text-slate-900" />
-              <span><strong>{visitorCount.toLocaleString()}</strong> Site Explorers</span>
-            </div>
-          )}
-          {downloadCount !== null && (
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-400 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
-              <Download className="w-3.5 h-3.5 text-slate-900" />
-              <span><strong>{downloadCount}</strong> Community Downloads</span>
-            </div>
-          )}
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sky-300 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 hover:-translate-y-0.5 transition-transform cursor-default" title="Total visitors who explored ByteMap">
+            <Eye className="w-3.5 h-3.5 text-slate-900" />
+            <span><strong>{visitorCount.toLocaleString()}</strong> Site Explorers</span>
+          </div>
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-400 border-2.5 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900">
+            <Download className="w-3.5 h-3.5 text-slate-900" />
+            <span><strong>{downloadCount}</strong> Community Downloads</span>
+          </div>
         </div>
 
         {/* Massive Comic Headline - Crystal Clear Readability */}
@@ -230,10 +226,14 @@ export const HeroSection: React.FC = () => {
           <div className="relative bg-slate-900 rounded-2xl border-3 border-slate-900 shadow-comic-lg overflow-hidden group">
             <a href="#proof" title="Click to view full uncompressed screenshots and proof" className="block relative">
               <img
-                src="/screenshots/overview.png"
+                src="/screenshots/overview.webp"
                 alt="ByteMap Storage Intelligence Dashboard Screenshot showing 1,319,645 files scanned"
+                width={1920}
+                height={988}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-auto block select-none group-hover:scale-[1.005] transition-transform duration-200"
-                style={{ imageRendering: '-webkit-optimize-contrast' }}
+                style={{ imageRendering: '-webkit-optimize-contrast', aspectRatio: '1920 / 988' }}
               />
               {/* Subtle hover prompt */}
               <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">

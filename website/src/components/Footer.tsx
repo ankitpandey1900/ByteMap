@@ -10,8 +10,12 @@ export const Footer: React.FC = () => {
         <a href="https://bytemap.alltracker.online/" className="flex items-center space-x-3 group">
           <div className="w-10 h-10 rounded-full bg-amber-400 border-2 border-slate-900 flex items-center justify-center shadow-comic-sm overflow-hidden p-0.5 group-hover:scale-105 transition-transform">
             <img
-              src="/logo.png"
+              src="/logo.webp"
               alt="ByteMap Mascot"
+              width={40}
+              height={40}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover rounded-full"
             />
           </div>
@@ -36,8 +40,12 @@ export const Footer: React.FC = () => {
           >
             <div className="w-5 h-5 rounded-full overflow-hidden border border-slate-900 shrink-0 shadow-xs">
               <img
-                src="/ankit.jpg"
+                src="/ankit.webp"
                 alt="Ankit Pandey"
+                width={20}
+                height={20}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>

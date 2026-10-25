@@ -1,0 +1,12 @@
+{
+  "name": "ByteMap",
+  "description": "Desktop Storage Intelligence for Windows and macOS. A fast, 100% offline, and privacy-first disk space visualizer built with Rust and React.",
+  "url": "https://bytemap.alltracker.online/",
+  "repository": "https://github.com/ankitpandey1900/ByteMap",
+  "version": "1.0.9",
+  "license": "MIT",
+  "author": {
+    "name": "Ankit Pandey",
+    "url": "https://ankitpandey19.vercel.app/"
+  }
+}

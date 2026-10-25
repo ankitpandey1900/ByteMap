@@ -175,7 +175,7 @@ export const InteractiveDemo: React.FC = () => {
                 <span>25% Nominal</span>
                 <span>50% Mid</span>
                 <span>75% Warning</span>
-                <span className="text-rose-600">100% Full</span>
+                <span className="text-rose-800 font-extrabold">100% Full</span>
               </div>
             </div>
 

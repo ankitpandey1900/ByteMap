@@ -26,8 +26,12 @@ export const AuthorSpotlight: React.FC = () => {
             {/* Avatar Photo Frame */}
             <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl bg-amber-400 border-3 border-slate-900 overflow-hidden shrink-0 shadow-comic-lg relative group">
               <img
-                src="/ankit.jpg"
+                src="/ankit.webp"
                 alt="Ankit Pandey"
+                width={144}
+                height={144}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>

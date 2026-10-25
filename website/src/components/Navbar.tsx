@@ -29,8 +29,11 @@ export const Navbar: React.FC = () => {
           <a href="https://bytemap.alltracker.online/" className="flex items-center space-x-3 group">
             <div className="w-11 h-11 rounded-full bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 overflow-hidden p-0.5">
               <img
-                src="/logo.png"
+                src="/logo.webp"
                 alt="ByteMap Mascot"
+                width={44}
+                height={44}
+                decoding="async"
                 className="w-full h-full object-cover rounded-full"
               />
             </div>
@@ -75,8 +78,12 @@ export const Navbar: React.FC = () => {
               className="px-3.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-amber-100 text-slate-800 font-comic text-xs uppercase shadow-comic-sm hover:-translate-y-0.5 transition-all flex items-center space-x-1.5"
             >
               <img
-                src="/ankit.jpg"
+                src="/ankit.webp"
                 alt="Ankit Pandey"
+                width={16}
+                height={16}
+                loading="lazy"
+                decoding="async"
                 className="w-4 h-4 rounded-full object-cover border border-slate-900"
               />
               <span>Author</span>

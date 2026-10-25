@@ -5,7 +5,7 @@ import { trackDownloadClick } from '../lib/analytics';
 export const DownloadSection: React.FC = () => {
   const [copiedWinget, setCopiedWinget] = useState(false);
   const [copiedMac, setCopiedMac] = useState(false);
-  const [downloadCount, setDownloadCount] = useState<number | null>(null);
+  const [downloadCount, setDownloadCount] = useState<number>(57);
   const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64-setup.exe');
   const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_universal.dmg');
   const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64_en-US.msi');
@@ -78,12 +78,8 @@ export const DownloadSection: React.FC = () => {
         <div className="text-center mb-12">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900 mb-3">
             <span>Official Releases • v1.0.9</span>
-            {downloadCount !== null && (
-              <>
-                <span>•</span>
-                <span>{downloadCount} Downloads</span>
-              </>
-            )}
+            <span>•</span>
+            <span>{downloadCount} Downloads</span>
           </div>
           <h2 className="font-bangers text-5xl sm:text-6xl text-white uppercase tracking-wider comic-text-shadow-lg">
             DOWNLOAD BYTEMAP FOR WINDOWS & MACBOOK
