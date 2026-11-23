@@ -93,7 +93,25 @@ export const ComicUpdateModal: React.FC = () => {
     } catch (err: any) {
       console.error('Update installation failed:', err);
       setIsDownloading(false);
-      setErrorMsg(err?.message || 'Failed to download update automatically.');
+      const rawMsg =
+        typeof err === 'string'
+          ? err
+          : err?.message || (err ? JSON.stringify(err) : 'Failed to download update automatically.');
+      let helpfulMsg = rawMsg;
+      const lower = rawMsg.toLowerCase();
+      if (
+        lower.includes('read-only') ||
+        lower.includes('mount') ||
+        lower.includes('permission') ||
+        lower.includes('tempdirnotonsamemountpoint') ||
+        lower.includes('os error 30') ||
+        lower.includes('os error 13') ||
+        lower.includes('failed to install update')
+      ) {
+        helpfulMsg =
+          'macOS In-Place Update Notice: ByteMap cannot replace itself because it is running from a mounted read-only DMG volume, quarantined Downloads folder, or lacks write access to /Applications. Please drag ByteMap.app into your /Applications folder, or download the new installer directly below!';
+      }
+      setErrorMsg(helpfulMsg);
     }
   };
 

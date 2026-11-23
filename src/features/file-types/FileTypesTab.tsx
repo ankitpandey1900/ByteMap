@@ -9,6 +9,7 @@ import {
   Terminal,
   Gamepad,
   File,
+  Shield,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBytes, formatNumber, getCategoryColor } from '@/lib/utils';
@@ -45,6 +46,8 @@ export const FileTypesTab: React.FC = () => {
         return <Archive className="w-4 h-4 text-amber-600" />;
       case 'app':
         return <Terminal className="w-4 h-4 text-cyan-600" />;
+      case 'system':
+        return <Shield className="w-4 h-4 text-indigo-600" />;
       case 'dev':
         return <FileCode className="w-4 h-4 text-indigo-600" />;
       case 'game':

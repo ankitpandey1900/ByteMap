@@ -10,7 +10,7 @@ use crate::models::{
     CategorySummary, CleanupCandidate, CleanupType, ExtensionSummary, FileCategory, RiskLevel,
     ScanError, ScanOptions, ScanProgress, ScanStatus, ScanSummary, ScannedFile, ScannedFolder,
 };
-use crate::scanner::categorize::categorize_extension;
+use crate::scanner::categorize::categorize_file;
 use crate::scanner::exclusions::{is_file_hidden, ExclusionFilter};
 
 // Lightweight candidate wrapper for fixed-size streaming Min-Heap (top 100 files)
@@ -89,11 +89,16 @@ impl Scanner {
         let mut last_progress_report = Instant::now();
         const PROGRESS_INTERVAL_MS: u128 = 150;
 
+        let root_for_filter = root_path.clone();
         let walker = WalkDir::new(&root_path)
             .follow_links(options.follow_symlinks)
-            .same_file_system(true);
+            .same_file_system(true)
+            .into_iter()
+            .filter_entry(move |entry| {
+                !exclusion_filter.should_exclude_dir_entry(entry, &root_for_filter)
+            });
 
-        for entry_res in walker.into_iter() {
+        for entry_res in walker {
             if cancel_token.load(Ordering::Relaxed) {
                 return Err(AppError::Cancelled);
             }
@@ -130,11 +135,6 @@ impl Scanner {
             // Zero-handle hidden check using already-retrieved metadata
             let is_hidden = is_file_hidden(path, Some(&metadata));
 
-            // Check exclusion filter
-            if exclusion_filter.should_exclude(path, is_hidden) {
-                continue;
-            }
-
             if metadata.is_dir() {
                 scanned_directories += 1;
                 direct_dir_sizes
@@ -162,7 +162,8 @@ impl Scanner {
                     .map(|e| e.to_string_lossy().to_lowercase())
                     .unwrap_or_default();
 
-                let category = categorize_extension(&ext);
+                let path_lower = path.to_string_lossy().to_lowercase();
+                let (category, is_system) = categorize_file(&file_name, &ext, &path_lower);
 
                 let modified_at = metadata.modified().ok().and_then(|t| {
                     t.duration_since(UNIX_EPOCH)
@@ -209,7 +210,7 @@ impl Scanner {
                             extension: ext.clone(),
                             modified_at,
                             is_hidden,
-                            is_system: false,
+                            is_system,
                         },
                     });
                 } else if let Some(min_top) = largest_files_heap.peek() {
@@ -226,14 +227,14 @@ impl Scanner {
                                 extension: ext.clone(),
                                 modified_at,
                                 is_hidden,
-                                is_system: false,
+                                is_system,
                             },
                         });
                     }
                 }
 
-                // Streaming Cleanup Candidates Detection (caps at 100)
-                if cleanup_candidates.len() < 100 {
+                // Streaming Cleanup Candidates Detection (caps at 100, never suggest critical OS system files)
+                if cleanup_candidates.len() < 100 && !is_system {
                     let path_lower = path.to_string_lossy().to_lowercase();
                     let is_temp = path_lower.contains("\\temp\\")
                         || path_lower.contains("/tmp/")

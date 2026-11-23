@@ -7,6 +7,7 @@ import {
   getCategoryColor,
   cleanDisplayPath,
   findDriveForPath,
+  getFileIntelligence,
 } from '@/lib/utils';
 import { DriveInfo } from '@/types';
 
@@ -168,6 +169,41 @@ describe('findDriveForPath utility', () => {
     expect(findDriveForPath('', mockDrives)).toBeNull();
     expect(findDriveForPath(undefined, mockDrives)).toBeNull();
     expect(findDriveForPath('E:\\', [])).toBeNull();
+  });
+});
+
+describe('getFileIntelligence utility', () => {
+  it('identifies Windows pagefile.sys with plain-English explanation', () => {
+    const intel = getFileIntelligence('pagefile.sys', 'C:\\pagefile.sys');
+    expect(intel.isSystem).toBe(true);
+    expect(intel.isDependency).toBe(true);
+    expect(intel.shortTag).toContain('Virtual Memory');
+    expect(intel.explanation).toBeDefined();
+    expect(intel.actionGuidance).toBeDefined();
+  });
+
+  it('identifies Windows hiberfil.sys with powercfg guidance', () => {
+    const intel = getFileIntelligence('hiberfil.sys', 'C:\\hiberfil.sys');
+    expect(intel.isSystem).toBe(true);
+    expect(intel.actionGuidance).toContain('powercfg /h off');
+  });
+
+  it('identifies Docker virtual hard disk ext4.vhdx', () => {
+    const intel = getFileIntelligence('ext4.vhdx', 'C:\\Users\\user\\AppData\\Local\\Docker\\wsl\\data\\ext4.vhdx');
+    expect(intel.shortTag).toContain('Docker');
+    expect(intel.actionGuidance).toContain('docker system prune');
+  });
+
+  it('identifies Program Files DLLs as critical app dependencies', () => {
+    const intel = getFileIntelligence('msedge.dll', 'C:\\Program Files (x86)\\Microsoft\\Copilot\\Application\\msedge.dll');
+    expect(intel.isDependency).toBe(true);
+    expect(intel.shortTag).toContain('Critical Application Library');
+  });
+
+  it('returns false for normal media files', () => {
+    const intel = getFileIntelligence('movie.mp4', 'D:\\Videos\\movie.mp4');
+    expect(intel.isSystem).toBe(false);
+    expect(intel.isDependency).toBe(false);
   });
 });
 

@@ -484,6 +484,8 @@ export const ComicCategoryFileIcon: React.FC<{ category?: string; className?: st
       return <ComicArchiveIcon className={className} />;
     case 'app':
       return <ComicAppIcon className={className} />;
+    case 'system':
+      return <ComicShieldIcon className={className} />;
     case 'document':
     default:
       return <ComicDocIcon className={className} />;

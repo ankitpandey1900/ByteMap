@@ -8,8 +8,25 @@ impl DriveDiscovery {
         let disks = Disks::new_with_refreshed_list();
         let mut results = Vec::new();
 
+        #[cfg(unix)]
+        let has_root_mount = disks.iter().any(|d| d.mount_point().to_string_lossy() == "/");
+
         for disk in &disks {
             let mount_point = disk.mount_point().to_string_lossy().to_string();
+
+            // Filter out internal macOS APFS synthetic sub-volumes
+            #[cfg(unix)]
+            {
+                let mp_lower = mount_point.to_lowercase();
+                if mp_lower.starts_with("/system/volumes/vm")
+                    || mp_lower.starts_with("/system/volumes/preboot")
+                    || mp_lower.starts_with("/system/volumes/update")
+                    || (has_root_mount && mp_lower == "/system/volumes/data")
+                {
+                    continue;
+                }
+            }
+
             let name_str = disk.name().to_string_lossy().to_string();
             let clean_mount = if mount_point == "/" {
                 "/".to_string()

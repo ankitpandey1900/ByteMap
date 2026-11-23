@@ -11,6 +11,7 @@ pub enum FileCategory {
     App,
     Dev,
     Game,
+    System,
     Other,
 }
 

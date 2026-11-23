@@ -10,6 +10,7 @@ import {
   Gamepad2,
   Folder,
   Layers,
+  Shield,
 } from 'lucide-react';
 import { FileCategory } from '@/types';
 
@@ -58,8 +59,10 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
     case 'app':
     case 'application':
     case 'applications':
+      return <Terminal {...iconProps} className={`${className} text-rose-600`} />;
     case 'system':
-      return <Terminal {...iconProps} className={`${className} text-cyan-600`} />;
+    case 'os':
+      return <Shield {...iconProps} className={`${className} text-indigo-600`} />;
     case 'audio':
     case 'music':
     case 'sound':

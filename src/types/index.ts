@@ -7,6 +7,7 @@ export type FileCategory =
   | 'app'
   | 'dev'
   | 'game'
+  | 'system'
   | 'other';
 
 export interface DriveInfo {

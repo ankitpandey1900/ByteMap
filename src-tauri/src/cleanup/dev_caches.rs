@@ -288,6 +288,48 @@ impl DevCacheScanner {
             });
         }
 
+        // 9. Docker & Container Desktop Caches
+        if let Some(ref h) = home {
+            descriptors.push(CacheDescriptor {
+                id: "docker_buildx_cache",
+                tool: "Docker",
+                tool_icon: "boxes",
+                name: "Docker BuildKit Layer Cache",
+                description: "Intermediate image build layers and temporary cache chunks created during `docker build`.",
+                path: h.join(".docker").join("buildx"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to clear. Docker will recreate build cache as needed.",
+            });
+
+            // macOS Docker VM disk image
+            #[cfg(target_os = "macos")]
+            {
+                descriptors.push(CacheDescriptor {
+                    id: "docker_macos_vm",
+                    tool: "Docker",
+                    tool_icon: "boxes",
+                    name: "Docker Desktop VM Disk (Docker.raw)",
+                    description: "Virtual disk container holding Docker containers and local images on macOS.",
+                    path: h.join("Library").join("Containers").join("com.docker.docker").join("Data").join("vms").join("0").join("data"),
+                    safety_level: RiskLevel::Low,
+                    safety_explanation: "Contains your local Docker images and containers. Reclaim unused layers via `docker system prune`.",
+                });
+            }
+        }
+
+        if let Some(ref loc) = local_appdata {
+            descriptors.push(CacheDescriptor {
+                id: "docker_wsl_disk",
+                tool: "Docker",
+                tool_icon: "boxes",
+                name: "Docker Desktop WSL2 Virtual Disk (ext4.vhdx)",
+                description: "Virtual disk container holding local Docker images, containers, and volume data.",
+                path: loc.join("Docker").join("wsl").join("data"),
+                safety_level: RiskLevel::Low,
+                safety_explanation: "Contains your active Docker images. Reclaim space via `docker system prune` or by compacting the VHDX.",
+            });
+        }
+
         descriptors
     }
 

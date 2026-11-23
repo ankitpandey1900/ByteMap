@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "ByteMap",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "identifier": "com.bytemap.app",
   "build": {
     "frontendDist": "../dist",
@@ -23,7 +23,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: asset:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ipc: http://ipc.localhost https://github.com https://objects.githubusercontent.com"
+      "csp": "default-src 'self'; img-src 'self' data: asset:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ipc: http://ipc.localhost https://github.com https://*.github.com https://objects.githubusercontent.com https://*.githubusercontent.com"
     }
   },
   "plugins": {
@@ -50,7 +50,8 @@
     ],
     "macOS": {
       "frameworks": [],
-      "minimumSystemVersion": "10.13"
+      "minimumSystemVersion": "10.13",
+      "infoPlist": "Info.plist"
     },
     "windows": {
       "nsis": {

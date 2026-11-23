@@ -5,6 +5,7 @@ import {
   BarChart3,
   X,
   Layers,
+  Info,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -22,6 +23,7 @@ import {
   formatNumber,
   getCategoryColor,
   cleanDisplayPath,
+  getFileIntelligence,
 } from '@/lib/utils';
 import {
   ComicCategoryFileIcon,
@@ -370,28 +372,30 @@ export const LargeFilesTab: React.FC = () => {
           );
           const catColor = getCategoryColor(file.category);
 
+          const intel = getFileIntelligence(file.name, file.path);
+
           return (
             <div
               key={file.id}
-              className="p-3.5 flex items-center justify-between hover:bg-amber-50/80 transition-colors gap-4 w-full group"
+              className="p-3.5 flex flex-col md:flex-row md:items-center justify-between hover:bg-amber-50/80 transition-colors gap-3 w-full group"
             >
               {/* Rank & File details */}
-              <div className="flex items-center space-x-3 min-w-0 flex-1">
-                <span className="font-bangers text-xs text-slate-700 bg-amber-200 px-2 py-1 rounded-md border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a] shrink-0">
+              <div className="flex items-start space-x-3 min-w-0 flex-1">
+                <span className="font-bangers text-xs text-slate-700 bg-amber-200 px-2 py-1 rounded-md border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a] shrink-0 mt-0.5">
                   #{idx + 1}
                 </span>
 
-                <div className="shrink-0 p-1 bg-amber-100 border-2 border-slate-900 rounded-lg shadow-[1.5px_1.5px_0px_#0f172a] group-hover:scale-105 transition-transform">
+                <div className="shrink-0 p-1 bg-amber-100 border-2 border-slate-900 rounded-lg shadow-[1.5px_1.5px_0px_#0f172a] group-hover:scale-105 transition-transform mt-0.5">
                   <ComicCategoryFileIcon category={file.category} className="w-5 h-5" />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center space-x-2 flex-wrap gap-1">
+                  <div className="flex items-center space-x-2 flex-wrap gap-1.5">
                     <span className="font-comicNeue font-bold text-sm text-slate-900 truncate">
                       {file.name}
                     </span>
                     <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]"
                       style={{
                         backgroundColor: `${catColor}25`,
                         color: '#0f172a',
@@ -400,13 +404,44 @@ export const LargeFilesTab: React.FC = () => {
                       <CategoryIcon category={file.category} className="w-3.5 h-3.5" />
                       <span>{file.category}</span>
                     </span>
+
+                    {/* Explanatory Intelligence Tag for mysterious OS, Docker, or AI files */}
+                    {intel.shortTag && (
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-fredoka font-bold border border-slate-900 shadow-[1px_1px_0px_#0f172a] ${
+                          intel.isSystem
+                            ? 'bg-rose-100 text-rose-950'
+                            : 'bg-indigo-100 text-indigo-950'
+                        }`}
+                      >
+                        {intel.isSystem ? '🛡️' : '💡'} {intel.shortTag}
+                      </span>
+                    )}
                   </div>
+
                   <p
                     className="text-[11px] text-slate-500 font-mono truncate mt-0.5"
                     title={cleanDisplayPath(file.path)}
                   >
                     {cleanDisplayPath(file.path)}
                   </p>
+
+                  {/* Plain-English context card for normal users */}
+                  {intel.explanation && (
+                    <div className="mt-2 p-2 rounded-xl bg-amber-100/70 border-1.5 border-slate-900/40 text-[11px] font-fredoka text-slate-800 flex items-start space-x-2 shadow-xs">
+                      <Info className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5">
+                        <span className="font-medium text-slate-900 leading-snug block">
+                          {intel.explanation}
+                        </span>
+                        {intel.actionGuidance && (
+                          <span className="text-[10px] font-bold text-amber-950 block bg-white/70 px-1.5 py-0.5 rounded border border-slate-900/20">
+                            👉 Action: {intel.actionGuidance}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

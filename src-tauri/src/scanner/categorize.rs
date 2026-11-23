@@ -1,5 +1,71 @@
 use crate::models::FileCategory;
 
+/// Categorizes a file based on its name, extension, and full path.
+/// Returns a tuple of (FileCategory, is_system_file).
+pub fn categorize_file(name: &str, ext: &str, path_lower: &str) -> (FileCategory, bool) {
+    let name_lower = name.to_lowercase();
+    let ext_lower = ext.to_lowercase();
+
+    // 1. Critical OS / Kernel Memory & Swap files
+    if name_lower == "pagefile.sys"
+        || name_lower == "hiberfil.sys"
+        || name_lower == "swapfile.sys"
+        || name_lower == "dumpstack.log.tmp"
+        || name_lower == "memory.dmp"
+        || name_lower == "sleepimage"
+    {
+        return (FileCategory::System, true);
+    }
+
+    // 2. Docker & Container specific files & virtual disk images
+    if name_lower == "dockerfile"
+        || name_lower.starts_with("dockerfile.")
+        || name_lower == "containerfile"
+        || name_lower.starts_with("docker-compose")
+        || name_lower == ".dockerignore"
+    {
+        return (FileCategory::Dev, false);
+    }
+
+    // Docker and WSL virtual disk images (often 20GB-100GB)
+    if (ext_lower == "vhdx" || ext_lower == "raw" || ext_lower == "vhd")
+        && (path_lower.contains("docker") || path_lower.contains("wsl") || name_lower.contains("docker"))
+    {
+        return (FileCategory::Dev, false);
+    }
+
+    // AI On-device model weights
+    if name_lower == "weights.bin" || path_lower.contains("optguideondevicemodel") {
+        return (FileCategory::Dev, false);
+    }
+
+    // 3. System core libraries, drivers & binaries
+    match ext_lower.as_str() {
+        "sys" | "drv" | "ocx" | "cpl" | "dmp" | "efi" | "ko" | "so" | "dylib" | "mui" => {
+            return (FileCategory::System, true);
+        }
+        "dll" => {
+            let is_sys = path_lower.contains("\\windows\\")
+                || path_lower.contains("/system/")
+                || path_lower.contains("/usr/lib");
+            return (FileCategory::System, is_sys);
+        }
+        _ => {}
+    }
+
+    // Check if located in OS system directories
+    let is_os_path = path_lower.contains("c:\\windows\\")
+        || path_lower.contains("/system/library/")
+        || path_lower.contains("/usr/lib/");
+
+    let cat = categorize_extension(&ext_lower);
+    if is_os_path && cat == FileCategory::App {
+        return (FileCategory::System, true);
+    }
+
+    (cat, is_os_path)
+}
+
 pub fn categorize_extension(ext: &str) -> FileCategory {
     let ext_lower = ext.to_lowercase();
     match ext_lower.as_str() {
@@ -26,16 +92,21 @@ pub fn categorize_extension(ext: &str) -> FileCategory {
         | "vcf" | "ics" | "pps" | "ppsx" | "xlsm" | "docm" | "pptm" | "xlt" | "xltx" | "dot"
         | "dotx" | "log" => FileCategory::Document,
 
-        // Archives & Disk Images
+        // Archives & Virtual Machine Disk Images
         "zip" | "rar" | "7z" | "tar" | "gz" | "bz2" | "xz" | "tgz" | "tbz2" | "txz" | "lz"
         | "lzma" | "lzh" | "lz4" | "zst" | "zstd" | "iso" | "dmg" | "cab" | "z" | "wim" | "vhd"
-        | "vhdx" | "vdi" | "vmdk" | "img" | "cue" | "nrg" | "mdf" | "cpio" | "ar" | "shar"
+        | "vhdx" | "vdi" | "vmdk" | "qcow2" | "img" | "cue" | "nrg" | "mdf" | "cpio" | "ar" | "shar"
         | "sit" | "sitx" => FileCategory::Archive,
 
         // Applications & Executables
         "exe" | "msi" | "app" | "bat" | "cmd" | "ps1" | "sh" | "bin" | "deb" | "rpm" | "apk"
         | "ipa" | "jar" | "appimage" | "flatpak" | "snap" | "pkg" | "msix" | "appx" | "msp"
         | "run" | "gadget" | "com" | "scr" => FileCategory::App,
+
+        // System & Driver Files
+        "sys" | "dll" | "drv" | "ocx" | "cpl" | "dmp" | "efi" | "ko" | "so" | "dylib" | "mui" => {
+            FileCategory::System
+        }
 
         // Development & Code (Comprehensive coverage across languages, frameworks, web, data & config)
         "rs" | "rlib" | "ron" | "ts" | "tsx" | "js" | "jsx" | "mjs" | "cjs" | "mts" | "cts"
@@ -96,6 +167,25 @@ mod tests {
         assert_eq!(categorize_extension("appimage"), FileCategory::App);
         assert_eq!(categorize_extension("flac"), FileCategory::Audio);
         assert_eq!(categorize_extension("gba"), FileCategory::Game);
+        assert_eq!(categorize_extension("sys"), FileCategory::System);
+        assert_eq!(categorize_extension("dll"), FileCategory::System);
         assert_eq!(categorize_extension("unknown_xyz"), FileCategory::Other);
+    }
+
+    #[test]
+    fn test_categorize_file_special() {
+        let (cat, is_sys) = categorize_file("pagefile.sys", "sys", "c:\\pagefile.sys");
+        assert_eq!(cat, FileCategory::System);
+        assert!(is_sys);
+
+        let (cat, is_sys) = categorize_file("hiberfil.sys", "sys", "c:\\hiberfil.sys");
+        assert_eq!(cat, FileCategory::System);
+        assert!(is_sys);
+
+        let (cat, _) = categorize_file("ext4.vhdx", "vhdx", "c:\\users\\user\\appdata\\local\\docker\\wsl\\data\\ext4.vhdx");
+        assert_eq!(cat, FileCategory::Dev);
+
+        let (cat, _) = categorize_file("Dockerfile", "", "/projects/app/Dockerfile");
+        assert_eq!(cat, FileCategory::Dev);
     }
 }

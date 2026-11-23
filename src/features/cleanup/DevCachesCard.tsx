@@ -36,6 +36,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
 }) => {
   const {
     devCaches,
+    setDevCaches,
     isScanningDevCaches,
     scanDevCachesAction,
     applyCleanupResult,
@@ -88,7 +89,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
 
   const isPackages = (item: DevCacheItem) => {
     const t = item.tool.toLowerCase();
-    return t.includes('npm') || t.includes('pnpm') || t.includes('cargo') || t.includes('pip') || t.includes('uv') || t.includes('yarn');
+    return t.includes('npm') || t.includes('pnpm') || t.includes('cargo') || t.includes('pip') || t.includes('uv') || t.includes('yarn') || t.includes('docker');
   };
 
   const isBuild = (item: DevCacheItem) => {
@@ -180,6 +181,14 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
       });
       applyCleanupResult(summary.total_freed_bytes, successfulPaths, pathBytesMap, preferTrash);
 
+      // Instantly remove successfully purged cache items from local store so UI updates with 0ms delay!
+      const successfulIds = new Set(
+        summary.results.filter((r) => r.success).map((r) => r.id)
+      );
+      if (devCaches) {
+        setDevCaches(devCaches.filter((c) => !successfulIds.has(c.id)));
+      }
+
       // Remove purged IDs from current selection
       setSelectedIds((prev) => {
         const next = new Set(prev);
@@ -201,6 +210,13 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
 
   const getToolIcon = (tool: string) => {
     const t = tool.toLowerCase();
+    if (t.includes('docker')) {
+      return (
+        <div className="w-8 h-8 rounded-lg bg-sky-100 border border-slate-900 flex items-center justify-center text-sky-800 shadow-comic-sm shrink-0">
+          <Boxes className="w-4 h-4" />
+        </div>
+      );
+    }
     if (t.includes('antigravity')) {
       return (
         <div className="w-8 h-8 rounded-lg bg-sky-100 border border-slate-900 flex items-center justify-center text-sky-700 shadow-comic-sm shrink-0">

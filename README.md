@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.9-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.10-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
   <a href="https://bytemap.alltracker.online/"><img src="https://img.shields.io/badge/website-bytemap.alltracker.online-4F46E5?style=flat-square&logo=googlechrome&logoColor=white" alt="Website" /></a>
   <img src="https://img.shields.io/badge/platforms-Windows_%7C_macOS-0284C7?style=flat-square" alt="Platforms" />
   <img src="https://img.shields.io/badge/built_with-Rust_2021_+_Tauri_2-DEA584?style=flat-square&logo=rust" alt="Rust Tauri" />
@@ -20,9 +20,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.9/ByteMap_1.0.9_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.10/ByteMap_1.0.10_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.10/ByteMap_1.0.10_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.10/ByteMap_1.0.10_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
 </p>
 
 ---
@@ -84,11 +84,19 @@ Reclaim gigabytes from hidden AI caches, IDE session artifacts, package managers
 
 ---
 
-### 5. Live Folder Hierarchy Rollup & Native Trash Shortcut *(New in v1.0.9)*
+### 5. Live Folder Hierarchy Rollup & Native Trash Shortcut
 When you clean files or directories:
 - **Instant Roll-down**: Ancestor folders dynamically recalculate their sizes (`size_bytes`) and file counts in memory with 0ms latency.
 - **Smart Treemap Stepback**: If you were drilled down into a deleted directory, the Treemap gracefully steps back to the closest surviving parent folder.
 - **Recycle Bin Clarification & Quick-Action**: Clearly explains why Windows OS disk capacity frees up after emptying the Recycle Bin, and provides a 1-click native shortcut to open the OS Recycle Bin / Trash.
+
+---
+
+### 6. macOS Boundary Safety, Treemap Aspect Optimization & System Intelligence *(New in v1.0.10)*
+- **macOS Root Boundary Protection**: Prunes APFS firmlinks (`/System/Volumes/Data`), synthetic mountpoints, and `/Volumes` to prevent duplicate scanning on MacBooks.
+- **Authentic Squarified Treemap**: Replaced naive area splits with the Bruls-Huizing-van Wijk squarified layout algorithm, eliminating narrow slivers and ugly border overflow.
+- **System & Docker Intelligence**: Automatically categorizes and provides plain-English explanations for `pagefile.sys`, `hiberfil.sys`, `swapfile.sys`, Docker `.vhdx`, and AI model weights (`weights.bin`).
+- **One-Click Quick Selection**: Select All, Safe Only, and Clear Selection controls for temporary files, caches, and duplicate groups.
 
 ---
 
@@ -103,7 +111,7 @@ Get an instant category donut breakdown, inspect the top large files from 10MB t
 
 ## Feature Comparison
 
-| Capability | ByteMap (v1.0.9) | Legacy WinDirStat | Commercial Cleaners |
+| Capability | ByteMap (v1.0.10) | Legacy WinDirStat | Commercial Cleaners |
 | :--- | :---: | :---: | :---: |
 | **Engine Speed** | Native Multi-Threaded Rust | Single-threaded Win32 | Heavy Node.js / Electron |
 | **Storage Architecture** | Zero Database (Volatile RAM) | In-Memory (No snapshots) | Persistent SQLite / Registry |

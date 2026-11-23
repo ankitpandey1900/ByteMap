@@ -8,6 +8,8 @@ import {
   CornerUpLeft,
   Palette,
   Flame,
+  Copy,
+  Check,
 } from 'lucide-react';
 import {
   ComicKingdomIcon,
@@ -74,60 +76,138 @@ function squarify(
   const totalValue = items.reduce((acc, it) => acc + it.size, 0);
   if (totalValue <= 0) return [];
 
+  const sorted = [...items]
+    .filter((it) => it.size > 0)
+    .sort((a, b) => b.size - a.size);
+  if (sorted.length === 0) return [];
+
+  const totalArea = width * height;
+  const normalized = sorted.map((it) => ({
+    ...it,
+    area: (it.size / totalValue) * totalArea,
+  }));
+
   const result: RectNode[] = [];
 
-  function layoutSlice(
-    slice: TreemapItem[],
-    curX: number,
-    curY: number,
-    curW: number,
-    curH: number
-  ) {
-    if (slice.length === 0) return;
-    if (slice.length === 1) {
-      result.push({
-        ...slice[0],
-        x: curX,
-        y: curY,
-        w: curW,
-        h: curH,
-      });
-      return;
+  function worstAspectRatio(row: typeof normalized, side: number): number {
+    if (row.length === 0 || side <= 0) return Infinity;
+    const sumArea = row.reduce((acc, r) => acc + r.area, 0);
+    if (sumArea <= 0) return Infinity;
+
+    const s2 = side * side;
+    const sum2 = sumArea * sumArea;
+
+    let maxRatio = 0;
+    for (const r of row) {
+      if (r.area <= 0) continue;
+      const ratio = Math.max((s2 * r.area) / sum2, sum2 / (s2 * r.area));
+      if (ratio > maxRatio) maxRatio = ratio;
     }
+    return maxRatio;
+  }
 
-    const isHorizontal = curW >= curH;
-    let halfSum = 0;
-    const sliceTotal = slice.reduce((acc, it) => acc + it.size, 0);
-    let splitIdx = 0;
-
-    for (let i = 0; i < slice.length; i++) {
-      halfSum += slice[i].size;
-      if (halfSum >= sliceTotal / 2) {
-        splitIdx = i + 1;
-        break;
-      }
-    }
-
-    if (splitIdx === 0) splitIdx = 1;
-    if (splitIdx >= slice.length) splitIdx = slice.length - 1;
-
-    const groupA = slice.slice(0, splitIdx);
-    const groupB = slice.slice(splitIdx);
-    const ratioA = groupA.reduce((acc, it) => acc + it.size, 0) / sliceTotal;
+  function layoutRow(
+    row: typeof normalized,
+    rx: number,
+    ry: number,
+    rw: number,
+    rh: number
+  ): { nextX: number; nextY: number; nextW: number; nextH: number } {
+    const sumArea = row.reduce((acc, r) => acc + r.area, 0);
+    const isHorizontal = rw >= rh;
 
     if (isHorizontal) {
-      const widthA = curW * ratioA;
-      layoutSlice(groupA, curX, curY, widthA, curH);
-      layoutSlice(groupB, curX + widthA, curY, curW - widthA, curH);
+      const rowWidth = rh > 0 ? sumArea / rh : 0;
+      let currY = ry;
+      for (const item of row) {
+        const itemHeight = sumArea > 0 ? (item.area / sumArea) * rh : 0;
+        result.push({
+          id: item.id,
+          name: item.name,
+          path: item.path,
+          size: item.size,
+          isDir: item.isDir,
+          category: item.category,
+          fileCount: item.fileCount,
+          x: rx,
+          y: currY,
+          w: rowWidth,
+          h: itemHeight,
+        });
+        currY += itemHeight;
+      }
+      return {
+        nextX: rx + rowWidth,
+        nextY: ry,
+        nextW: Math.max(0, rw - rowWidth),
+        nextH: rh,
+      };
     } else {
-      const heightA = curH * ratioA;
-      layoutSlice(groupA, curX, curY, curW, heightA);
-      layoutSlice(groupB, curX, curY + heightA, curW, curH - heightA);
+      const rowHeight = rw > 0 ? sumArea / rw : 0;
+      let currX = rx;
+      for (const item of row) {
+        const itemWidth = sumArea > 0 ? (item.area / sumArea) * rw : 0;
+        result.push({
+          id: item.id,
+          name: item.name,
+          path: item.path,
+          size: item.size,
+          isDir: item.isDir,
+          category: item.category,
+          fileCount: item.fileCount,
+          x: currX,
+          y: ry,
+          w: itemWidth,
+          h: rowHeight,
+        });
+        currX += itemWidth;
+      }
+      return {
+        nextX: rx,
+        nextY: ry + rowHeight,
+        nextW: rw,
+        nextH: Math.max(0, rh - rowHeight),
+      };
     }
   }
 
-  const sorted = [...items].sort((a, b) => b.size - a.size);
-  layoutSlice(sorted, x, y, width, height);
+  function squarifySub(
+    children: typeof normalized,
+    row: typeof normalized,
+    cx: number,
+    cy: number,
+    cw: number,
+    ch: number
+  ) {
+    if (children.length === 0) {
+      if (row.length > 0) {
+        layoutRow(row, cx, cy, cw, ch);
+      }
+      return;
+    }
+
+    const shorterSide = Math.min(cw, ch);
+    if (shorterSide <= 0) return;
+
+    const nextChild = children[0];
+    const candidateRow = [...row, nextChild];
+
+    if (row.length === 0) {
+      squarifySub(children.slice(1), candidateRow, cx, cy, cw, ch);
+    } else {
+      const currentWorst = worstAspectRatio(row, shorterSide);
+      const candidateWorst = worstAspectRatio(candidateRow, shorterSide);
+
+      if (candidateWorst <= currentWorst) {
+        squarifySub(children.slice(1), candidateRow, cx, cy, cw, ch);
+      } else {
+        const remaining = layoutRow(row, cx, cy, cw, ch);
+        squarifySub(children, [], remaining.nextX, remaining.nextY, remaining.nextW, remaining.nextH);
+      }
+    }
+  }
+
+  squarifySub(normalized, [], x, y, width, height);
   return result;
 }
 
@@ -367,10 +447,6 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
     return scanSummary?.root_path ? cleanDisplayPath(scanSummary.root_path).replace(/[\\\/]+$/, '') : '';
   }, [scanSummary]);
 
-  const cleanDisplayCurrent = useMemo(() => {
-    return cleanDisplayPath(treemapCurrentPath || scanSummary?.root_path || 'Home');
-  }, [treemapCurrentPath, scanSummary]);
-
   const isDrilledDown = useMemo(() => {
     if (!treemapCurrentPath) return false;
     const cleanCurrent = cleanDisplayPath(treemapCurrentPath).replace(/[\\\/]+$/, '');
@@ -380,6 +456,43 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
     }
     return true;
   }, [treemapCurrentPath, cleanRootPath]);
+
+  const [copiedPath, setCopiedPath] = useState(false);
+  const handleCopyCurrentPath = () => {
+    const p = treemapCurrentPath || scanSummary?.root_path || '';
+    if (p) {
+      navigator.clipboard?.writeText(cleanDisplayPath(p));
+      setCopiedPath(true);
+      setTimeout(() => setCopiedPath(false), 1500);
+    }
+  };
+
+  const breadcrumbs = useMemo(() => {
+    if (!treemapCurrentPath || !scanSummary?.root_path) return [];
+    const cleanRoot = cleanDisplayPath(scanSummary.root_path).replace(/[\\\/]+$/, '');
+    const cleanCurrent = cleanDisplayPath(treemapCurrentPath).replace(/[\\\/]+$/, '');
+    if (!cleanCurrent || cleanCurrent.toLowerCase() === cleanRoot.toLowerCase()) return [];
+
+    const isWindows = cleanRoot.includes(':') || cleanRoot.includes('\\');
+    const sep = isWindows ? '\\' : '/';
+
+    if (cleanCurrent.toLowerCase().startsWith(cleanRoot.toLowerCase())) {
+      const rel = cleanCurrent.slice(cleanRoot.length).replace(/^[\\\/]+/, '');
+      if (!rel) return [];
+      const parts = rel.split(/[\\\/]/).filter(Boolean);
+      let accumulated = cleanRoot;
+      return parts.map((part) => {
+        accumulated = `${accumulated}${sep}${part}`;
+        return { name: part, path: accumulated };
+      });
+    }
+
+    const parts = cleanCurrent.split(/[\\\/]/).filter(Boolean);
+    return parts.map((part, idx) => ({
+      name: part,
+      path: parts.slice(0, idx + 1).join(sep),
+    }));
+  }, [treemapCurrentPath, scanSummary?.root_path]);
 
   const handleTreemapBack = () => {
     if (!treemapCurrentPath) return;
@@ -905,30 +1018,67 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
 
             {/* Row 2: Dedicated Navigation & Visual Category Legend Toolbar Shelf */}
             <div className="flex items-center justify-between flex-wrap gap-2 px-3 py-1.5 rounded-xl bg-slate-100/90 border-2 border-slate-900 shadow-comic-sm">
-              {/* Left: Location & Drilldown breadcrumb */}
-              <div className="flex items-center space-x-1.5 text-xs font-comic font-bold text-slate-700 min-w-0">
+              {/* Left: Location & Interactive Drilldown Breadcrumbs */}
+              <div className="flex items-center space-x-1.5 text-xs font-comic font-bold text-slate-700 min-w-0 max-w-full overflow-x-auto py-0.5">
                 <Compass className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                 <span className="text-slate-500 uppercase text-[10px] tracking-wide shrink-0">Location:</span>
+
+                {/* Root Home Button */}
                 <button
                   onClick={() => setTreemapCurrentPath('')}
-                  className={`px-2 py-0.5 rounded-md border border-slate-900 uppercase text-[11px] transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-md border border-slate-900 uppercase text-[11px] transition-all cursor-pointer shrink-0 ${
                     !isDrilledDown
                       ? 'bg-amber-300 text-slate-900 font-bold shadow-[1px_1px_0px_#0f172a]'
                       : 'bg-white hover:bg-amber-100 text-slate-700 hover:-translate-y-0.5'
                   }`}
-                  title="Return to Kingdom Root"
+                  title={scanSummary?.root_path ? `Root: ${cleanDisplayPath(scanSummary.root_path)}` : 'Kingdom Root'}
                 >
                   {scanSummary?.root_path ? cleanDisplayPath(scanSummary.root_path) : 'Home'}
                 </button>
+
+                {/* Interactive Clickable Path Hierarchy */}
                 {isDrilledDown && (
                   <>
-                    <span className="text-slate-400 font-bold">&gt;</span>
-                    <span className="truncate max-w-[160px] sm:max-w-[220px] text-slate-900 bg-white px-2 py-0.5 rounded-md border border-slate-900 text-[11px] shadow-[1px_1px_0px_#0f172a]">
-                      {cleanDisplayCurrent.length > 25 ? '...' + cleanDisplayCurrent.slice(-25) : cleanDisplayCurrent}
-                    </span>
+                    {breadcrumbs.map((b, i) => (
+                      <React.Fragment key={b.path}>
+                        <span className="text-slate-400 font-bold shrink-0">&gt;</span>
+                        <button
+                          onClick={() => setTreemapCurrentPath(b.path)}
+                          className={`px-2 py-0.5 rounded-md border border-slate-900 text-[11px] font-fredoka font-bold transition-all cursor-pointer shrink-0 ${
+                            i === breadcrumbs.length - 1
+                              ? 'bg-amber-300 text-slate-900 shadow-[1px_1px_0px_#0f172a]'
+                              : 'bg-white hover:bg-amber-100 text-slate-700 hover:-translate-y-0.5'
+                          }`}
+                          title={`Click to navigate to: ${cleanDisplayPath(b.path)}`}
+                        >
+                          {b.name}
+                        </button>
+                      </React.Fragment>
+                    ))}
+
+                    {/* Copy Path Shortcut */}
+                    <button
+                      onClick={handleCopyCurrentPath}
+                      className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-white hover:bg-slate-200 text-[10px] text-slate-700 font-comic uppercase border border-slate-900 shadow-[1px_1px_0px_#0f172a] transition-all cursor-pointer shrink-0 ml-1"
+                      title="Copy full directory path"
+                    >
+                      {copiedPath ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span className="text-emerald-700">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 text-slate-700" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Step-back button */}
                     <button
                       onClick={handleTreemapBack}
-                      className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-rose-200 hover:bg-rose-300 text-[10px] text-slate-800 font-comic uppercase border border-slate-900 shadow-[1px_1px_0px_#0f172a] transition-all hover:-translate-y-0.5 cursor-pointer"
+                      className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-rose-200 hover:bg-rose-300 text-[10px] text-slate-800 font-comic uppercase border border-slate-900 shadow-[1px_1px_0px_#0f172a] transition-all hover:-translate-y-0.5 cursor-pointer shrink-0"
                       title="Back to parent directory"
                     >
                       <CornerUpLeft className="w-3 h-3" />
@@ -966,6 +1116,18 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 >
                   <ComicAppIcon className="w-3.5 h-3.5" />
                   <span>Apps</span>
+                </button>
+                <button
+                  onClick={() => setHighlightCategory(highlightCategory === 'system' ? 'all' : 'system')}
+                  className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-md border border-slate-900 transition-all cursor-pointer ${
+                    highlightCategory === 'system'
+                      ? 'bg-indigo-300 ring-2 ring-slate-900 scale-105 shadow-[2px_2px_0px_#0f172a]'
+                      : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-900 shadow-[1px_1px_0px_#0f172a]'
+                  }`}
+                  title="Click to spotlight OS & System files"
+                >
+                  <ComicShieldIcon className="w-3.5 h-3.5" />
+                  <span>System</span>
                 </button>
                 <button
                   onClick={() => setHighlightCategory(highlightCategory === 'image' ? 'all' : 'image')}
@@ -1160,8 +1322,8 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                                 </div>
                               )}
 
-                              {/* Clean, readable filename with frosted comic background */}
-                              <p className="font-fredoka font-bold text-xs sm:text-[13px] text-slate-900 truncate w-full max-w-full px-1.5 py-0.5 bg-white/85 rounded-md border border-slate-900/30 leading-tight mb-1 shadow-xs">
+                              {/* Clean, readable filename with comic pill background (avoids awkward full-width bars on giant cells) */}
+                              <p className="font-fredoka font-bold text-xs sm:text-[13px] text-slate-900 truncate max-w-[85%] sm:max-w-xs md:max-w-sm px-2.5 py-0.5 bg-white/95 rounded-md border border-slate-900 shadow-[1px_1px_0px_#0f172a] leading-tight mb-1">
                                 {node.name}
                               </p>
 

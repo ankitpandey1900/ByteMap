@@ -390,6 +390,79 @@ export const CleanupTab: React.FC = () => {
             )}
           </div>
 
+          {/* Quick Selection Toolbar (Select All / Safe Only / Clear Selection) */}
+          <div className="flex items-center justify-between flex-wrap gap-2 px-3.5 py-2 bg-white rounded-xl border-2 border-slate-900 shadow-comic-sm text-xs font-comic">
+            <div className="flex items-center space-x-2 flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const allFilteredIds = filteredCandidates.map((c) => c.id);
+                  const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every((id) => selectedCleanupIds.has(id));
+                  if (isAllSelected) {
+                    clearCleanupSelection();
+                  } else {
+                    selectAllCleanup(allFilteredIds);
+                  }
+                }}
+                className="flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-300 hover:bg-amber-200 border-1.5 border-slate-900 text-slate-900 font-bold shadow-xs cursor-pointer"
+              >
+                {filteredCandidates.length > 0 && filteredCandidates.every((c) => selectedCleanupIds.has(c.id)) ? (
+                  <>
+                    <CheckSquare className="w-4 h-4 text-slate-900" />
+                    <span>Deselect All</span>
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-4 h-4 text-slate-900" />
+                    <span>Select All ({filteredCandidates.length})</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const safeIds = filteredCandidates.filter((c) => c.risk_level === 'safe').map((c) => c.id);
+                  selectAllCleanup(safeIds);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 border-1.5 border-slate-900 text-emerald-950 font-bold shadow-xs cursor-pointer"
+                title="Select only 100% safe candidates"
+              >
+                Safe Only
+              </button>
+
+              {selectedCleanupIds.size > 0 && (
+                <button
+                  type="button"
+                  onClick={clearCleanupSelection}
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border-1.5 border-slate-900 text-slate-700 shadow-xs cursor-pointer"
+                >
+                  Clear Selection
+                </button>
+              )}
+            </div>
+
+            {/* Selection stats & Action Trigger */}
+            <div className="flex items-center space-x-3">
+              <span className="text-slate-600 font-fredoka font-bold text-xs">
+                Selected: <strong className="text-slate-900 font-comic">{selectedCandidates.length}</strong> (
+                <span className="text-emerald-700 font-bold">{formatBytes(totalSelectedBytes, settings.unit)}</span>)
+              </span>
+
+              {selectedCandidates.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(true)}
+                  disabled={isExecuting}
+                  className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-xs uppercase tracking-wider border-2 border-slate-900 rounded-xl shadow-comic-sm transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clean Selected</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Candidates List */}
           <div className="space-y-2.5">
             {filteredCandidates.map((candidate) => {
