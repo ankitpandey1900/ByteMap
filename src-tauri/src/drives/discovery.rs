@@ -9,7 +9,9 @@ impl DriveDiscovery {
         let mut results = Vec::new();
 
         #[cfg(unix)]
-        let has_root_mount = disks.iter().any(|d| d.mount_point().to_string_lossy() == "/");
+        let has_root_mount = disks
+            .iter()
+            .any(|d| d.mount_point().to_string_lossy() == "/");
 
         for disk in &disks {
             let mount_point = disk.mount_point().to_string_lossy().to_string();

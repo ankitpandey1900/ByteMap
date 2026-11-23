@@ -39,7 +39,8 @@ impl ExclusionFilter {
             let root_str = root_path.to_string_lossy();
 
             // When scanning root '/', never cross into '/Volumes' (which mounts all external drives, network shares, and DMGs)
-            if root_str == "/" && (path_lower == "/volumes" || path_lower.starts_with("/volumes/")) {
+            if root_str == "/" && (path_lower == "/volumes" || path_lower.starts_with("/volumes/"))
+            {
                 return true;
             }
 
@@ -130,7 +131,8 @@ impl ExclusionFilter {
         let path_lower = path.to_string_lossy().to_lowercase();
 
         for pattern in &self.exclude_patterns {
-            if file_name == *pattern || file_name.contains(pattern) || path_lower.contains(pattern) {
+            if file_name == *pattern || file_name.contains(pattern) || path_lower.contains(pattern)
+            {
                 return true;
             }
         }

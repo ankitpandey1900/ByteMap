@@ -29,7 +29,9 @@ pub fn categorize_file(name: &str, ext: &str, path_lower: &str) -> (FileCategory
 
     // Docker and WSL virtual disk images (often 20GB-100GB)
     if (ext_lower == "vhdx" || ext_lower == "raw" || ext_lower == "vhd")
-        && (path_lower.contains("docker") || path_lower.contains("wsl") || name_lower.contains("docker"))
+        && (path_lower.contains("docker")
+            || path_lower.contains("wsl")
+            || name_lower.contains("docker"))
     {
         return (FileCategory::Dev, false);
     }
@@ -95,8 +97,8 @@ pub fn categorize_extension(ext: &str) -> FileCategory {
         // Archives & Virtual Machine Disk Images
         "zip" | "rar" | "7z" | "tar" | "gz" | "bz2" | "xz" | "tgz" | "tbz2" | "txz" | "lz"
         | "lzma" | "lzh" | "lz4" | "zst" | "zstd" | "iso" | "dmg" | "cab" | "z" | "wim" | "vhd"
-        | "vhdx" | "vdi" | "vmdk" | "qcow2" | "img" | "cue" | "nrg" | "mdf" | "cpio" | "ar" | "shar"
-        | "sit" | "sitx" => FileCategory::Archive,
+        | "vhdx" | "vdi" | "vmdk" | "qcow2" | "img" | "cue" | "nrg" | "mdf" | "cpio" | "ar"
+        | "shar" | "sit" | "sitx" => FileCategory::Archive,
 
         // Applications & Executables
         "exe" | "msi" | "app" | "bat" | "cmd" | "ps1" | "sh" | "bin" | "deb" | "rpm" | "apk"
@@ -182,7 +184,11 @@ mod tests {
         assert_eq!(cat, FileCategory::System);
         assert!(is_sys);
 
-        let (cat, _) = categorize_file("ext4.vhdx", "vhdx", "c:\\users\\user\\appdata\\local\\docker\\wsl\\data\\ext4.vhdx");
+        let (cat, _) = categorize_file(
+            "ext4.vhdx",
+            "vhdx",
+            "c:\\users\\user\\appdata\\local\\docker\\wsl\\data\\ext4.vhdx",
+        );
         assert_eq!(cat, FileCategory::Dev);
 
         let (cat, _) = categorize_file("Dockerfile", "", "/projects/app/Dockerfile");
