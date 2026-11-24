@@ -6,6 +6,8 @@ import {
   X,
   Layers,
   Info,
+  Clock,
+  Snowflake,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -34,6 +36,26 @@ import { ScoutAvatar } from '@/components/ScoutMascot';
 import { api } from '@/lib/api';
 
 type SizeTierKey = 'all' | 'under100' | '100to500' | '500to1g' | '1gto5g' | 'over5g';
+type AgeFilterKey = 'all' | '3months' | '6months' | '1year';
+
+function getFileAgeBadge(timestamp?: number): { label: string; color: string } | null {
+  if (!timestamp) return null;
+  const ageMs = Date.now() - timestamp;
+  const oneYear = 365 * 24 * 60 * 60 * 1000;
+  const sixMonths = 180 * 24 * 60 * 60 * 1000;
+  const threeMonths = 90 * 24 * 60 * 60 * 1000;
+
+  if (ageMs >= oneYear) {
+    return { label: '❄️ Cold (>1 yr)', color: 'bg-cyan-100 text-cyan-950 border-cyan-400' };
+  }
+  if (ageMs >= sixMonths) {
+    return { label: '⏳ Stale (>6 mo)', color: 'bg-indigo-100 text-indigo-950 border-indigo-400' };
+  }
+  if (ageMs >= threeMonths) {
+    return { label: 'Dormant (>3 mo)', color: 'bg-slate-100 text-slate-800 border-slate-300' };
+  }
+  return null;
+}
 
 interface SizeTier {
   key: SizeTierKey;
@@ -56,6 +78,7 @@ export const LargeFilesTab: React.FC = () => {
   const [thresholdMB, setThresholdMB] = useState<number>(settings.large_file_threshold_mb);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [selectedTier, setSelectedTier] = useState<SizeTierKey>('all');
+  const [ageFilter, setAgeFilter] = useState<AgeFilterKey>('all');
   const [showHistogram, setShowHistogram] = useState<boolean>(true);
 
   // Compute histogram data across all large files
@@ -98,6 +121,18 @@ export const LargeFilesTab: React.FC = () => {
       files = files.filter((f) => f.size_bytes >= thresholdBytes);
     }
 
+    // Filter by age / inactivity if selected
+    if (ageFilter === '3months') {
+      const minAge = 90 * 24 * 60 * 60 * 1000;
+      files = files.filter((f) => f.modified_at && Date.now() - f.modified_at >= minAge);
+    } else if (ageFilter === '6months') {
+      const minAge = 180 * 24 * 60 * 60 * 1000;
+      files = files.filter((f) => f.modified_at && Date.now() - f.modified_at >= minAge);
+    } else if (ageFilter === '1year') {
+      const minAge = 365 * 24 * 60 * 60 * 1000;
+      files = files.filter((f) => f.modified_at && Date.now() - f.modified_at >= minAge);
+    }
+
     const sorted = [...files].sort((a, b) =>
       sortOrder === 'desc'
         ? b.size_bytes - a.size_bytes
@@ -105,7 +140,23 @@ export const LargeFilesTab: React.FC = () => {
     );
 
     return sorted;
-  }, [scanSummary, thresholdMB, sortOrder, selectedTier]);
+  }, [scanSummary, thresholdMB, sortOrder, selectedTier, ageFilter]);
+
+  const coldFilesCount = useMemo(() => {
+    if (!scanSummary) return 0;
+    const sixMonths = 180 * 24 * 60 * 60 * 1000;
+    return scanSummary.largest_files.filter(
+      (f) => f.modified_at && Date.now() - f.modified_at >= sixMonths
+    ).length;
+  }, [scanSummary]);
+
+  const coldFilesBytes = useMemo(() => {
+    if (!scanSummary) return 0;
+    const sixMonths = 180 * 24 * 60 * 60 * 1000;
+    return scanSummary.largest_files
+      .filter((f) => f.modified_at && Date.now() - f.modified_at >= sixMonths)
+      .reduce((sum, f) => sum + f.size_bytes, 0);
+  }, [scanSummary]);
 
   const handleReveal = async (path: string) => {
     try {
@@ -327,15 +378,44 @@ export const LargeFilesTab: React.FC = () => {
                 );
               })}
             </div>
+
+            {/* Age & Inactivity Filter Pills */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-100">
+              <span className="text-xs font-bangers uppercase text-slate-500 mr-1 flex items-center gap-1">
+                <Clock className="w-3 h-3 text-cyan-600" />
+                Age Filter:
+              </span>
+              {[
+                { key: 'all', label: 'All Times' },
+                { key: '3months', label: 'Dormant (>3 mo)' },
+                { key: '6months', label: '⏳ Stale (>6 mo)' },
+                { key: '1year', label: '❄️ Cold (>1 yr)' },
+              ].map((tier) => (
+                <button
+                  key={tier.key}
+                  type="button"
+                  onClick={() => setAgeFilter(tier.key as any)}
+                  className={`px-2.5 py-1 rounded-lg border-1.5 border-slate-900 text-[11px] font-comic uppercase tracking-wider transition-all cursor-pointer ${
+                    ageFilter === tier.key
+                      ? 'bg-cyan-300 font-bold text-slate-900 shadow-comic-sm -translate-y-0.5'
+                      : 'bg-white hover:bg-cyan-100 text-slate-700'
+                  }`}
+                >
+                  {tier.label}
+                </button>
+              ))}
+            </div>
           </>
         )}
       </div>
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 w-full">
         <div className="p-4 bg-white rounded-2xl border-3 border-slate-900 shadow-[4px_4px_0px_#0f172a]">
           <span className="font-bangers uppercase tracking-wider text-xs text-slate-500 block">
-            {selectedTier === 'all' ? 'Files Above Threshold' : 'Files in Selected Tier'}
+            {selectedTier === 'all' && ageFilter === 'all'
+              ? 'Files Above Threshold'
+              : 'Filtered Matches'}
           </span>
           <p className="text-2xl font-mono font-bold text-slate-900 mt-1 tabular-nums">
             {formatNumber(filteredLargeFiles.length)}
@@ -361,6 +441,18 @@ export const LargeFilesTab: React.FC = () => {
               : '—'}
           </p>
         </div>
+
+        <div className="p-4 bg-white rounded-2xl border-3 border-slate-900 shadow-[4px_4px_0px_#0f172a]">
+          <span className="font-bangers uppercase tracking-wider text-xs text-cyan-700 block flex items-center gap-1">
+            <Snowflake className="w-3.5 h-3.5" />
+            Cold Storage (&gt;6 mo)
+          </span>
+          <p className="text-2xl font-mono font-bold text-cyan-600 mt-1 truncate tabular-nums">
+            {coldFilesCount > 0
+              ? `${coldFilesCount} (${formatBytes(coldFilesBytes, settings.unit)})`
+              : '0 Bytes'}
+          </p>
+        </div>
       </div>
 
       {/* Large Files Comic List */}
@@ -373,6 +465,7 @@ export const LargeFilesTab: React.FC = () => {
           const catColor = getCategoryColor(file.category);
 
           const intel = getFileIntelligence(file.name, file.path);
+          const ageBadge = getFileAgeBadge(file.modified_at);
 
           return (
             <div
@@ -417,6 +510,16 @@ export const LargeFilesTab: React.FC = () => {
                         {intel.isSystem ? '🛡️' : '💡'} {intel.shortTag}
                       </span>
                     )}
+
+                    {/* Cold / Stale Activity Badge */}
+                    {ageBadge && (
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-fredoka font-bold border border-slate-900 shadow-[1px_1px_0px_#0f172a] ${ageBadge.color}`}
+                        title={`Last modified: ${formatDate(file.modified_at)}`}
+                      >
+                        {ageBadge.label}
+                      </span>
+                    )}
                   </div>
 
                   <p
@@ -451,7 +554,7 @@ export const LargeFilesTab: React.FC = () => {
                   <span className="font-mono font-bold text-sm text-slate-900 block tabular-nums">
                     {formatBytes(file.size_bytes, settings.unit)}
                   </span>
-                  <div className="w-full mt-1 h-2 bg-slate-200 border border-slate-900 rounded-full overflow-hidden p-0.2">
+                  <div className="w-full mt-1 h-2 bg-slate-200 border border-slate-900 rounded-full overflow-hidden p-[1px]">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{

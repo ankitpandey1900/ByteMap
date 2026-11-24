@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   ExternalLink,
   ArrowRight,
@@ -10,6 +10,9 @@ import {
   Flame,
   Copy,
   Check,
+  Search,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import {
   ComicKingdomIcon,
@@ -458,6 +461,26 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   }, [treemapCurrentPath, cleanRootPath]);
 
   const [copiedPath, setCopiedPath] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [spotlightQuery, setSpotlightQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut Ctrl+F / Cmd+F to open Spotlight Search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        setShowSearch(true);
+        setTimeout(() => searchInputRef.current?.focus(), 80);
+      } else if (e.key === 'Escape' && showSearch) {
+        setShowSearch(false);
+        setSpotlightQuery('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showSearch]);
+
   const handleCopyCurrentPath = () => {
     const p = treemapCurrentPath || scanSummary?.root_path || '';
     if (p) {
@@ -596,6 +619,24 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   const rects = useMemo(() => {
     return squarify(treemapItems, 0, 0, 1000, 700);
   }, [treemapItems]);
+
+  const matchesSearch = (node: RectNode, query: string) => {
+    if (!query.trim()) return false;
+    const q = query.toLowerCase().trim();
+    const nameMatch = node.name.toLowerCase().includes(q);
+    const pathMatch = node.path.toLowerCase().includes(q);
+    const catMatch = (node.category || '').toLowerCase().includes(q);
+    return nameMatch || pathMatch || catMatch;
+  };
+
+  const matchedNodes = useMemo(() => {
+    if (!spotlightQuery.trim()) return [];
+    return rects.filter((r) => matchesSearch(r, spotlightQuery));
+  }, [rects, spotlightQuery]);
+
+  const matchedBytes = useMemo(() => {
+    return matchedNodes.reduce((sum, n) => sum + n.size, 0);
+  }, [matchedNodes]);
 
   // Real Large Files List
   const largeFilesList = useMemo(() => {
@@ -996,6 +1037,25 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
               {/* Action Buttons: Clean single row */}
               <div className="flex items-center space-x-2 shrink-0">
                 <button
+                  type="button"
+                  onClick={() => {
+                    setShowSearch((prev) => !prev);
+                    if (!showSearch) setTimeout(() => searchInputRef.current?.focus(), 80);
+                  }}
+                  className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase transition-all cursor-pointer ${
+                    showSearch
+                      ? 'bg-amber-400 text-slate-900 font-bold shadow-comic'
+                      : 'bg-white hover:bg-amber-100 text-slate-800 hover:-translate-y-0.5'
+                  }`}
+                  title="Spotlight Search: search files, extensions, folders (Ctrl+F / Cmd+F)"
+                >
+                  <Search className="w-3.5 h-3.5 text-slate-900" />
+                  <span>Spotlight</span>
+                  <span className="hidden sm:inline-block text-[10px] bg-slate-200 px-1 py-0.5 rounded text-slate-600 font-mono">
+                    ⌘F
+                  </span>
+                </button>
+                <button
                   onClick={() => setShowTimeMachine(true)}
                   disabled={!scanSummary}
                   className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase text-slate-900 hover:-translate-y-0.5 hover:shadow-comic transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
@@ -1015,6 +1075,41 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* Spotlight Search Floating Shelf */}
+            {showSearch && (
+              <div className="flex items-center justify-between gap-2 p-2 bg-amber-300 border-2.5 border-slate-900 rounded-xl shadow-comic animate-in fade-in slide-in-from-top-1">
+                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                  <Search className="w-4 h-4 text-slate-900 shrink-0" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={spotlightQuery}
+                    onChange={(e) => setSpotlightQuery(e.target.value)}
+                    placeholder="Spotlight search by name, .ext, folder, or category (e.g. .mp4, node_modules, docker)..."
+                    className="w-full bg-white px-3 py-1 text-xs font-comic font-bold text-slate-900 rounded-lg border-2 border-slate-900 focus:outline-none placeholder:text-slate-400 placeholder:font-normal"
+                  />
+                </div>
+                {spotlightQuery.trim() && (
+                  <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-slate-900 text-amber-300 font-mono text-[11px] font-bold shrink-0">
+                    <span>{matchedNodes.length} matches</span>
+                    <span>•</span>
+                    <span>{formatBytes(matchedBytes, settings.unit)}</span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSpotlightQuery('');
+                    setShowSearch(false);
+                  }}
+                  className="p-1 hover:bg-amber-400 rounded-md text-slate-900 cursor-pointer"
+                  title="Close Search (Esc)"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* Row 2: Dedicated Navigation & Visual Category Legend Toolbar Shelf */}
             <div className="flex items-center justify-between flex-wrap gap-2 px-3 py-1.5 rounded-xl bg-slate-100/90 border-2 border-slate-900 shadow-comic-sm">
@@ -1044,7 +1139,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                         <span className="text-slate-400 font-bold shrink-0">&gt;</span>
                         <button
                           onClick={() => setTreemapCurrentPath(b.path)}
-                          className={`px-2 py-0.5 rounded-md border border-slate-900 text-[11px] font-fredoka font-bold transition-all cursor-pointer shrink-0 ${
+                          className={`px-2 py-0.5 rounded-md border border-slate-900 text-[11px] font-fredoka font-bold transition-all cursor-pointer shrink-0 max-w-[160px] sm:max-w-[220px] truncate ${
                             i === breadcrumbs.length - 1
                               ? 'bg-amber-300 text-slate-900 shadow-[1px_1px_0px_#0f172a]'
                               : 'bg-white hover:bg-amber-100 text-slate-700 hover:-translate-y-0.5'
@@ -1216,7 +1311,10 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                   const fill = getVibrantCellColor(node.name, idx, cat, mapColorMode);
                   const isHovered = hoveredNode?.id === node.id;
                   const isHugeFile = idx === 0 && node.size > 50 * 1024 * 1024; // Only badge the largest genuine file
-                  const isHighlighted = highlightCategory === 'all' || cat === highlightCategory;
+                  const isSearchActive = Boolean(spotlightQuery.trim());
+                  const isMatch = isSearchActive ? matchesSearch(node, spotlightQuery) : false;
+                  const isCategoryMatch = highlightCategory === 'all' || cat === highlightCategory;
+                  const isHighlighted = isSearchActive ? isMatch : isCategoryMatch;
 
                   return (
                     <g
@@ -1238,12 +1336,18 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                         height={Math.max(0, node.h - 4)}
                         rx={8}
                         fill={fill}
-                        stroke="#0f172a"
-                        strokeWidth={isHovered ? 4 : isHighlighted ? 2.5 : 1}
-                        opacity={isHighlighted ? 1 : 0.22}
+                        stroke={isMatch ? '#eab308' : '#0f172a'}
+                        strokeWidth={isMatch ? (isHovered ? 6 : 4.5) : isHovered ? 4 : isHighlighted ? 2.5 : 1}
+                        opacity={isHighlighted ? 1 : 0.18}
                         style={{
-                          transition: 'stroke-width 0.15s ease, opacity 0.2s ease',
-                          filter: isHovered ? 'brightness(1.1)' : isHighlighted ? 'none' : 'grayscale(0.6)',
+                          transition: 'stroke-width 0.15s ease, opacity 0.2s ease, stroke 0.2s ease',
+                          filter: isMatch
+                            ? 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.9))'
+                            : isHovered
+                            ? 'brightness(1.1)'
+                            : isHighlighted
+                            ? 'none'
+                            : 'grayscale(0.7)',
                         }}
                       />
 
@@ -1284,7 +1388,9 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                           className="overflow-hidden"
                         >
                           <div
-                            className="w-full h-full p-2 flex flex-col justify-between items-center text-center relative select-none"
+                            className={`w-full h-full ${
+                              node.w > 80 ? 'p-2' : 'p-1'
+                            } flex flex-col justify-between items-center text-center relative select-none`}
                             style={{
                               opacity: isHighlighted ? 1 : 0.2,
                               transition: 'opacity 0.2s ease',
@@ -1292,7 +1398,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                           >
                             {/* Top row: Category Tag (left) & Top Hog Ribbon (right) */}
                             <div className="w-full flex items-center justify-between pointer-events-none min-h-[18px]">
-                              {node.w > 75 && node.h > 50 ? (
+                              {node.w > 85 && node.h > 55 ? (
                                 <div className="px-1.5 py-0.5 rounded-md bg-white border border-slate-900 shadow-[1px_1px_0px_#0f172a] flex items-center space-x-1">
                                   <CategoryIcon category={cat} className="w-2.5 h-2.5 shrink-0" />
                                   <span className="font-fredoka font-bold text-[9px] uppercase text-slate-900 leading-none">
@@ -1303,14 +1409,21 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                                 <span />
                               )}
 
-                              {isHugeFile && node.w > 110 && node.h > 65 && (
+                              {isMatch && node.w > 60 && node.h > 40 ? (
+                                <div className="px-1.5 py-0.5 rounded-md bg-amber-400 border border-slate-900 shadow-[1px_1px_0px_#0f172a] flex items-center space-x-1 animate-pulse ml-auto">
+                                  <Sparkles className="w-2.5 h-2.5 text-slate-900" />
+                                  <span className="font-bangers text-[9px] uppercase text-slate-900 tracking-wider leading-none">
+                                    MATCH
+                                  </span>
+                                </div>
+                              ) : isHugeFile && node.w > 110 && node.h > 65 ? (
                                 <div className="px-2 py-0.5 rounded-md bg-amber-400 border border-slate-900 shadow-[1px_1px_0px_#0f172a] flex items-center space-x-1 animate-pulse-subtle ml-auto">
                                   <ComicZapIcon className="w-2.5 h-2.5 text-slate-900" />
                                   <span className="font-bangers text-[10px] uppercase text-slate-900 tracking-wider leading-none">
                                     Top Hog
                                   </span>
                                 </div>
-                              )}
+                              ) : null}
                             </div>
 
                             {/* Center Content: Icon + Name + Size Pill (Guaranteed zero collisions via Flexbox) */}
@@ -1323,13 +1436,19 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                               )}
 
                               {/* Clean, readable filename with comic pill background (avoids awkward full-width bars on giant cells) */}
-                              <p className="font-fredoka font-bold text-xs sm:text-[13px] text-slate-900 truncate max-w-[85%] sm:max-w-xs md:max-w-sm px-2.5 py-0.5 bg-white/95 rounded-md border border-slate-900 shadow-[1px_1px_0px_#0f172a] leading-tight mb-1">
+                              <p
+                                className={`font-fredoka font-bold ${
+                                  node.w < 75
+                                    ? 'text-[10px] px-1 py-0'
+                                    : 'text-xs sm:text-[13px] px-2.5 py-0.5'
+                                } text-slate-900 truncate max-w-[85%] sm:max-w-xs md:max-w-sm bg-white/95 rounded-md border border-slate-900 shadow-[1px_1px_0px_#0f172a] leading-tight mb-1`}
+                              >
                                 {node.name}
                               </p>
 
                               {/* Crisp Mono Size Pill */}
-                              {node.h > 55 && (
-                                <span className="inline-flex items-center font-mono font-bold text-[10px] sm:text-[11px] text-slate-900 px-2 py-0.5 rounded-md bg-white border-1.5 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a] tabular-nums shrink-0">
+                              {node.h > 55 && node.w > 65 && (
+                                <span className="inline-flex items-center font-mono font-bold text-[9px] sm:text-[10px] text-slate-900 px-1.5 py-0.5 rounded-md bg-white border-1.5 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a] tabular-nums shrink-0 max-w-[95%] truncate">
                                   {formatBytes(node.size, settings.unit)}
                                 </span>
                               )}

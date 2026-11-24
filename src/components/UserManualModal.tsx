@@ -12,6 +12,8 @@ import {
   Zap,
   BarChart3,
   Trash2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { ActiveTab } from '@/types';
@@ -19,7 +21,7 @@ import { api } from '@/lib/api';
 
 interface GuideProblem {
   id: string;
-  category: 'emergency' | 'hidden' | 'duplicates' | 'cleanup' | 'dev' | 'diff';
+  category: 'emergency' | 'hidden' | 'duplicates' | 'cleanup' | 'dev' | 'diff' | 'ai' | 'mac';
   badge: string;
   badgeColor: string;
   title: string;
@@ -50,7 +52,8 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     ],
     recommendedTab: 'large-files',
     tabActionLabel: 'Jump to Large Files Scout',
-    safetyTip: 'Everything moved through ByteMap goes straight to your Windows Recycle Bin first, so you can always restore anything if you change your mind.',
+    safetyTip:
+      'Everything moved through ByteMap goes straight to your OS Recycle Bin / macOS Trash first, so you can always restore anything if you change your mind.',
   },
   {
     id: 'ide-caches',
@@ -66,12 +69,34 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
       'Open the "Cleanup" tab in the top header.',
       'Click the "Coding & IDE Caches" pill at the top.',
       'Click the prominent "[ 🚀 Scan Developer Caches ]" button to audit your machine.',
-      'Filter by category badges: All Caches, AI & IDEs, Package Managers, or Build Systems.',
+      'Filter by category badges: All Caches, AI Models, IDE & Editors, Package Managers, or Build Systems.',
       'Select what you want to remove and click "Purge Selected". All caches are 100% safe to clear and rebuild cleanly when you run your tools next time.',
     ],
     recommendedTab: 'cleanup',
     tabActionLabel: 'Open Coding Cache Purger',
-    safetyTip: 'Purging IDE caches will never delete your source code or git repos; it only removes temporary download buffers, model weights, and session logs.',
+    safetyTip:
+      'Purging IDE caches will never delete your source code or git repos; it only removes temporary download buffers, model weights, and session logs.',
+  },
+  {
+    id: 'ai-llm-models',
+    category: 'ai',
+    badge: 'AI Models (LLMs) 🧠',
+    badgeColor: 'bg-purple-500 text-white',
+    title: 'Ollama, HuggingFace, LM Studio & PyTorch Models Eating 50+ GB',
+    symptom:
+      'You tested local AI models (Llama 3, DeepSeek, Mistral) or downloaded weights via HuggingFace/LM Studio, and your SSD is suddenly missing 50 to 100 GB.',
+    ankitsTake:
+      'Local AI models are massive (4 GB to 40 GB per checkpoint). They hide deep inside ~/.ollama/models, ~/.cache/huggingface/hub, or Chrome Gemini Nano storage where standard cleaners never look. I added dedicated model radar in Developer Caches so you can purge unused models safely in 1 click:',
+    solutionSteps: [
+      'Head to the "Cleanup" tab and open "Coding & IDE Caches".',
+      'Click the "🧠 AI Models (LLM)" category filter pill.',
+      'ByteMap lists all detected Ollama, HuggingFace Hub, LM Studio, PyTorch checkpoints, and Chrome on-device weights.',
+      'Select the old model checkpoints you no longer run and purge them to instantly reclaim 10–50+ GB!',
+    ],
+    recommendedTab: 'cleanup',
+    tabActionLabel: 'Open AI Model Purger',
+    safetyTip:
+      'Purging model weights never deletes your code or API keys. You can re-pull any model anytime via ollama pull or huggingface-cli.',
   },
   {
     id: 'drive-health',
@@ -84,14 +109,15 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     ankitsTake:
       'When Solid State Drives exceed 75% capacity, write speeds begin throttling and drive life decreases due to write amplification. I coded 4 clear operational stages so you know when to intervene:',
     solutionSteps: [
-      'SAFE (0–49% used): Great health! Plenty of breathing room for Windows and applications.',
+      'SAFE (0–49% used): Great health! Plenty of breathing room for the operating system and applications.',
       'RISING (50–74% used): Normal operational range. Good time to review old downloads if planning big game installs.',
       'HEAVY (75–89% used): Warning territory! SSD wear increases. Open "Large Files" to prune obsolete media or archives.',
-      'CRITICAL (90%+ used): Danger zone! Windows updates and background paging will fail. Open "Cleanup" right away.',
+      'CRITICAL (90%+ used): Danger zone! System updates and background paging will fail. Open "Cleanup" right away.',
     ],
     recommendedTab: 'drives',
     tabActionLabel: 'Check Drives Health',
-    safetyTip: 'Always keep at least 15% free space on your boot drive so Windows TRIM and wear-leveling can maintain peak performance.',
+    safetyTip:
+      'Always keep at least 15% free space on your boot drive so native TRIM and wear-leveling can maintain peak performance.',
   },
   {
     id: 'where-space-went',
@@ -102,7 +128,7 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     symptom:
       'You had 50 GB free yesterday. You did not download anything big, but today you are down to 10 GB. What happened?',
     ankitsTake:
-      'This used to drive me crazy too. Windows secretly dumps massive rollback updates, or Steam/Epic pre-allocates giant staging files in hidden AppData folders. That is literally why I coded the Time Machine:',
+      'This used to drive me crazy too. Operating systems secretly dump massive rollback updates, or Steam/Epic pre-allocates giant staging files in hidden AppData folders. That is literally why I coded the Time Machine:',
     solutionSteps: [
       'Run a quick scan on your drive.',
       'Click the "Time Machine" button right above the Interactive Map.',
@@ -111,7 +137,29 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     ],
     recommendedTab: 'overview',
     tabActionLabel: 'Open Kingdom Overview',
-    safetyTip: 'Snapshots are feather-light and saved locally in your app memory. Zero files are uploaded anywhere.',
+    safetyTip:
+      'Snapshots are feather-light and saved locally in your app memory. Zero files are uploaded anywhere.',
+  },
+  {
+    id: 'spotlight-search',
+    category: 'hidden',
+    badge: 'Spotlight 🔍',
+    badgeColor: 'bg-amber-300 text-slate-900',
+    title: 'How to Find Any File Instantly with Treemap Spotlight (Cmd+F / Ctrl+F)',
+    symptom:
+      'You have 500,000 files on your disk and want to see where all .mp4 movies, .vhdx virtual disks, or ISO images are hiding on the interactive map.',
+    ankitsTake:
+      'Instead of squinting at individual blocks, I built Treemap Spotlight. Just press Ctrl+F or Cmd+F anywhere on the map to search extensions, filenames, or directories with instant electric yellow highlights and live match counters.',
+    solutionSteps: [
+      'Press Ctrl + F (or Cmd + F on macOS) while viewing the Interactive Map.',
+      'Type any extension like .mp4, .zip, .vhdx, or a project name like docker or steam.',
+      'Matching blocks instantly glow in bright neon electric yellow with a ⚡ MATCH badge. Non-matching files dim smoothly.',
+      'See the live count of matching items and total aggregated storage right in the spotlight bar!',
+    ],
+    recommendedTab: 'overview',
+    tabActionLabel: 'Open Interactive Map',
+    safetyTip:
+      'Spotlight search is 100% real-time and happens entirely in your computer\'s RAM.',
   },
   {
     id: 'live-sync',
@@ -125,13 +173,14 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
       'I hate waiting for redundant scans. I engineered ByteMap\'s Live Storage Synchronizer so the moment you purge a file or cache, your drive gauges and charts update in memory with 0ms latency:',
     solutionSteps: [
       'Click "Clean Selected" in Cleanup or Developer Caches.',
-      'ByteMap\'s Rust background worker deletes the targets safely into your Windows Recycle Bin.',
+      'ByteMap\'s Rust background worker deletes the targets safely into your OS Recycle Bin / macOS Trash.',
       'Your available space gauge increases and the pruned files disappear from memory immediately.',
       'A green celebratory banner pops up at the top showing exactly how many megabytes were freed!',
     ],
     recommendedTab: 'overview',
     tabActionLabel: 'View Kingdom Overview',
-    safetyTip: 'All storage calculations happen locally in RAM; zero data is sent to external servers.',
+    safetyTip:
+      'All storage calculations happen locally in RAM; zero data is sent to external servers.',
   },
   {
     id: 'duplicate-files',
@@ -146,30 +195,54 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     solutionSteps: [
       'Click the "Duplicates" tab in the top navigation bar.',
       'ByteMap groups your clones side-by-side, marks the original, and flags the safe-to-prune duplicates.',
-      'Select the duplicate copies and click "Clean Selected" to recover instant gigabytes without second-guessing.',
+      'Use the "Select Safe Copies" button or check individual duplicates.',
+      'Click "Move Marked to Trash Now" in the sticky floating action dock to recover instant gigabytes without second-guessing.',
     ],
     recommendedTab: 'duplicates',
     tabActionLabel: 'Jump to Duplicate Finder',
-    safetyTip: 'ByteMap guarantees 100% cryptographic verification. Two files are only flagged as duplicates if their contents are bit-for-bit identical.',
+    safetyTip:
+      'ByteMap guarantees 100% cryptographic verification. Two files are only flagged as duplicates if their contents are bit-for-bit identical.',
   },
   {
     id: 'safe-cleanup',
     category: 'cleanup',
     badge: 'Safe Janitor 🧹',
     badgeColor: 'bg-emerald-400 text-slate-900',
-    title: 'Can I delete this, or will it blow up my Windows?',
+    title: 'Can I delete this, or will it break my operating system?',
     symptom:
-      'You want to free up space, but you are terrified of accidentally deleting an important Windows system file and bricking your PC.',
+      'You want to free up space, but you are terrified of accidentally deleting an important OS system file.',
     ankitsTake:
-      'I built ByteMap with very strict conservative rules. It will NEVER recommend critical Windows boot files or system libraries. Plus, everything we delete goes straight to your Windows Recycle Bin first!',
+      'I built ByteMap with very strict conservative rules. It will NEVER recommend critical boot files or OS system libraries. Plus, everything we delete goes straight to your OS Recycle Bin / macOS Trash first!',
     solutionSteps: [
       'Click the "Cleanup" tab.',
       'Review my risk badges: Green is 100% safe (temp files & obsolete installers), Blue is low risk (extracted archives).',
-      'Pick what you want to remove and hit "Clean Selected". If you ever panic, you can always open your Windows Recycle Bin and click Restore!',
+      'Pick what you want to remove and hit "Clean Selected". If you ever panic, you can always open your OS Recycle Bin / macOS Trash and click Restore!',
     ],
     recommendedTab: 'cleanup',
     tabActionLabel: 'Open Safe Cleanup Station',
-    safetyTip: 'Critical system and boot files are automatically shielded and ignored to keep your machine 100% stable.',
+    safetyTip:
+      'Critical system and boot files are automatically shielded and ignored to keep your machine 100% stable.',
+  },
+  {
+    id: 'reclaim-sandbox',
+    category: 'cleanup',
+    badge: 'Sandbox & Scripts 🧪',
+    badgeColor: 'bg-emerald-300 text-slate-900',
+    title: 'What-If Reclamation Sandbox & Audit Script Generator (.ps1 / .sh)',
+    symptom:
+      'You want to see exactly how much your drive will open up before deleting, or you need an audited PowerShell or Bash script for IT approval.',
+    ankitsTake:
+      'I built the What-If Reclamation Sandbox so you can see your drive gauge visually expand in real-time as you select candidates. Plus, you can generate clean, human-auditable PowerShell (.ps1) or Bash (.sh) cleanup scripts with 1 click:',
+    solutionSteps: [
+      'In "Cleanup", select any combination of junk files, build bloat, or developer caches.',
+      'Look at the "What-If Reclamation Sandbox" bar at the top: the striped green preview shows your projected free space expansion!',
+      'Click "Generate Script (.ps1 / .sh)" to view the exact commands.',
+      'Copy the script or download it to run via your terminal or save for IT compliance!',
+    ],
+    recommendedTab: 'cleanup',
+    tabActionLabel: 'Open Reclamation Sandbox',
+    safetyTip:
+      'Generated scripts include safety checks and respect OS Recycle Bin / Trash deletion flags.',
   },
   {
     id: 'dev-bloat',
@@ -188,7 +261,8 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     ],
     recommendedTab: 'cleanup',
     tabActionLabel: 'Explore Developer Sweeper',
-    safetyTip: 'Deleting build folders will never touch your source code (.ts, .rs, .py, .js, .html).',
+    safetyTip:
+      'Deleting build folders will never touch your source code (.ts, .rs, .py, .js, .html).',
   },
   {
     id: 'empty-ghosts',
@@ -207,7 +281,50 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     ],
     recommendedTab: 'cleanup',
     tabActionLabel: 'Check Empty Folders',
-    safetyTip: 'Pruning empty directories speeds up Windows search indexing and keeps your folder hierarchy organized.',
+    safetyTip:
+      'Pruning empty directories speeds up OS search indexing and keeps your folder hierarchy organized.',
+  },
+  {
+    id: 'cold-storage',
+    category: 'hidden',
+    badge: 'Forgotten Giants ❄️',
+    badgeColor: 'bg-cyan-300 text-slate-900',
+    title: 'Finding "Forgotten Giants": Huge files you haven\'t opened in over 1 year',
+    symptom:
+      'Your SSD is choked with giant files, but you have no idea which ones you actually need vs. files you downloaded 2 years ago and completely forgot about.',
+    ankitsTake:
+      'Disk space is too expensive to waste on ancient installers and old screen recordings. In "Large Files", I added smart age filters so you can filter by last modification date:',
+    solutionSteps: [
+      'Click "Large Files" in the top navigation bar.',
+      'Notice the KPI summary cards: "Forgotten Giants (>6 Mo)" and "Cold Storage (>1 Yr)".',
+      'Click the "❄️ Cold (>1 yr)" or "⏳ Stale (>6 mo)" filter pill.',
+      'Every file displays a color-coded status badge showing how old it is. Open or safely trash files you no longer need!',
+    ],
+    recommendedTab: 'large-files',
+    tabActionLabel: 'Scan Forgotten Giants',
+    safetyTip:
+      'ByteMap never deletes files automatically; you always have full preview and control with Recycle Bin / Trash protection.',
+  },
+  {
+    id: 'mac-storage',
+    category: 'mac',
+    badge: 'macOS & APFS 🍎',
+    badgeColor: 'bg-slate-800 text-white',
+    title: 'macOS Storage: APFS Clones, System Data & Safe High-Speed Scanning',
+    symptom:
+      'On your Mac, "System Data" is taking 80 GB, or disk tools show weird scanned sizes because of APFS clones or multiple volume mounts.',
+    ankitsTake:
+      'macOS handles storage differently than Windows. APFS uses Copy-on-Write clones (where duplicate files share the same physical storage blocks until edited), and /Volumes mounts external drives and DMG images. I engineered ByteMap specifically for macOS:',
+    solutionSteps: [
+      'ByteMap never double-counts APFS clones and avoids looping into /Volumes or virtual DMG containers.',
+      'macOS scanning uses high-speed batch directory queries (getattrlistbulk) that comply 100% with Apple System Integrity Protection (SIP).',
+      'Deleted files move safely to macOS Trash ~/.Trash, never permanently erased without your explicit choice.',
+      'Use Finder Quick Actions ("Inspect with ByteMap") or right-click any folder to scout it directly!',
+    ],
+    recommendedTab: 'drives',
+    tabActionLabel: 'View Storage Drives',
+    safetyTip:
+      'ByteMap never touches protected macOS System Integrity Protection (SIP) directories like /System or read-only sealed system volumes.',
   },
   {
     id: 'text-highlight',
@@ -216,18 +333,19 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     badgeColor: 'bg-amber-300 text-slate-900',
     title: 'How to Copy Paths with the Comic Yellow Highlighter',
     symptom:
-      'You found a rogue file and want to copy its full path or jump directly to it in Windows File Explorer.',
+      'You found a rogue file and want to copy its full path or jump directly to it in File Explorer / Finder.',
     ankitsTake:
       'You do not need to manually re-type long folder paths. I enabled full text selection with a bold comic yellow marker so copying paths is effortless:',
     solutionSteps: [
       'Click and drag your mouse over any file path, size, or hash anywhere in ByteMap.',
       'The text highlights in bright comic yellow with deep ink contrast.',
-      'Press Ctrl + C to copy it directly to your clipboard.',
-      'Or click the folder icon next to any file row to reveal and pre-select it directly in Windows File Explorer!',
+      'Press Ctrl + C (or Cmd + C) to copy it directly to your clipboard.',
+      'Or click the folder icon next to any file row to reveal and pre-select it directly in File Explorer or macOS Finder!',
     ],
     recommendedTab: 'explore',
     tabActionLabel: 'Open Explorer Scout',
-    safetyTip: 'Clicking the folder icon uses the native Windows shell to reveal the file in its real folder.',
+    safetyTip:
+      'Clicking the open button uses the native OS shell to reveal the file in its real folder.',
   },
   {
     id: 'html-report',
@@ -242,11 +360,12 @@ const GUIDE_PROBLEMS: GuideProblem[] = [
     solutionSteps: [
       'Click "Export Report" right above the map (or "Audit Report (HTML)" in the bottom dock).',
       'ByteMap generates a self-contained .html file with visual charts and top hogs.',
-      'Email or message that file to your friend. It opens in any browser and formats cleanly for PDF printing (Ctrl + P)!',
+      'Email or message that file to your friend. It opens in any browser and formats cleanly for PDF printing (Ctrl + P / Cmd + P)!',
     ],
     recommendedTab: 'overview',
     tabActionLabel: 'View Export Actions',
-    safetyTip: 'The audit report contains zero private personal data; it only lists file sizes, categories, and paths.',
+    safetyTip:
+      'The audit report contains zero private personal data; it only lists file sizes, categories, and paths.',
   },
 ];
 
@@ -259,6 +378,7 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
   const { setActiveTab } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['c-drive-red']));
 
   if (!isOpen) return null;
 
@@ -274,30 +394,50 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
     return matchesCat && matchesSearch;
   });
 
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleExpandAll = () => {
+    setExpandedIds(new Set(filteredProblems.map((p) => p.id)));
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedIds(new Set());
+  };
+
   const handleJumpToTab = (tab: ActiveTab) => {
     setActiveTab(tab);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs font-sans text-slate-900">
-      <div className="bg-white border-3 border-slate-900 rounded-3xl max-w-4xl w-full p-6 shadow-comic-xl flex flex-col max-h-[92vh] overflow-hidden">
-        {/* Header with Ankit's Creator Badge */}
-        <div className="flex items-center justify-between pb-4 border-b-2.5 border-slate-900 shrink-0">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic overflow-hidden shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-xs font-sans text-slate-900">
+      <div className="bg-white border-3 border-slate-900 rounded-3xl max-w-4xl w-full p-4 sm:p-6 shadow-comic-xl flex flex-col max-h-[92vh] overflow-hidden">
+        {/* Header with Creator Avatar & Badge */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 pb-3 sm:pb-4 border-b-2.5 border-slate-900 shrink-0">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic overflow-hidden shrink-0">
               <img
                 src="/ankit.jpg"
                 alt="Ankit Pandey"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-300 border border-slate-900 text-[10px] font-comic uppercase tracking-wider text-slate-900">
                 <Sparkles className="w-3 h-3 text-slate-900" />
                 <span>Ankit's Handbook • Written by the Creator</span>
               </div>
-              <h2 className="font-bangers text-2xl uppercase tracking-wider text-slate-900 leading-tight">
+              <h2 className="font-bangers text-xl sm:text-2xl uppercase tracking-wider text-slate-900 leading-tight truncate mt-0.5">
                 Hey, Let's Fix Your Storage — Ankit's Survival Guide
               </h2>
             </div>
@@ -305,7 +445,7 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 transition-colors shadow-comic-sm"
+            className="p-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 transition-colors shadow-comic-sm cursor-pointer shrink-0"
             title="Close Guide"
           >
             <X className="w-5 h-5 text-slate-900" />
@@ -313,30 +453,30 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Creator Intro Note */}
-        <div className="py-2.5 px-3.5 mt-3 bg-amber-100 rounded-2xl border-2 border-slate-900 shadow-comic-sm flex items-center justify-between gap-3 text-xs shrink-0">
+        <div className="py-2 px-3 mt-2.5 bg-amber-100 rounded-2xl border-2 border-slate-900 shadow-comic-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs shrink-0">
           <p className="font-fredoka font-semibold text-slate-800 leading-snug">
             👋 <strong>From Ankit:</strong> I built ByteMap because I got tired of slow, clunky disk tools from 1998 that try to install adware or spam alerts. Here is my honest, practical guide on how to clean your SSD without breaking anything.
           </p>
           <button
             type="button"
             onClick={() => api.openExternalUrl('https://ankitpandey19.vercel.app/')}
-            className="shrink-0 px-2.5 py-1 rounded-lg bg-white border border-slate-900 font-comic uppercase text-[10px] text-slate-900 hover:bg-amber-300 transition-all flex items-center space-x-1"
+            className="shrink-0 px-2.5 py-1 rounded-lg bg-white border border-slate-900 font-comic uppercase text-[10px] text-slate-900 hover:bg-amber-300 transition-all flex items-center space-x-1 cursor-pointer"
           >
             <span>My Portfolio</span>
             <ExternalLink className="w-3 h-3" />
           </button>
         </div>
 
-        {/* Search & Category Filter Pills */}
-        <div className="py-3 border-b-2 border-slate-200 shrink-0 space-y-2">
+        {/* Search Bar & Category Filter Pills */}
+        <div className="py-2.5 border-b-2 border-slate-200 shrink-0 space-y-2">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search problems (e.g., 'C drive red', 'duplicates', 'node_modules', 'where did space go')..."
+              placeholder="Search problems (e.g., 'C drive red', 'AI models', 'duplicates', 'where did space go', 'macOS')..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-comic placeholder:text-slate-400 focus:bg-amber-50 outline-none shadow-comic-sm transition-all"
+              className="w-full pl-9 pr-4 py-1.5 sm:py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-comic placeholder:text-slate-400 focus:bg-amber-50 outline-none shadow-comic-sm transition-all"
             />
           </div>
 
@@ -344,17 +484,19 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
             {[
               { id: 'all', label: 'All Problems' },
               { id: 'emergency', label: '🚨 Emergency Full' },
+              { id: 'ai', label: '🧠 AI & LLM Models' },
               { id: 'diff', label: '⏱️ Space Mystery' },
               { id: 'duplicates', label: '👯 Duplicates' },
               { id: 'cleanup', label: '🧹 Safe Junk' },
               { id: 'dev', label: '💻 Developer Bloat' },
+              { id: 'mac', label: '🍎 macOS Special' },
             ].map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all shrink-0 ${
+                className={`px-3 py-1 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all shrink-0 cursor-pointer ${
                   selectedCategory === cat.id
-                    ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5'
+                    ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5 font-bold'
                     : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
                 }`}
               >
@@ -365,20 +507,20 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Body Cards List */}
-        <div className="flex-1 overflow-y-auto py-3 space-y-3.5 pr-1">
-          {/* Simple Visual App Workflow Diagram (From User's Perspective) */}
-          <div className="bg-gradient-to-r from-amber-50 via-sky-50 to-blue-50 border-2.5 border-slate-900 rounded-2xl p-4 shadow-comic space-y-3">
+        <div className="flex-1 overflow-y-auto py-3 space-y-3 pr-1">
+          {/* Simple Visual App Workflow Diagram (4 Simple Steps) */}
+          <div className="bg-gradient-to-r from-amber-50 via-sky-50 to-blue-50 border-2.5 border-slate-900 rounded-2xl p-3 sm:p-4 shadow-comic space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center font-bangers text-sm shadow-comic-sm">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center font-bangers text-xs sm:text-sm shadow-comic-sm">
                   🧭
                 </div>
                 <div>
-                  <h3 className="font-bangers text-lg uppercase tracking-wider text-slate-900 leading-none">
+                  <h3 className="font-bangers text-base sm:text-lg uppercase tracking-wider text-slate-900 leading-none">
                     How ByteMap Works — The 4-Step Recovery Workflow
                   </h3>
-                  <p className="text-[11px] font-fredoka font-semibold text-slate-600 leading-none mt-1">
-                    Written by Ankit: Zero cloud uploads • 100% In-Memory Rust engine • Instant Recycle Bin recovery
+                  <p className="text-[10px] sm:text-[11px] font-fredoka font-semibold text-slate-600 leading-none mt-1">
+                    Written by Ankit: Zero cloud uploads • 100% In-Memory Rust engine • Instant Recycle Bin / Trash recovery
                   </p>
                 </div>
               </div>
@@ -388,199 +530,266 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
               </span>
             </div>
 
-            {/* 4 Step Diagram Cards Grid with Connective Indicators */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-slate-900">
-              {/* Step 1 */}
-              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+            {/* 4 Step Diagram Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-slate-900">
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-2.5 shadow-comic-sm space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-bangers text-[11px] text-amber-900 bg-amber-300 px-1.5 py-0.5 rounded border border-slate-900">
+                  <span className="font-bangers text-[10px] text-amber-900 bg-amber-300 px-1.5 py-0.5 rounded border border-slate-900">
                     STEP 01
                   </span>
-                  <Target className="w-4 h-4 text-amber-600" />
+                  <Target className="w-3.5 h-3.5 text-amber-600" />
                 </div>
-                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                <h4 className="font-bangers text-xs sm:text-sm uppercase text-slate-900 tracking-wide">
                   1. Pick Target
                 </h4>
-                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
-                  Choose your C: drive or browse to any folder (Downloads, games, or work repos) you want to investigate.
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-tight">
+                  Choose your main drive or browse to any folder (Downloads, games, or work repos) to inspect.
                 </p>
               </div>
 
-              {/* Step 2 */}
-              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-2.5 shadow-comic-sm space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-bangers text-[11px] text-sky-900 bg-sky-300 px-1.5 py-0.5 rounded border border-slate-900">
+                  <span className="font-bangers text-[10px] text-sky-900 bg-sky-300 px-1.5 py-0.5 rounded border border-slate-900">
                     STEP 02
                   </span>
-                  <Zap className="w-4 h-4 text-sky-600" />
+                  <Zap className="w-3.5 h-3.5 text-sky-600" />
                 </div>
-                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                <h4 className="font-bangers text-xs sm:text-sm uppercase text-slate-900 tracking-wide">
                   2. Hit Analyze
                 </h4>
-                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
-                  Multi-core Rust engine walks millions of files in RAM in seconds. Never spins your disk needlessly.
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-tight">
+                  Multi-core Rust engine walks millions of files in RAM in seconds without spinning disks needlessly.
                 </p>
               </div>
 
-              {/* Step 3 */}
-              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-2.5 shadow-comic-sm space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-bangers text-[11px] text-purple-900 bg-purple-300 px-1.5 py-0.5 rounded border border-slate-900">
+                  <span className="font-bangers text-[10px] text-purple-900 bg-purple-300 px-1.5 py-0.5 rounded border border-slate-900">
                     STEP 03
                   </span>
-                  <BarChart3 className="w-4 h-4 text-purple-600" />
+                  <BarChart3 className="w-3.5 h-3.5 text-purple-600" />
                 </div>
-                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                <h4 className="font-bangers text-xs sm:text-sm uppercase text-slate-900 tracking-wide">
                   3. Spot Space Hogs
                 </h4>
-                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-tight">
                   Giant interactive blocks & rankers reveal hidden gigabytes, obsolete installers, and duplicate clones.
                 </p>
               </div>
 
-              {/* Step 4 */}
-              <div className="bg-white rounded-xl border-2 border-slate-900 p-3 shadow-comic-sm space-y-1.5 relative group hover:-translate-y-0.5 transition-transform">
+              <div className="bg-white rounded-xl border-2 border-slate-900 p-2.5 shadow-comic-sm space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-bangers text-[11px] text-emerald-900 bg-emerald-300 px-1.5 py-0.5 rounded border border-slate-900">
+                  <span className="font-bangers text-[10px] text-emerald-900 bg-emerald-300 px-1.5 py-0.5 rounded border border-slate-900">
                     STEP 04
                   </span>
-                  <Trash2 className="w-4 h-4 text-emerald-600" />
+                  <Trash2 className="w-3.5 h-3.5 text-emerald-600" />
                 </div>
-                <h4 className="font-bangers text-sm uppercase text-slate-900 tracking-wide">
+                <h4 className="font-bangers text-xs sm:text-sm uppercase text-slate-900 tracking-wide">
                   4. Safe 1-Click Clean
                 </h4>
-                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-snug">
-                  Clean to Recycle Bin (undo anytime!), purge IDE/AI session caches, and watch space recover live!
+                <p className="font-fredoka text-[11px] font-semibold text-slate-600 leading-tight">
+                  Clean to OS Recycle Bin / macOS Trash, purge IDE/AI session caches, and watch space recover live!
                 </p>
               </div>
             </div>
           </div>
 
-          {filteredProblems.length > 0 ? (
-            filteredProblems.map((p) => (
-              <div
-                key={p.id}
-                className="bg-white rounded-2xl border-2.5 border-slate-900 p-4 shadow-comic space-y-3 hover:border-amber-500 transition-all"
+          {/* Quick Accordion Toolbar */}
+          <div className="flex items-center justify-between px-2 pt-1 text-xs">
+            <span className="font-comic uppercase text-[11px] text-slate-600 font-bold">
+              Showing {filteredProblems.length} Topics
+            </span>
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={handleExpandAll}
+                className="text-[11px] font-comic uppercase text-slate-700 hover:text-slate-900 underline cursor-pointer"
               >
-                {/* Problem Header */}
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-lg border border-slate-900 text-[10px] font-comic uppercase tracking-wider font-bold shadow-comic-sm ${p.badgeColor}`}
+                Expand All
+              </button>
+              <span className="text-slate-400">•</span>
+              <button
+                type="button"
+                onClick={handleCollapseAll}
+                className="text-[11px] font-comic uppercase text-slate-700 hover:text-slate-900 underline cursor-pointer"
+              >
+                Collapse All
+              </button>
+            </div>
+          </div>
+
+          {/* Collapsible Accordion Problem Cards */}
+          {filteredProblems.length > 0 ? (
+            filteredProblems.map((p) => {
+              const isExpanded = searchQuery.trim().length > 0 || expandedIds.has(p.id);
+
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => toggleExpand(p.id)}
+                  className={`rounded-2xl border-2.5 border-slate-900 transition-all cursor-pointer select-none ${
+                    isExpanded
+                      ? 'p-4 bg-white shadow-comic'
+                      : 'p-3 bg-slate-50 hover:bg-amber-50 shadow-comic-sm'
+                  }`}
+                >
+                  {/* Card Header Bar (Click to toggle) */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                      <span
+                        className={`px-2 py-0.5 rounded-lg border border-slate-900 text-[10px] font-comic uppercase tracking-wider font-bold shadow-comic-sm shrink-0 ${p.badgeColor}`}
+                      >
+                        {p.badge}
+                      </span>
+                      <h3 className="font-bangers text-base sm:text-lg uppercase tracking-wider text-slate-900 leading-tight truncate">
+                        {p.title}
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center space-x-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJumpToTab(p.recommendedTab);
+                        }}
+                        className="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-[11px] sm:text-xs uppercase shadow-comic transition-transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                        title={`Jump directly to ${p.tabActionLabel}`}
+                      >
+                        <span>{p.tabActionLabel}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+
+                      <div className="p-1 rounded-lg border border-slate-900 bg-white text-slate-700 shadow-xs">
+                        {isExpanded ? (
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expanded Body (Clean 2-row layout without color explosion) */}
+                  {isExpanded && (
+                    <div
+                      className="mt-3 pt-3 border-t-2 border-slate-200 space-y-2.5 cursor-default animate-comic-pop"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      {p.badge}
-                    </span>
-                    <h3 className="font-bangers text-xl uppercase tracking-wider text-slate-900">
-                      {p.title}
-                    </h3>
-                  </div>
+                      {/* 1. Context Row: Symptom & Ankit's Take */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                        <div className="p-3 bg-amber-50/60 border-1.5 border-slate-900 rounded-xl space-y-1">
+                          <span className="font-comic uppercase text-[10px] text-amber-900 font-bold block">
+                            The Annoying Symptom:
+                          </span>
+                          <p className="font-fredoka font-semibold text-slate-800 leading-relaxed">
+                            {p.symptom}
+                          </p>
+                        </div>
+                        <div className="p-3 bg-slate-100/70 border-1.5 border-slate-900 rounded-xl space-y-1">
+                          <span className="font-comic uppercase text-[10px] text-slate-700 font-bold block">
+                            Ankit's Take (Why this happens):
+                          </span>
+                          <p className="font-fredoka font-semibold text-slate-800 leading-relaxed">
+                            {p.ankitsTake}
+                          </p>
+                        </div>
+                      </div>
 
-                  <button
-                    onClick={() => handleJumpToTab(p.recommendedTab)}
-                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase shadow-comic transition-transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-                  >
-                    <span>{p.tabActionLabel}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                      {/* 2. Step-by-Step Fix in ByteMap */}
+                      <div className="p-3 bg-white border-1.5 border-slate-900 rounded-xl space-y-1.5">
+                        <span className="font-comic uppercase text-[10px] text-slate-900 font-bold flex items-center space-x-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>How I Solve It Step-by-Step in ByteMap:</span>
+                        </span>
+                        <ol className="space-y-1 pl-4 list-decimal text-xs font-fredoka font-semibold text-slate-800 leading-relaxed">
+                          {p.solutionSteps.map((step, idx) => (
+                            <li key={idx}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
 
-                {/* Symptom & Ankit's Take */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 bg-rose-50 border-1.5 border-slate-900 rounded-xl space-y-1">
-                    <span className="font-comic uppercase text-[10px] text-rose-800 font-bold block">
-                      The Annoying Symptom:
-                    </span>
-                    <p className="font-fredoka font-semibold text-slate-800 leading-relaxed">
-                      {p.symptom}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-amber-50 border-1.5 border-slate-900 rounded-xl space-y-1">
-                    <span className="font-comic uppercase text-[10px] text-amber-800 font-bold block">
-                      Ankit's Take (Why this happens):
-                    </span>
-                    <p className="font-fredoka font-semibold text-slate-800 leading-relaxed">
-                      {p.ankitsTake}
-                    </p>
-                  </div>
+                      {/* 3. Safety Guarantee Badge */}
+                      <div className="flex items-center space-x-2 text-[11px] font-fredoka font-bold text-emerald-950 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-400 shadow-xs">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="leading-snug">Ankit's Safety Guarantee: {p.safetyTip}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                {/* How to Solve in ByteMap */}
-                <div className="p-3 bg-sky-50 border-1.5 border-slate-900 rounded-xl space-y-2">
-                  <span className="font-comic uppercase text-[10px] text-sky-900 font-bold flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-sky-700" />
-                    <span>How I Solve It Step-by-Step in ByteMap:</span>
-                  </span>
-                  <ol className="space-y-1.5 pl-4 list-decimal text-xs font-fredoka font-semibold text-slate-800 leading-relaxed">
-                    {p.solutionSteps.map((step, idx) => (
-                      <li key={idx}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
-
-                {/* Safety Guarantee Footer */}
-                <div className="flex items-center space-x-2 text-[11px] font-fredoka font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-300">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Ankit's Safety Guarantee: {p.safetyTip}</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="p-8 text-center bg-slate-50 border-2 border-slate-900 rounded-2xl shadow-comic space-y-2">
               <Search className="w-8 h-8 text-slate-400 mx-auto" />
               <h4 className="font-comic text-sm uppercase text-slate-800">No matching problem found</h4>
               <p className="text-xs font-fredoka text-slate-500">
-                Try searching for "duplicates", "temp files", "installers", or "disk full".
+                Try searching for "duplicates", "AI models", "temp files", "installers", or "disk full".
               </p>
             </div>
           )}
 
           {/* Quick Shortcuts & Zoom Section */}
-          <div className="bg-amber-100 rounded-2xl border-2.5 border-slate-900 p-4 shadow-comic space-y-2.5">
+          <div className="bg-amber-100 rounded-2xl border-2.5 border-slate-900 p-3 sm:p-4 shadow-comic space-y-2">
             <div className="flex items-center space-x-2">
-              <Keyboard className="w-5 h-5 text-slate-900" />
-              <h4 className="font-bangers text-lg uppercase tracking-wider text-slate-900">
+              <Keyboard className="w-4 h-4 sm:w-5 sm:h-5 text-slate-900" />
+              <h4 className="font-bangers text-base sm:text-lg uppercase tracking-wider text-slate-900">
                 Pro Keyboard & Display Zoom Controls
               </h4>
             </div>
             <p className="text-xs font-fredoka font-semibold text-slate-700">
-              Need larger text or higher density on your screen? I added strict 5% keyboard scaling so nothing ever looks blurry:
+              Need larger text, higher density, or instant search? Use these cross-platform shortcuts anywhere in ByteMap:
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="p-2 bg-white border border-slate-900 rounded-xl shadow-comic-sm">
                 <kbd className="px-1.5 py-0.5 bg-slate-200 border border-slate-900 rounded text-[11px] font-mono font-bold">
-                  Ctrl +
+                  Ctrl / ⌘ +
                 </kbd>
-                <span className="ml-2 font-comic uppercase text-[11px]">Zoom In (+5%)</span>
+                <span className="ml-2 font-comic uppercase text-[10px] sm:text-[11px] block sm:inline mt-1 sm:mt-0">
+                  Zoom In (+5%)
+                </span>
               </div>
               <div className="p-2 bg-white border border-slate-900 rounded-xl shadow-comic-sm">
                 <kbd className="px-1.5 py-0.5 bg-slate-200 border border-slate-900 rounded text-[11px] font-mono font-bold">
-                  Ctrl -
+                  Ctrl / ⌘ -
                 </kbd>
-                <span className="ml-2 font-comic uppercase text-[11px]">Zoom Out (-5%)</span>
+                <span className="ml-2 font-comic uppercase text-[10px] sm:text-[11px] block sm:inline mt-1 sm:mt-0">
+                  Zoom Out (-5%)
+                </span>
               </div>
               <div className="p-2 bg-white border border-slate-900 rounded-xl shadow-comic-sm">
                 <kbd className="px-1.5 py-0.5 bg-slate-200 border border-slate-900 rounded text-[11px] font-mono font-bold">
-                  Ctrl 0
+                  Ctrl / ⌘ 0
                 </kbd>
-                <span className="ml-2 font-comic uppercase text-[11px]">Reset to 100%</span>
+                <span className="ml-2 font-comic uppercase text-[10px] sm:text-[11px] block sm:inline mt-1 sm:mt-0">
+                  Reset 100%
+                </span>
+              </div>
+              <div className="p-2 bg-amber-300 border border-slate-900 rounded-xl shadow-comic-sm">
+                <kbd className="px-1.5 py-0.5 bg-white border border-slate-900 rounded text-[11px] font-mono font-bold">
+                  Ctrl / ⌘ F
+                </kbd>
+                <span className="ml-2 font-comic uppercase text-[10px] sm:text-[11px] font-bold block sm:inline mt-1 sm:mt-0">
+                  Spotlight
+                </span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer with Ankit's Signature Quote */}
-        <div className="pt-3 border-t-2 border-slate-900 flex items-center justify-between shrink-0">
+        <div className="pt-2.5 sm:pt-3 border-t-2 border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 shrink-0">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 rounded-full overflow-hidden border border-slate-900 shrink-0">
               <img src="/ankit.jpg" alt="Ankit Pandey" className="w-full h-full object-cover" />
             </div>
-            <span className="text-xs font-fredoka font-bold text-slate-700">
+            <span className="text-xs font-fredoka font-bold text-slate-700 text-center sm:text-left">
               "I build products. Life? Still in debugging mode." — Ankit Pandey
             </span>
           </div>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wider shadow-comic"
+            className="px-5 py-2 rounded-xl border-2 border-slate-900 bg-amber-400 hover:bg-amber-300 font-comic text-xs uppercase tracking-wider shadow-comic cursor-pointer transition-all hover:-translate-y-0.5 shrink-0"
           >
             Got it Ankit, Let's Scout!
           </button>

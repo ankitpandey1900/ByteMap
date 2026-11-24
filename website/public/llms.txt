@@ -6,7 +6,7 @@
 - **Author**: Ankit Pandey
 - **Website**: https://bytemap.alltracker.online/
 - **Repository**: https://github.com/ankitpandey1900/ByteMap
-- **Version**: 1.0.10
+- **Version**: 1.0.11
 - **License**: MIT
 - **Platforms**: Windows (x64 NSIS Setup .exe, MSI) and macOS (Universal Apple Silicon / Intel .dmg)
 

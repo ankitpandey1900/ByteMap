@@ -53,7 +53,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isCleaning, setIsCleaning] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
-  const [activeCategory, setActiveCategory] = useState<'all' | 'ai_ide' | 'packages' | 'build'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'ai_models' | 'ai_ide' | 'packages' | 'build'>('all');
   const [lastPurged, setLastPurged] = useState<DevCacheCleanSummary | null>(null);
 
   const caches = devCaches || [];
@@ -82,9 +82,24 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
     }
   };
 
+  const isAiModels = (item: DevCacheItem) => {
+    const t = item.tool.toLowerCase();
+    const id = item.id.toLowerCase();
+    const n = item.name.toLowerCase();
+    return (
+      t.includes('ollama') ||
+      t.includes('hugging') ||
+      t.includes('lm studio') ||
+      t.includes('pytorch') ||
+      t.includes('chrome ai') ||
+      id.includes('model') ||
+      n.includes('model')
+    );
+  };
+
   const isAiIde = (item: DevCacheItem) => {
     const t = item.tool.toLowerCase();
-    return t.includes('antigravity') || t.includes('cursor') || t.includes('code');
+    return (t.includes('antigravity') || t.includes('cursor') || t.includes('code')) && !isAiModels(item);
   };
 
   const isPackages = (item: DevCacheItem) => {
@@ -97,6 +112,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
     return t.includes('gradle') || t.includes('go') || t.includes('maven');
   };
 
+  const aiModelsCount = useMemo(() => caches.filter(isAiModels).length, [caches]);
   const aiIdeCount = useMemo(() => caches.filter(isAiIde).length, [caches]);
   const packagesCount = useMemo(() => caches.filter(isPackages).length, [caches]);
   const buildCount = useMemo(() => caches.filter(isBuild).length, [caches]);
@@ -104,6 +120,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
   const filteredCaches = useMemo(() => {
     return caches.filter((item) => {
       if (activeCategory === 'all') return true;
+      if (activeCategory === 'ai_models') return isAiModels(item);
       if (activeCategory === 'ai_ide') return isAiIde(item);
       if (activeCategory === 'packages') return isPackages(item);
       if (activeCategory === 'build') return isBuild(item);
@@ -214,6 +231,20 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
       return (
         <div className="w-8 h-8 rounded-lg bg-sky-100 border border-slate-900 flex items-center justify-center text-sky-800 shadow-comic-sm shrink-0">
           <Boxes className="w-4 h-4" />
+        </div>
+      );
+    }
+    if (t.includes('ollama') || t.includes('hugging') || t.includes('lm studio') || t.includes('model') || t.includes('nano')) {
+      return (
+        <div className="w-8 h-8 rounded-lg bg-purple-100 border border-slate-900 flex items-center justify-center text-purple-700 shadow-comic-sm shrink-0">
+          <Cpu className="w-4 h-4" />
+        </div>
+      );
+    }
+    if (t.includes('pytorch') || t.includes('torch')) {
+      return (
+        <div className="w-8 h-8 rounded-lg bg-rose-100 border border-slate-900 flex items-center justify-center text-rose-700 shadow-comic-sm shrink-0">
+          <Zap className="w-4 h-4" />
         </div>
       );
     }
@@ -455,7 +486,8 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {[
             { id: 'all', label: 'All Caches', count: caches.length },
-            { id: 'ai_ide', label: 'AI & IDEs', count: aiIdeCount },
+            { id: 'ai_models', label: '🧠 AI Models (LLM)', count: aiModelsCount },
+            { id: 'ai_ide', label: 'IDE & Editors', count: aiIdeCount },
             { id: 'packages', label: 'Package Managers', count: packagesCount },
             { id: 'build', label: 'Build Systems', count: buildCount },
           ].map((cat) => (
@@ -469,7 +501,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
               }`}
             >
               <span>{cat.label}</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-slate-900 text-white font-bold">
+              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-full bg-slate-900 text-white font-bold">
                 {cat.count}
               </span>
             </button>

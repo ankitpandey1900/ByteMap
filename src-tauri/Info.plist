@@ -8,5 +8,24 @@
     <string>ByteMap requires access to calculate storage and find space hogs in your Documents folder.</string>
     <key>NSDownloadsFolderUsageDescription</key>
     <string>ByteMap requires access to calculate storage and find space hogs in your Downloads folder.</string>
+    <key>NSServices</key>
+    <array>
+        <dict>
+            <key>NSMenuItem</key>
+            <dict>
+                <key>default</key>
+                <string>Inspect with ByteMap</string>
+            </dict>
+            <key>NSMessage</key>
+            <string>inspectFolder</string>
+            <key>NSPortName</key>
+            <string>ByteMap</string>
+            <key>NSSendTypes</key>
+            <array>
+                <string>NSFilenamesPboardType</string>
+                <string>public.folder</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

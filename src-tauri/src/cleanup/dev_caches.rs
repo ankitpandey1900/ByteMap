@@ -330,6 +330,87 @@ impl DevCacheScanner {
             });
         }
 
+        // 10. Local AI & LLM Model Weights (Ollama, HuggingFace, LM Studio, PyTorch)
+        if let Some(ref h) = home {
+            // Ollama downloaded models (often 4GB - 40GB each)
+            descriptors.push(CacheDescriptor {
+                id: "ollama_models",
+                tool: "Ollama AI",
+                tool_icon: "cpu",
+                name: "Ollama Local LLM Models (GGUF Blobs & Manifests)",
+                description: "Downloaded GGUF quantized models (e.g., Llama, DeepSeek, Qwen) pulled via Ollama.",
+                path: h.join(".ollama").join("models"),
+                safety_level: RiskLevel::Low,
+                safety_explanation: "Purging deletes downloaded model weights. Any model can be re-pulled on demand with 'ollama run <model>'.",
+            });
+
+            // HuggingFace Transformers & Safetensors Cache
+            descriptors.push(CacheDescriptor {
+                id: "huggingface_hub",
+                tool: "Hugging Face",
+                tool_icon: "brain",
+                name: "Transformers & Safetensors Model Cache",
+                description: "Cached deep learning checkpoints, weights, and tokenizer files downloaded via Python transformers or diffusers.",
+                path: h.join(".cache").join("huggingface").join("hub"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to clear. Models will re-download automatically upon script execution.",
+            });
+
+            // LM Studio Models Cache
+            descriptors.push(CacheDescriptor {
+                id: "lm_studio_models",
+                tool: "LM Studio",
+                tool_icon: "brain",
+                name: "LM Studio Downloaded GGUF Models",
+                description: "Local GGUF models downloaded through LM Studio.",
+                path: h.join(".cache").join("lm-studio").join("models"),
+                safety_level: RiskLevel::Low,
+                safety_explanation: "Safe to purge. Models can be re-downloaded from Hugging Face inside LM Studio.",
+            });
+
+            // PyTorch Hub Checkpoints
+            descriptors.push(CacheDescriptor {
+                id: "pytorch_checkpoints",
+                tool: "PyTorch",
+                tool_icon: "cpu",
+                name: "PyTorch Hub Pretrained Checkpoints",
+                description: "Pre-trained vision, audio, and language weights cached by torch.hub or torchvision.",
+                path: h.join(".cache").join("torch").join("hub").join("checkpoints"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "100% safe to clear. Weights re-download automatically when executed.",
+            });
+
+            // Google Chrome Gemini Nano On-Device Model (macOS)
+            #[cfg(target_os = "macos")]
+            {
+                descriptors.push(CacheDescriptor {
+                    id: "chrome_nano_model_macos",
+                    tool: "Google Chrome AI",
+                    tool_icon: "sparkles",
+                    name: "Chrome On-Device Gemini Nano Weights",
+                    description: "Locally downloaded model weights for built-in Chrome on-device AI.",
+                    path: h.join("Library").join("Application Support").join("Google").join("Chrome").join("OptGuideOnDeviceModel"),
+                    safety_level: RiskLevel::Safe,
+                    safety_explanation: "Safe to remove. Chrome re-downloads automatically if on-device features are invoked.",
+                });
+            }
+        }
+
+        // Google Chrome Gemini Nano On-Device Model (Windows)
+        #[cfg(target_os = "windows")]
+        if let Some(ref loc) = local_appdata {
+            descriptors.push(CacheDescriptor {
+                id: "chrome_nano_model_win",
+                tool: "Google Chrome AI",
+                tool_icon: "sparkles",
+                name: "Chrome On-Device Gemini Nano Weights",
+                description: "Locally downloaded model weights for built-in Chrome on-device AI.",
+                path: loc.join("Google").join("Chrome").join("User Data").join("OptGuideOnDeviceModel"),
+                safety_level: RiskLevel::Safe,
+                safety_explanation: "Safe to remove. Chrome re-downloads automatically if on-device features are invoked.",
+            });
+        }
+
         descriptors
     }
 

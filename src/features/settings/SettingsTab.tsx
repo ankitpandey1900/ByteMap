@@ -227,10 +227,10 @@ export const SettingsTab: React.FC = () => {
             />
             <div>
               <p className="font-comic text-xs uppercase text-slate-900">
-                Move cleanup items to OS Recycle Bin (Recommended)
+                Move cleanup items to OS Recycle Bin / macOS Trash (Recommended)
               </p>
               <p className="text-[11px] font-fredoka font-semibold text-slate-600">
-                Files are safely moved to the Windows Recycle Bin so they can be recovered if needed.
+                Files are safely moved to the OS Recycle Bin / macOS Trash so they can be easily restored if needed.
               </p>
             </div>
           </label>

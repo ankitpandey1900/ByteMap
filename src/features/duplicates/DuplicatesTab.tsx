@@ -78,6 +78,26 @@ export const DuplicatesTab: React.FC = () => {
     }
   };
 
+  const getLocationBadge = (filePath: string) => {
+    const p = filePath.toLowerCase();
+    if (p.includes('\\downloads\\') || p.includes('/downloads/')) {
+      return { label: '📥 Downloads', color: 'bg-blue-100 text-blue-950 border-blue-400' };
+    }
+    if (p.includes('\\desktop\\') || p.includes('/desktop/')) {
+      return { label: '🖥️ Desktop', color: 'bg-purple-100 text-purple-950 border-purple-400' };
+    }
+    if (p.includes('\\documents\\') || p.includes('/documents/')) {
+      return { label: '📄 Documents', color: 'bg-emerald-100 text-emerald-950 border-emerald-400' };
+    }
+    if (p.includes('\\appdata\\') || p.includes('/library/application support/')) {
+      return { label: '⚙️ App Cache / Data', color: 'bg-amber-100 text-amber-950 border-amber-400' };
+    }
+    if (p.includes('program files') || p.includes('/applications/')) {
+      return { label: '📦 Installed App', color: 'bg-rose-100 text-rose-950 border-rose-400' };
+    }
+    return null;
+  };
+
   // Flatten all duplicate copies that can be selected (excluding the index 0 original file)
   const allCandidateCopies = useMemo(() => {
     const list: ScannedFile[] = [];
@@ -337,6 +357,7 @@ export const DuplicatesTab: React.FC = () => {
                 const isSelected = selectedCleanupIds.has(file.id);
                 const isOriginal = fileIdx === 0;
                 const intel = getFileIntelligence(file.name, file.path);
+                const locBadge = getLocationBadge(file.path);
 
                 return (
                   <div
@@ -386,10 +407,20 @@ export const DuplicatesTab: React.FC = () => {
                           {cleanDisplayPath(file.path)}
                         </p>
 
-                        <div className="flex items-center space-x-3 text-[10px] font-fredoka font-semibold text-slate-500 mt-1">
+                        <div className="flex items-center space-x-2 text-[10px] font-fredoka font-semibold text-slate-500 mt-1 flex-wrap gap-1">
                           <span>📅 Modified: {formatDate(file.modified_at)}</span>
                           <span>•</span>
                           <span className="uppercase">{file.category}</span>
+                          {locBadge && (
+                            <>
+                              <span>•</span>
+                              <span
+                                className={`px-1.5 py-[1px] rounded border font-bold ${locBadge.color}`}
+                              >
+                                {locBadge.label}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -453,6 +484,52 @@ export const DuplicatesTab: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Sticky Floating Action Dock when duplicates are marked */}
+      {selectedDuplicateFiles.length > 0 && (
+        <div className="sticky bottom-4 z-40 p-3.5 bg-slate-900 text-white border-2.5 border-slate-900 rounded-2xl shadow-comic-lg flex items-center justify-between flex-wrap gap-3 animate-comic-pop">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-400 border border-slate-900 flex items-center justify-center text-slate-900 shrink-0 font-bangers text-base shadow-xs">
+              {selectedDuplicateFiles.length}
+            </div>
+            <div>
+              <p className="font-bangers text-sm uppercase tracking-wider text-amber-300">
+                {selectedDuplicateFiles.length} Duplicate Copies Marked For Deletion
+              </p>
+              <p className="text-xs font-fredoka font-bold text-slate-300">
+                Reclaimable Space:{' '}
+                <strong className="text-emerald-400 font-mono text-sm">
+                  {formatBytes(totalSelectedBytes, settings.unit)}
+                </strong>{' '}
+                <span className="text-slate-400 font-normal">
+                  (Originals 100% preserved)
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={clearCleanupSelection}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-xl font-comic text-xs uppercase cursor-pointer transition-colors"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => setShowConfirmModal(true)}
+              disabled={isDeleting}
+              className="flex items-center space-x-1.5 px-4 py-2 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-xs uppercase tracking-wider border-2 border-white/40 rounded-xl shadow-comic hover:-translate-y-0.5 cursor-pointer transition-all disabled:opacity-50"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>
+                {settings.prefer_trash
+                  ? 'Move Marked to Trash Now'
+                  : 'Permanently Delete Marked'}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Direct Deletion Confirmation Modal */}
       {showConfirmModal && (

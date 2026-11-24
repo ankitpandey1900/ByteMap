@@ -15,6 +15,7 @@ import {
   formatNumber,
   getCategoryColor,
   cleanDisplayPath,
+  getFileIntelligence,
 } from '@/lib/utils';
 import {
   ComicFolderIcon,
@@ -302,6 +303,7 @@ export const ExplorerTab: React.FC = () => {
                       Math.max(6, Math.round((file.size_bytes / maxFileSize) * 100))
                     );
                     const catColor = getCategoryColor(file.category);
+                    const intel = getFileIntelligence(file.name, file.path);
 
                     return (
                       <tr
@@ -315,9 +317,31 @@ export const ExplorerTab: React.FC = () => {
                               <ComicCategoryFileIcon category={file.category} className="w-5 h-5" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="font-comicNeue font-bold text-slate-900 text-sm truncate">
-                                {file.name}
-                              </p>
+                              <div className="flex items-center space-x-2 flex-wrap gap-1">
+                                <span className="font-comicNeue font-bold text-slate-900 text-sm truncate">
+                                  {file.name}
+                                </span>
+                                {intel.shortTag && (
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-fredoka font-bold border border-slate-900 shadow-xs ${
+                                      intel.isSystem
+                                        ? 'bg-rose-100 text-rose-950'
+                                        : 'bg-indigo-100 text-indigo-950'
+                                    }`}
+                                    title={
+                                      intel.explanation
+                                        ? `${intel.explanation}${
+                                            intel.actionGuidance
+                                              ? ` — 👉 Action: ${intel.actionGuidance}`
+                                              : ''
+                                          }`
+                                        : intel.shortTag
+                                    }
+                                  >
+                                    {intel.isSystem ? '🛡️' : '💡'} {intel.shortTag}
+                                  </span>
+                                )}
+                              </div>
                               <p
                                 className="text-[11px] text-slate-500 truncate font-mono"
                                 title={cleanDisplayPath(file.path)}
@@ -333,7 +357,7 @@ export const ExplorerTab: React.FC = () => {
                           <div className="font-mono font-bold text-slate-900 text-sm tabular-nums">
                             {formatBytes(file.size_bytes, settings.unit)}
                           </div>
-                          <div className="w-24 ml-auto mt-1 h-2 bg-slate-200 border border-slate-900 rounded-full overflow-hidden p-0.2">
+                          <div className="w-24 ml-auto mt-1 h-2 bg-slate-200 border border-slate-900 rounded-full overflow-hidden p-[1px]">
                             <div
                               className="h-full rounded-full transition-all"
                               style={{
@@ -416,7 +440,7 @@ export const ExplorerTab: React.FC = () => {
                           <div className="font-comic font-black text-slate-900 text-sm">
                             {formatBytes(folder.size_bytes, settings.unit)}
                           </div>
-                          <div className="w-24 ml-auto mt-1 h-2 bg-slate-200 border border-slate-900 rounded-full overflow-hidden p-0.2">
+                          <div className="w-24 ml-auto mt-1 h-2 bg-slate-200 border border-slate-900 rounded-full overflow-hidden p-[1px]">
                             <div
                               className="h-full bg-amber-400 rounded-full transition-all"
                               style={{ width: `${percent}%` }}

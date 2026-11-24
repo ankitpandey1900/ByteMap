@@ -23,6 +23,7 @@ import { RiskLevel } from '@/types';
 import { DevArtifactsCard } from './DevArtifactsCard';
 import { EmptyFoldersCard } from './EmptyFoldersCard';
 import { DevCachesCard } from './DevCachesCard';
+import { ReclaimScriptModal } from '@/components/ReclaimScriptModal';
 
 export const CleanupTab: React.FC = () => {
   const {
@@ -47,6 +48,7 @@ export const CleanupTab: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [isExecuting, setIsExecuting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showScriptModal, setShowScriptModal] = useState(false);
   const [lastResult, setLastResult] = useState<CleanupExecutionResult | null>(null);
 
   const candidates = scanSummary?.cleanup_candidates || [];
@@ -364,6 +366,48 @@ export const CleanupTab: React.FC = () => {
       {/* 4. Safe Junk & Cache Recommendations View */}
       {cleanupView === 'junk' && scanSummary && (
         <>
+          {/* Interactive What-If Storage Simulator Bar */}
+          {selectedCleanupIds.size > 0 && (
+            <div className="p-3 bg-gradient-to-r from-amber-100 via-sky-100 to-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3 animate-in fade-in slide-in-from-top-1">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-400 border border-slate-900 flex items-center justify-center text-slate-900 shadow-comic-sm shrink-0">
+                  <Sparkles className="w-4 h-4 text-slate-900" />
+                </div>
+                <div>
+                  <span className="font-bangers text-xs uppercase text-slate-600 block">
+                    What-If Reclamation Sandbox
+                  </span>
+                  <span className="font-fredoka font-bold text-xs text-slate-900">
+                    Staging {selectedCleanupIds.size} items. Disk space will expand by{' '}
+                    <strong className="text-emerald-700 font-mono">+{formatBytes(totalSelectedBytes, settings.unit)}</strong>!
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowScriptModal(true)}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-slate-100 text-xs font-comic uppercase text-slate-900 shadow-comic-sm hover:-translate-y-0.5 transition-all cursor-pointer"
+                  title="Generate PowerShell (.ps1) or Bash (.sh) script to review before deleting"
+                >
+                  <Terminal className="w-3.5 h-3.5" />
+                  <span>Script (.ps1/.sh)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(true)}
+                  disabled={isExecuting}
+                  className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-xl border-2 border-slate-900 bg-rose-500 hover:bg-rose-400 text-white text-xs font-bangers uppercase tracking-wider shadow-comic-sm hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clean Now ({formatBytes(totalSelectedBytes, settings.unit)})</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Filter Tabs */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
             {['all', 'temp_file', 'old_installer', 'large_archive', 'large_download'].map((f) => (
@@ -605,6 +649,18 @@ export const CleanupTab: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* What-If Audit Shell Script Generator Modal */}
+      <ReclaimScriptModal
+        isOpen={showScriptModal}
+        onClose={() => setShowScriptModal(false)}
+        targets={selectedCandidates.map((c) => ({
+          path: c.file.path,
+          size_bytes: c.file.size_bytes,
+        }))}
+        totalBytes={totalSelectedBytes}
+        unit={settings.unit}
+      />
     </div>
   );
 };
