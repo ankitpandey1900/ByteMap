@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.11-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.12-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
   <a href="https://bytemap.alltracker.online/"><img src="https://img.shields.io/badge/website-bytemap.alltracker.online-4F46E5?style=flat-square&logo=googlechrome&logoColor=white" alt="Website" /></a>
   <img src="https://img.shields.io/badge/platforms-Windows_%7C_macOS-0284C7?style=flat-square" alt="Platforms" />
   <img src="https://img.shields.io/badge/built_with-Rust_2021_+_Tauri_2-DEA584?style=flat-square&logo=rust" alt="Rust Tauri" />
@@ -20,9 +20,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.11/ByteMap_1.0.11_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.11/ByteMap_1.0.11_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.11/ByteMap_1.0.11_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.12/ByteMap_1.0.12_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.12/ByteMap_1.0.12_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.12/ByteMap_1.0.12_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
 </p>
 
 ---
@@ -92,12 +92,12 @@ When you clean files or directories:
 
 ---
 
-### 6. Treemap Spotlight, AI Models Radar & Reclamation Sandbox *(New in v1.0.11)*
+### 6. Treemap Spotlight, AI Models Radar & Reclamation Sandbox *(New in v1.0.12)*
 - **Treemap Spotlight Search (`Ctrl+F` / `Cmd+F`)**: Instant electric yellow neon search across 500k+ files with aggregated matched bytes.
 - **AI & LLM Model Cache Radar**: Discovers and purges Ollama (`~/.ollama/models`), HuggingFace Hub, LM Studio, PyTorch checkpoints, and Chrome Gemini Nano weights.
 - **What-If Reclamation Sandbox**: Real-time visual drive expansion bar and non-destructive `.ps1` / `.sh` script generator.
 - **Interactive User Survival Guide**: Accordion problem-solver with cross-platform macOS Trash and Windows Recycle Bin parity.
-- **macOS Boundary Protection & Speed**: APFS clone awareness, `/Volumes` containment, and `getattrlistbulk` high-speed scanning.
+- **macOS APFS Physical Sizing**: Native sparse-file block allocation (`st_blocks * 512`) eliminates Docker.raw phantom bloat, with strict `/Volumes` and firmlink containment.
 
 ---
 
@@ -112,7 +112,7 @@ Get an instant category donut breakdown, inspect the top large files from 10MB t
 
 ## Feature Comparison
 
-| Capability | ByteMap (v1.0.11) | Legacy WinDirStat | Commercial Cleaners |
+| Capability | ByteMap (v1.0.12) | Legacy WinDirStat | Commercial Cleaners |
 | :--- | :---: | :---: | :---: |
 | **Engine Speed** | Native Multi-Threaded Rust | Single-threaded Win32 | Heavy Node.js / Electron |
 | **Storage Architecture** | Zero Database (Volatile RAM) | In-Memory (No snapshots) | Persistent SQLite / Registry |

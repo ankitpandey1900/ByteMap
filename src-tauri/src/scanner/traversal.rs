@@ -35,6 +35,27 @@ impl PartialOrd for LargestFileCandidate {
 
 pub struct Scanner;
 
+/// Returns the effective physical size of a file, taking into account sparse files on Unix.
+/// For sparse files (e.g., Docker.raw, WSL disks, VM images) or dataless cloud files, physical allocated
+/// blocks are used instead of the virtual maximum logical length to prevent overcounting phantom gigabytes.
+pub fn get_effective_file_size(metadata: &std::fs::Metadata) -> u64 {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        let physical_bytes = metadata.blocks() * 512;
+        // If file is smaller than one filesystem block (4KB) and stored inline in inode,
+        // use logical length so tiny files are never rounded down to 0.
+        if physical_bytes == 0 && metadata.len() < 4096 {
+            return metadata.len();
+        }
+        std::cmp::min(metadata.len(), physical_bytes)
+    }
+    #[cfg(not(unix))]
+    {
+        metadata.len()
+    }
+}
+
 impl Scanner {
     pub fn scan<F>(
         options: ScanOptions,
@@ -149,7 +170,7 @@ impl Scanner {
                 }
             } else if metadata.is_file() {
                 scanned_files += 1;
-                let size = metadata.len();
+                let size = get_effective_file_size(&metadata);
                 scanned_bytes += size;
 
                 let file_name = path

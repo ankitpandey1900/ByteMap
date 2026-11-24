@@ -159,11 +159,12 @@ impl PathValidator {
 
         if metadata.is_file() {
             if let Some(exp_size) = expected_size {
-                if metadata.len() != exp_size {
+                let actual_size = crate::scanner::get_effective_file_size(&metadata);
+                if actual_size != exp_size {
                     return Err(AppError::TargetChanged(format!(
                         "File size has changed since scan (expected {} bytes, found {} bytes): {}",
                         exp_size,
-                        metadata.len(),
+                        actual_size,
                         canonical_target.display()
                     )));
                 }
