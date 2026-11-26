@@ -469,7 +469,87 @@ export const ComicFolderIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5
 );
 
 /**
- * 🏷️ Helper to render the appropriate comic category icon
+ * 💻 Comic Dev / Source Code Icon (Cyan #06b6d4)
+ */
+export const ComicDevIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="3" y="4" width="18" height="16" rx="3" fill="#06b6d4" stroke="#0f172a" strokeWidth="2" />
+    <path d="M9 9.5L6.5 12L9 14.5" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M15 9.5L17.5 12L15 14.5" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M13 8.5L11 15.5" stroke="#fef08a" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+/**
+ * 🎵 Comic Audio / Music Icon (Violet #8b5cf6)
+ */
+export const ComicAudioIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="3" y="3" width="18" height="18" rx="4" fill="#8b5cf6" stroke="#0f172a" strokeWidth="2" />
+    <path d="M10 15.5V8.5L16.5 7V14" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="8.5" cy="16" r="2" fill="#fef08a" stroke="#0f172a" strokeWidth="1.5" />
+    <circle cx="15" cy="14.5" r="2" fill="#fef08a" stroke="#0f172a" strokeWidth="1.5" />
+  </svg>
+);
+
+/**
+ * 🎮 Comic Game Icon (Orange #f97316)
+ */
+export const ComicGameIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M6.5 7H17.5C19.8 7 21.5 9.2 21 12.2L20 17C19.6 18.8 17.6 19.6 16.2 18.4L14.2 16.5H9.8L7.8 18.4C6.4 19.6 4.4 18.8 4 17L3 12.2C2.5 9.2 4.2 7 6.5 7Z"
+      fill="#f97316"
+      stroke="#0f172a"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path d="M7.5 10.5V13.5M6 12H9" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" />
+    <circle cx="15.5" cy="11" r="1" fill="#fef08a" />
+    <circle cx="17.5" cy="13" r="1" fill="#ffffff" />
+  </svg>
+);
+
+/**
+ * 📄 Comic Other / Generic File Icon (Slate #64748b)
+ */
+export const ComicOtherIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M5 3H14L19 8V20C19 20.6 18.6 21 18 21H5C4.4 21 4 20.6 4 20V4C4 3.4 4.4 3 5 3Z"
+      fill="#94a3b8"
+      stroke="#0f172a"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path d="M14 3V8H19" fill="#cbd5e1" stroke="#0f172a" strokeWidth="1.8" strokeLinejoin="round" />
+    <circle cx="9.5" cy="14" r="1.2" fill="#0f172a" />
+    <circle cx="13.5" cy="14" r="1.2" fill="#0f172a" />
+  </svg>
+);
+
+/**
+ * 🏷️ Helper to render the appropriate comic category icon (100% parity with FileCategory)
  */
 export const ComicCategoryFileIcon: React.FC<{ category?: string; className?: string }> = ({
   category = 'other',
@@ -480,15 +560,23 @@ export const ComicCategoryFileIcon: React.FC<{ category?: string; className?: st
       return <ComicVideoIcon className={className} />;
     case 'image':
       return <ComicImageIcon className={className} />;
+    case 'audio':
+      return <ComicAudioIcon className={className} />;
     case 'archive':
       return <ComicArchiveIcon className={className} />;
     case 'app':
       return <ComicAppIcon className={className} />;
+    case 'dev':
+      return <ComicDevIcon className={className} />;
+    case 'game':
+      return <ComicGameIcon className={className} />;
     case 'system':
       return <ComicShieldIcon className={className} />;
     case 'document':
-    default:
       return <ComicDocIcon className={className} />;
+    case 'other':
+    default:
+      return <ComicOtherIcon className={className} />;
   }
 };
 

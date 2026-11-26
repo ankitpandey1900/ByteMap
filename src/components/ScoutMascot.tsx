@@ -12,133 +12,155 @@ export const ScoutAvatar: React.FC<ScoutAvatarProps> = ({
 }) => {
   return (
     <div
-      className={`relative shrink-0 ${className} flex items-center justify-center select-none ${
-        isScanning ? 'animate-bounce' : 'comic-hover-wiggle'
+      className={`relative shrink-0 ${className} flex items-center justify-center select-none overflow-hidden ${
+        isScanning ? 'animate-scout-bob' : 'comic-hover-wiggle'
       }`}
     >
       <svg
         viewBox="0 0 120 120"
-        className="w-full h-full drop-shadow-[2px_2px_0px_rgba(15,23,42,0.9)] overflow-visible"
+        className="w-full h-full overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Outer Circular Comic Badge */}
-        <circle
-          cx="60"
-          cy="60"
-          r="54"
-          fill="#fef08a"
-          stroke="#0f172a"
-          strokeWidth="4"
+        <defs>
+          <radialGradient id="scoutBackdropIdle" cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stopColor="#fef9c3" />
+            <stop offset="100%" stopColor="#fde047" />
+          </radialGradient>
+          <radialGradient id="scoutBackdropScan" cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stopColor="#d1fae5" />
+            <stop offset="100%" stopColor="#38bdf8" />
+          </radialGradient>
+        </defs>
+
+        {/* Full-bleed Soft Radial Portrait Backdrop (zero double inner border) */}
+        <rect
+          x="0"
+          y="0"
+          width="120"
+          height="120"
+          rx="20"
+          fill={isScanning ? 'url(#scoutBackdropScan)' : 'url(#scoutBackdropIdle)'}
         />
 
-        {/* Halftone dots texture on avatar background */}
-        <circle cx="36" cy="30" r="1.5" fill="#0f172a" opacity="0.15" />
-        <circle cx="48" cy="24" r="1.5" fill="#0f172a" opacity="0.15" />
-        <circle cx="72" cy="24" r="1.5" fill="#0f172a" opacity="0.15" />
-        <circle cx="84" cy="30" r="1.5" fill="#0f172a" opacity="0.15" />
-        <circle cx="28" cy="50" r="1.5" fill="#0f172a" opacity="0.15" />
-        <circle cx="92" cy="50" r="1.5" fill="#0f172a" opacity="0.15" />
+        {/* Subtle radial spotlight / halftone dots */}
+        <circle cx="24" cy="24" r="1.8" fill="#0f172a" opacity="0.12" />
+        <circle cx="96" cy="24" r="1.8" fill="#0f172a" opacity="0.12" />
+        <circle cx="18" cy="60" r="1.5" fill="#0f172a" opacity="0.1" />
+        <circle cx="102" cy="60" r="1.5" fill="#0f172a" opacity="0.1" />
 
-        {/* Scout Explorer Body / Khaki Jacket */}
+        {/* Animated Dashed Radar Orbit Ring while scanning */}
+        {isScanning && (
+          <circle
+            cx="60"
+            cy="60"
+            r="50"
+            stroke="#0284c7"
+            strokeWidth="2.2"
+            strokeDasharray="7 7"
+            opacity="0.55"
+            className="animate-scout-orbit"
+          />
+        )}
+
+        {/* Scout Explorer Body / Jacket */}
         <path
-          d="M34 96 C34 78 46 75 60 75 C74 75 86 78 86 96 L90 114 L30 114 Z"
+          d="M32 98 C32 79 45 75 60 75 C75 75 88 79 88 98 L93 120 L27 120 Z"
           fill="#d97706"
           stroke="#0f172a"
           strokeWidth="3.5"
           strokeLinejoin="round"
         />
 
-        {/* Jacket Collar & Red Neckerchief */}
-        <path d="M50 75 L60 89 L70 75 Z" fill="#dc2626" stroke="#0f172a" strokeWidth="2.5" />
-        <path d="M55 86 L60 99 L65 86 Z" fill="#ef4444" stroke="#0f172a" strokeWidth="2" />
-        {/* Yellow Neckerchief Ring */}
-        <rect x="57" y="84" width="6" height="4" rx="1.5" fill="#facc15" stroke="#0f172a" strokeWidth="1.5" />
+        {/* Jacket Collar & Neckerchief */}
+        <path d="M49 75 L60 90 L71 75 Z" fill="#dc2626" stroke="#0f172a" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d="M55 87 L60 101 L65 87 Z" fill="#ef4444" stroke="#0f172a" strokeWidth="2" strokeLinejoin="round" />
+        <rect x="57" y="84" width="6" height="4.5" rx="1.5" fill="#facc15" stroke="#0f172a" strokeWidth="1.5" />
 
         {/* Scout Face */}
-        <ellipse cx="60" cy="55" rx="21" ry="23" fill="#fed7aa" stroke="#0f172a" strokeWidth="3.5" />
-        
+        <ellipse cx="60" cy="54" rx="21.5" ry="23" fill="#fed7aa" stroke="#0f172a" strokeWidth="3.5" />
+
         {/* Ears */}
-        <circle cx="38" cy="55" r="5.5" fill="#fed7aa" stroke="#0f172a" strokeWidth="3" />
-        <circle cx="82" cy="55" r="5.5" fill="#fed7aa" stroke="#0f172a" strokeWidth="3" />
+        <circle cx="37.5" cy="54" r="5.5" fill="#fed7aa" stroke="#0f172a" strokeWidth="3" />
+        <circle cx="82.5" cy="54" r="5.5" fill="#fed7aa" stroke="#0f172a" strokeWidth="3" />
 
         {/* Hair Fringe */}
         <path
-          d="M43 45 C48 37 72 37 77 45 C75 41 67 41 60 42 C53 41 45 41 43 45 Z"
+          d="M42 44 C47 36 73 36 78 44 C75 40 67 40 60 41 C53 40 45 40 42 44 Z"
           fill="#78350f"
           stroke="#0f172a"
           strokeWidth="2.5"
+          strokeLinejoin="round"
         />
 
-        {/* Eyes & Gaze */}
-        <circle cx="52" cy="54" r="3.5" fill="#0f172a" />
-        <circle cx="53.3" cy="52.7" r="1.3" fill="#ffffff" />
-        <circle cx="68" cy="54" r="3.5" fill="#0f172a" />
-        <circle cx="69.3" cy="52.7" r="1.3" fill="#ffffff" />
+        {/* Eyes with natural blink animation */}
+        <g className={isScanning ? '' : 'animate-scout-blink'}>
+          <circle cx="51.5" cy="53" r="3.6" fill="#0f172a" />
+          <circle cx="52.8" cy="51.7" r="1.3" fill="#ffffff" />
+          <circle cx="68.5" cy="53" r="3.6" fill="#0f172a" />
+          <circle cx="69.8" cy="51.7" r="1.3" fill="#ffffff" />
+        </g>
 
         {/* Rosy Cheeks */}
-        <ellipse cx="46" cy="62" rx="4" ry="2.2" fill="#f87171" opacity="0.65" />
-        <ellipse cx="74" cy="62" rx="4" ry="2.2" fill="#f87171" opacity="0.65" />
+        <ellipse cx="45.5" cy="61" rx="4" ry="2.2" fill="#f87171" opacity="0.55" />
+        <ellipse cx="74.5" cy="61" rx="4" ry="2.2" fill="#f87171" opacity="0.55" />
 
         {/* Cheerful Explorer Smile */}
         <path
-          d="M52 64 Q60 72 68 64"
+          d="M52 63 Q60 70.5 68 63"
           fill="#991b1b"
           stroke="#0f172a"
           strokeWidth="2.5"
           strokeLinecap="round"
         />
 
-        {/* Safari Pith Helmet / Explorer Hat */}
-        {/* Hat Brim */}
-        <ellipse cx="60" cy="41" rx="36" ry="10" fill="#b45309" stroke="#0f172a" strokeWidth="3.5" />
-        {/* Hat Crown */}
+        {/* Explorer Hat */}
+        <ellipse cx="60" cy="39" rx="36" ry="9.5" fill="#b45309" stroke="#0f172a" strokeWidth="3.5" />
         <path
-          d="M35 40 C35 18 50 12 60 12 C70 12 85 18 85 40 Z"
+          d="M35 38 C35 16 49 10 60 10 C71 10 85 16 85 38 Z"
           fill="#d97706"
           stroke="#0f172a"
           strokeWidth="3.5"
           strokeLinejoin="round"
         />
-        {/* Hat Leather Band */}
         <path
-          d="M36 38 C44 36 76 36 84 38 L84 42 C76 40 44 40 36 42 Z"
+          d="M36 36 C44 34 76 34 84 36 L84 40 C76 38 44 38 36 40 Z"
           fill="#78350f"
           stroke="#0f172a"
           strokeWidth="2.5"
         />
 
-        {/* Magnifying Glass Hand & Scanner Device */}
+        {/* Magnifying Glass & Active Scanning Sweep */}
         <g
           className={
             isScanning
-              ? 'animate-[comic-magnifier-scan_1.6s_ease-in-out_infinite] origin-[72px_72px]'
+              ? 'animate-[comic-magnifier-scan_1.35s_ease-in-out_infinite]'
               : ''
           }
+          style={{ transformOrigin: '76px 76px' }}
         >
           {/* Active Scanning Beam radiating from lens */}
           {isScanning && (
-            <g className="animate-[comic-scan-beam_1.2s_ease-in-out_infinite] origin-[74px_74px]">
+            <g className="animate-[comic-scan-beam_1.1s_ease-in-out_infinite]">
               <path
-                d="M74 74 L40 115 L108 115 Z"
-                fill="#38bdf8"
-                fillOpacity="0.25"
-                stroke="#0f172a"
+                d="M73 74 L38 117 L108 117 Z"
+                fill="#10b981"
+                fillOpacity="0.22"
+                stroke="#059669"
                 strokeWidth="1.5"
                 strokeDasharray="3 3"
               />
-              {/* Radar rings inside beam */}
               <path
-                d="M56 94 Q74 99 92 94"
-                stroke="#34d399"
-                strokeWidth="2"
+                d="M55 95 Q73 101 91 95"
+                stroke="#10b981"
+                strokeWidth="2.2"
                 strokeLinecap="round"
                 fill="none"
               />
               <path
-                d="M48 106 Q74 112 100 106"
-                stroke="#38bdf8"
-                strokeWidth="2.5"
+                d="M47 107 Q73 114 99 107"
+                stroke="#0284c7"
+                strokeWidth="2.4"
                 strokeLinecap="round"
                 fill="none"
               />
@@ -146,13 +168,19 @@ export const ScoutAvatar: React.FC<ScoutAvatarProps> = ({
           )}
 
           {/* Scout Hand holding the glass */}
-          <ellipse cx="82" cy="80" rx="6" ry="5" fill="#fed7aa" stroke="#0f172a" strokeWidth="2.5" />
+          <ellipse cx="83" cy="81" rx="6" ry="5" fill="#fed7aa" stroke="#0f172a" strokeWidth="2.5" />
 
           {/* Glass Handle */}
           <path
-            d="M76 76 L94 94"
+            d="M78 78 L96 96"
             stroke="#78350f"
-            strokeWidth="5.5"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+          <path
+            d="M78 78 L96 96"
+            stroke="#0f172a"
+            strokeWidth="2"
             strokeLinecap="round"
           />
 
@@ -160,45 +188,36 @@ export const ScoutAvatar: React.FC<ScoutAvatarProps> = ({
           <circle
             cx="72"
             cy="70"
-            r="16"
-            fill={isScanning ? '#38bdf8' : '#e0f2fe'}
-            fillOpacity={isScanning ? 0.95 : 0.8}
+            r="16.5"
+            fill={isScanning ? '#7dd3fc' : '#e0f2fe'}
+            fillOpacity={isScanning ? 0.85 : 0.78}
             stroke="#0f172a"
             strokeWidth="3.5"
           />
 
-          {/* Glass Highlight Arc */}
+          {/* Specular Shine Arc */}
           <path
-            d="M64 63 Q70 60 78 64"
+            d="M63.5 62.5 Q70 59 78 63"
             stroke="#ffffff"
-            strokeWidth="2.5"
+            strokeWidth="2.6"
             strokeLinecap="round"
           />
 
-          {/* Center Scanner Reticle Crosshair during scan */}
+          {/* Precision Radar Reticle inside glass while scanning */}
           {isScanning && (
             <>
-              <line x1="72" y1="62" x2="72" y2="78" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="2 2" />
-              <line x1="64" y1="70" x2="80" y2="70" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="2 2" />
-              <circle cx="72" cy="70" r="4" fill="none" stroke="#0284c7" strokeWidth="1.5" />
+              <line x1="72" y1="60" x2="72" y2="80" stroke="#0369a1" strokeWidth="1.6" strokeDasharray="2 2" />
+              <line x1="62" y1="70" x2="82" y2="70" stroke="#0369a1" strokeWidth="1.6" strokeDasharray="2 2" />
+              <circle cx="72" cy="70" r="5" fill="none" stroke="#0369a1" strokeWidth="1.6" />
             </>
           )}
         </g>
 
-        {/* Active Scanning Indicator Badge in corner */}
+        {/* Live Pulsing Radar Beacon in corner during scan (clean vector dot, no emoji) */}
         {isScanning && (
           <g>
-            <circle cx="20" cy="20" r="14" fill="#10b981" stroke="#0f172a" strokeWidth="2.5" />
-            <text
-              x="20"
-              y="25"
-              textAnchor="middle"
-              fontSize="13"
-              fill="#ffffff"
-              fontWeight="bold"
-            >
-              🔍
-            </text>
+            <circle cx="18" cy="18" r="9" fill="#10b981" fillOpacity="0.28" className="animate-ping" style={{ transformOrigin: '18px 18px' }} />
+            <circle cx="18" cy="18" r="5.5" fill="#10b981" stroke="#0f172a" strokeWidth="2" />
           </g>
         )}
       </svg>
@@ -218,24 +237,23 @@ export const ScoutMascot: React.FC<ScoutMascotProps> = ({
   statusText,
 }) => {
   return (
-    <div className="flex items-center space-x-3 bg-amber-100 p-2.5 rounded-xl border-2.5 border-slate-900 shadow-comic relative overflow-hidden">
-      {/* Subtle halftone background texture */}
-      <div className="absolute inset-0 bg-comic-dots opacity-20 pointer-events-none" />
+    <div className="flex items-center space-x-3 bg-amber-100 dark:bg-slate-800/90 p-2.5 rounded-xl border-2.5 border-slate-900 dark:border-slate-700 shadow-comic relative overflow-hidden">
+      <div className="absolute inset-0 bg-comic-dots opacity-20 dark:opacity-10 pointer-events-none" />
 
-      {/* Cartoon Explorer Scout Mascot Avatar */}
+      {/* Scout Avatar Tile */}
       <div className="relative shrink-0">
-        <div className={`rounded-2xl border-2.5 border-slate-900 overflow-hidden bg-amber-300 shadow-comic-sm flex items-center justify-center p-0.5 ${className}`}>
+        <div
+          className={`rounded-2xl border-2.5 border-slate-900 overflow-hidden shadow-comic-sm flex items-center justify-center ${className}`}
+        >
           <ScoutAvatar isScanning={isScanning} className="w-full h-full" />
         </div>
-        {/* Pulsing ring during scan */}
         {isScanning && (
-          <div className="absolute -inset-1 border-2 border-emerald-400 rounded-2xl animate-ping pointer-events-none opacity-60" />
+          <div className="absolute -inset-1 border-2 border-emerald-400 rounded-2xl animate-pulse pointer-events-none opacity-75" />
         )}
       </div>
 
-      {/* Scout Speech Bubble & Status */}
+      {/* Status Badge & Speech Bubble */}
       <div className="relative flex-1 min-w-0 z-10">
-        {/* Status Badge Pill */}
         <div
           className={`inline-flex items-center pl-1.5 pr-2.5 py-0.5 rounded-full border-2 border-slate-900 text-xs font-bangers uppercase tracking-wider mb-1 shadow-comic-sm transition-colors ${
             isScanning
@@ -243,7 +261,10 @@ export const ScoutMascot: React.FC<ScoutMascotProps> = ({
               : 'bg-sky-400 text-slate-900'
           }`}
         >
-          <span className="w-4 h-4 rounded-full bg-white border border-slate-900 flex items-center justify-center mr-1.5 shrink-0 shadow-[1px_1px_0px_#0f172a]">
+          <span
+            className="w-4 h-4 rounded-full bg-white border border-slate-900 flex items-center justify-center mr-1.5 shrink-0 shadow-[1px_1px_0px_#0f172a]"
+            style={{ backgroundColor: '#ffffff' }}
+          >
             {isScanning ? (
               <Compass className="w-2.5 h-2.5 text-slate-900 animate-spin" />
             ) : (
@@ -253,14 +274,15 @@ export const ScoutMascot: React.FC<ScoutMascotProps> = ({
           {isScanning ? 'Active Scanning' : 'Scout Ready'}
         </div>
 
-        {/* Speech text with cartoon tail */}
-        <div className="relative bg-yellow-50 border-2 border-slate-900 rounded-lg px-2.5 py-1.5 shadow-comic-sm">
-          {/* Speech bubble tail pointing to mascot */}
-          <div className="absolute -left-2 top-2 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-slate-900 border-b-[6px] border-b-transparent" />
-          <div className="absolute -left-[6px] top-[9px] w-0 h-0 border-t-[5px] border-t-transparent border-r-[7px] border-r-yellow-50 border-b-[5px] border-b-transparent" />
+        <div className="relative bg-yellow-50 dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-600 rounded-lg px-2.5 py-1.5 shadow-comic-sm overflow-hidden">
+          {isScanning && (
+            <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-emerald-300/25 to-transparent animate-scout-sweep pointer-events-none" />
+          )}
+          <div className="absolute -left-2 top-2 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-slate-900 dark:border-r-slate-600 border-b-[6px] border-b-transparent" />
+          <div className="absolute -left-[6px] top-[9px] w-0 h-0 border-t-[5px] border-t-transparent border-r-[7px] border-r-yellow-50 dark:border-r-slate-900 border-b-[5px] border-b-transparent" />
 
-          <p className="text-xs font-bold text-slate-900 font-comicNeue leading-snug truncate">
-            {statusText || (isScanning ? '80ms Telemetry • In Progress' : 'Ready to scout storage!')}
+          <p className="relative text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug truncate">
+            {statusText || (isScanning ? 'Scanning filesystem in parallel...' : 'Ready to scout storage!')}
           </p>
         </div>
       </div>

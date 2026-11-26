@@ -51,16 +51,17 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Category colors
+        // Category colors (canonical single source of truth)
         cat: {
           video: "#3b82f6",
           image: "#ec4899",
           audio: "#8b5cf6",
           document: "#10b981",
           archive: "#f59e0b",
-          app: "#06b6d4",
-          dev: "#6366f1",
+          app: "#ef4444",
+          dev: "#06b6d4",
           game: "#f97316",
+          system: "#6366f1",
           other: "#64748b",
         },
         // Comic accent palette
@@ -81,13 +82,13 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        comic: ["Fredoka", "'Comic Neue'", "'Plus Jakarta Sans'", "sans-serif"],
-        bangers: ["'Bangers'", "cursive"],
-        luckiest: ["'Luckiest Guy'", "cursive"],
-        comicNeue: ["'Comic Neue'", "cursive"],
-        fredoka: ["Fredoka", "sans-serif"],
-        heading: ["'Bangers'", "Fredoka", "sans-serif"],
-        sans: ["'Plus Jakarta Sans'", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        comic: ["'Figtree'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        bangers: ["'Figtree'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        luckiest: ["'Figtree'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        comicNeue: ["'Figtree'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        fredoka: ["'Figtree'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        heading: ["'Figtree'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        sans: ["'Figtree'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
         mono: ["'JetBrains Mono'", "Fira Code", "Consolas", "monospace"],
       },
       boxShadow: {

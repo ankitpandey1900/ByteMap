@@ -89,12 +89,13 @@ interface AppState {
 
 const defaultSettings: AppSettings = {
   theme: 'light',
-  unit: 'binary',
+  unit: 'decimal',
   large_file_threshold_mb: 100,
   auto_hash_duplicates: false,
   prefer_trash: true,
   show_system_files: false,
   default_excludes: ['$RECYCLE.BIN', 'System Volume Information', '.git', 'node_modules'],
+  auto_save_snapshot: false,
 };
 
 const initialProgress: ScanProgress = {
@@ -584,13 +585,13 @@ export const useAppStore = create<AppState>((set) => ({
   updateSettings: (newSettings) =>
     set((state) => ({ settings: { ...state.settings, ...newSettings } })),
 
-  // UI Zoom implementation
+  // UI Zoom (Standard desktop stops: 75% to 150%)
   zoomLevel: (() => {
     try {
       const saved = localStorage.getItem('bytemap_zoom_level');
       if (saved) {
         const val = parseInt(saved, 10);
-        if (!isNaN(val) && val >= 75 && val <= 160) return val;
+        if (!isNaN(val) && val >= 75 && val <= 150) return val;
       }
     } catch {}
     return 100;
@@ -598,7 +599,7 @@ export const useAppStore = create<AppState>((set) => ({
   setZoomLevel: (zoom) =>
     set((state) => {
       const next = typeof zoom === 'function' ? zoom(state.zoomLevel) : zoom;
-      const clamped = Math.max(75, Math.min(160, Math.round(next)));
+      const clamped = Math.max(75, Math.min(150, Math.round(next)));
       try {
         localStorage.setItem('bytemap_zoom_level', String(clamped));
       } catch {}
@@ -606,19 +607,21 @@ export const useAppStore = create<AppState>((set) => ({
     }),
   zoomIn: () =>
     set((state) => {
-      const clamped = Math.min(160, state.zoomLevel + 5);
+      const stops = [75, 80, 90, 100, 110, 125, 150];
+      const nextStop = stops.find((s) => s > state.zoomLevel) ?? 150;
       try {
-        localStorage.setItem('bytemap_zoom_level', String(clamped));
+        localStorage.setItem('bytemap_zoom_level', String(nextStop));
       } catch {}
-      return { zoomLevel: clamped };
+      return { zoomLevel: nextStop };
     }),
   zoomOut: () =>
     set((state) => {
-      const clamped = Math.max(70, state.zoomLevel - 5);
+      const stops = [75, 80, 90, 100, 110, 125, 150];
+      const prevStop = [...stops].reverse().find((s) => s < state.zoomLevel) ?? 75;
       try {
-        localStorage.setItem('bytemap_zoom_level', String(clamped));
+        localStorage.setItem('bytemap_zoom_level', String(prevStop));
       } catch {}
-      return { zoomLevel: clamped };
+      return { zoomLevel: prevStop };
     }),
   resetZoom: () =>
     set(() => {

@@ -45,6 +45,18 @@ export const ComicFolderPickerModal: React.FC<ComicFolderPickerModalProps> = ({
     }
   }, [isOpen, initialPath, drives]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   // Common quick shortcuts for desktop systems
@@ -79,7 +91,12 @@ export const ComicFolderPickerModal: React.FC<ComicFolderPickerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 select-none animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 select-none animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="folder-picker-title"
+    >
       {/* Modal Dialog Card */}
       <div className="relative w-full max-w-lg bg-white border-3 border-slate-900 rounded-2xl shadow-[8px_8px_0px_#0f172a] p-5 sm:p-6 space-y-4 text-slate-900 animate-comic-pop overflow-hidden">
         {/* Subtle Comic Halftone Dot Background */}
@@ -95,7 +112,10 @@ export const ComicFolderPickerModal: React.FC<ComicFolderPickerModalProps> = ({
               <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-400 border border-slate-900 font-bangers text-xs uppercase tracking-wider text-slate-900 mb-0.5 shadow-comic-sm">
                 Target Selector 🗺️
               </div>
-              <h3 className="font-bangers text-2xl uppercase tracking-wider text-slate-900 leading-none">
+              <h3
+                id="folder-picker-title"
+                className="font-bangers text-2xl uppercase tracking-wider text-slate-900 leading-none"
+              >
                 Select Folder or Drive
               </h3>
               <p className="text-xs font-comicNeue font-bold text-slate-600 mt-0.5">

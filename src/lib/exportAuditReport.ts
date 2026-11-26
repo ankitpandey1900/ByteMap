@@ -77,11 +77,11 @@ export function exportStorageAuditHtml(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ByteMap Storage Audit — ${escapeHtml(cleanDisplayPath(scanSummary.root_path))}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #f8fafc;
       color: #0f172a;
       padding: 32px 16px;
@@ -113,17 +113,19 @@ export function exportStorageAuditHtml(
       margin-bottom: 12px;
     }
     h1 {
-      font-family: 'Bangers', cursive;
-      font-size: 38px;
-      letter-spacing: 0.04em;
+      font-family: 'Figtree', sans-serif;
+      font-weight: 800;
+      font-size: 34px;
+      letter-spacing: -0.02em;
       text-transform: uppercase;
       margin-bottom: 6px;
       color: #0f172a;
     }
     h2 {
-      font-family: 'Bangers', cursive;
-      font-size: 24px;
-      letter-spacing: 0.03em;
+      font-family: 'Figtree', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.015em;
       text-transform: uppercase;
       margin-bottom: 14px;
       color: #0f172a;
@@ -189,9 +191,10 @@ export function exportStorageAuditHtml(
       border: 2px solid #0f172a;
       padding: 8px 16px;
       border-radius: 12px;
-      font-family: 'Bangers', cursive;
-      font-size: 16px;
-      letter-spacing: 0.05em;
+      font-family: 'Figtree', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.02em;
       cursor: pointer;
       box-shadow: 3px 3px 0px #0f172a;
       float: right;

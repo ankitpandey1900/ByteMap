@@ -6,10 +6,12 @@ import {
   FolderOpen,
   AlertTriangle,
   HardDrive,
+  Compass,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { formatBytes, formatDuration, formatNumber, findDriveForPath } from '@/lib/utils';
+import { saveSnapshotFromScan } from '@/lib/snapshots';
 import { ScanOptions } from '@/types';
 import { ScoutMascot } from '@/components/ScoutMascot';
 import { ComicFolderPickerModal } from '@/components/ComicFolderPickerModal';
@@ -54,6 +56,18 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
     };
   }, [setScanProgress]);
 
+  useEffect(() => {
+    if (!isOpen || isScanning) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isScanning, onClose]);
+
   if (!isOpen) return null;
 
   const handleBrowse = () => {
@@ -87,6 +101,9 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
     try {
       const summary = await api.startScan(opts);
       setScanSummary(summary);
+      if (settings.auto_save_snapshot) {
+        saveSnapshotFromScan(summary);
+      }
       onClose();
     } catch (err: any) {
       console.error('Scan error:', err);
@@ -102,7 +119,12 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 select-none">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 select-none"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scan-modal-title"
+    >
       {/* Modal Card with pop-in animation */}
       <div className="bg-white border-3 border-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-[8px_8px_0px_#0f172a] space-y-4 text-slate-900 font-sans relative max-h-[92vh] overflow-y-auto animate-comic-pop">
         {/* Halftone texture on modal */}
@@ -118,7 +140,10 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-400 border border-slate-900 font-bangers text-xs uppercase tracking-wide text-slate-900 mb-0.5 shadow-comic-sm">
                 Scout Mission 🗺️
               </div>
-              <h3 className="font-bangers text-2xl uppercase tracking-wider text-slate-900 leading-none">
+              <h3
+                id="scan-modal-title"
+                className="font-bangers text-2xl uppercase tracking-wider text-slate-900 leading-none"
+              >
                 Configure Storage Scan
               </h3>
               <p className="text-xs font-comicNeue font-bold text-slate-600 mt-1">
@@ -129,8 +154,10 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
 
           {!isScanning && (
             <button
+              type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-400 hover:text-white border-2 border-slate-900 flex items-center justify-center shadow-comic-sm transition-all hover:rotate-90 duration-200 text-slate-900"
+              aria-label="Close scan configuration modal"
+              className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-400 hover:text-white border-2 border-slate-900 flex items-center justify-center shadow-comic-sm transition-all hover:rotate-90 duration-200 text-slate-900 cursor-pointer"
             >
               <X className="w-4 h-4 stroke-[3]" />
             </button>
@@ -232,8 +259,8 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
         {isScanning && (
           <div className="relative space-y-3 p-3.5 bg-sky-50 rounded-xl border-2 border-slate-900 text-xs bg-comic-dots">
             <div className="flex items-center justify-between font-comic">
-              <span className="flex items-center space-x-2 text-blue-900 text-sm uppercase">
-                <span className="animate-comic-spin-wobble text-base">🧭</span>
+              <span className="flex items-center space-x-2 text-blue-900 dark:text-sky-200 text-sm uppercase">
+                <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-spin" />
                 <span>Scouting Active...</span>
               </span>
               <span className="text-slate-900 font-bold font-mono">
@@ -247,9 +274,10 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose }) => {
               statusText={`Scouting: ${formatNumber(scanProgress.scanned_files)} files processed`}
             />
 
-            {/* Solid Cartoon Progress Bar with candy stripe */}
+            {/* Progress Bar with live sweep beam */}
             <div className="w-full h-5 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden relative">
               <div className="h-full bg-emerald-400 w-full comic-progress-stripe" />
+              <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-scout-sweep pointer-events-none" />
             </div>
 
             <div className="grid grid-cols-3 gap-2 py-1 text-center">

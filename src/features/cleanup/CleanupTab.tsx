@@ -24,8 +24,13 @@ import { DevArtifactsCard } from './DevArtifactsCard';
 import { EmptyFoldersCard } from './EmptyFoldersCard';
 import { DevCachesCard } from './DevCachesCard';
 import { ReclaimScriptModal } from '@/components/ReclaimScriptModal';
+import { EmptyScanState } from '@/components/EmptyScanState';
 
-export const CleanupTab: React.FC = () => {
+interface CleanupTabProps {
+  onOpenScanModal?: () => void;
+}
+
+export const CleanupTab: React.FC<CleanupTabProps> = ({ onOpenScanModal }) => {
   const {
     scanSummary,
     settings,
@@ -311,20 +316,12 @@ export const CleanupTab: React.FC = () => {
 
       {/* For views requiring a scanned drive inventory */}
       {cleanupView !== 'dev_caches' && !scanSummary && (
-        <div className="flex flex-col items-center justify-center h-full min-h-[380px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
-          <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
-            <Trash2 className="w-8 h-8 text-slate-900" />
-          </div>
-          <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
-            Drive Scan Required
-          </div>
-          <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
-            Drive Scout Not Performed
-          </h3>
-          <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
-            Click <strong>ANALYZE</strong> to scout your drive and detect safe reclaimable files, obsolete installers, and temp files. Or switch to <strong>Coding & IDE Caches</strong> above to purge developer caches right away.
-          </p>
-        </div>
+        <EmptyScanState
+          badge="Drive Scan Required"
+          title="Drive Scout Not Performed"
+          description="Run a storage scan to detect safe reclaimable temp files, obsolete installers, and build artifacts — or switch to Coding & IDE Caches above right away."
+          onStartScan={onOpenScanModal}
+        />
       )}
 
       {/* 2. Developer Artifacts Sweeper View */}
@@ -368,7 +365,7 @@ export const CleanupTab: React.FC = () => {
         <>
           {/* Interactive What-If Storage Simulator Bar */}
           {selectedCleanupIds.size > 0 && (
-            <div className="p-3 bg-gradient-to-r from-amber-100 via-sky-100 to-emerald-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3 animate-in fade-in slide-in-from-top-1">
+            <div className="p-3 bg-gradient-to-r from-amber-100 via-sky-100 to-emerald-100 dark:from-slate-800 dark:via-slate-800 dark:to-emerald-950 border-2.5 border-slate-900 rounded-2xl shadow-comic flex items-center justify-between flex-wrap gap-3 animate-in fade-in slide-in-from-top-1">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-lg bg-amber-400 border border-slate-900 flex items-center justify-center text-slate-900 shadow-comic-sm shrink-0">
                   <Sparkles className="w-4 h-4 text-slate-900" />

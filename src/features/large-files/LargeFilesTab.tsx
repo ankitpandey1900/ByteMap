@@ -8,6 +8,10 @@ import {
   Info,
   Clock,
   Snowflake,
+  Trash2,
+  CheckSquare,
+  Square,
+  Sparkles,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -32,7 +36,8 @@ import {
   ComicLargeFilesIcon,
 } from '@/components/icons/ComicIcons';
 import { CategoryIcon } from '@/components/CategoryIcon';
-import { ScoutAvatar } from '@/components/ScoutMascot';
+import { EmptyScanState } from '@/components/EmptyScanState';
+import { ConfirmCleanupModal, ConfirmCleanupTarget } from '@/components/ConfirmCleanupModal';
 import { api } from '@/lib/api';
 
 type SizeTierKey = 'all' | 'under100' | '100to500' | '500to1g' | '1gto5g' | 'over5g';
@@ -73,13 +78,26 @@ const SIZE_TIERS: SizeTier[] = [
   { key: 'over5g', label: '> 5 GB Monster', minBytes: 5 * 1024 * 1024 * 1024, maxBytes: Infinity, color: '#ef4444' },
 ];
 
-export const LargeFilesTab: React.FC = () => {
-  const { scanSummary, settings } = useAppStore();
+interface LargeFilesTabProps {
+  onOpenScanModal?: () => void;
+}
+
+export const LargeFilesTab: React.FC<LargeFilesTabProps> = ({ onOpenScanModal }) => {
+  const { scanSummary, settings, applyCleanupResult } = useAppStore();
   const [thresholdMB, setThresholdMB] = useState<number>(settings.large_file_threshold_mb);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [selectedTier, setSelectedTier] = useState<SizeTierKey>('all');
   const [ageFilter, setAgeFilter] = useState<AgeFilterKey>('all');
   const [showHistogram, setShowHistogram] = useState<boolean>(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmTargets, setConfirmTargets] = useState<ConfirmCleanupTarget[]>([]);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  const isDark =
+    settings.theme === 'dark' ||
+    (settings.theme === 'system' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-color-scheme: dark)').matches);
 
   // Compute histogram data across all large files
   const histogramData = useMemo(() => {
@@ -166,6 +184,71 @@ export const LargeFilesTab: React.FC = () => {
     }
   };
 
+  const toggleSelectFile = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectSafe = () => {
+    const safeIds = filteredLargeFiles
+      .filter((f) => {
+        const intel = getFileIntelligence(f.name, f.path);
+        return !f.is_system && !intel.isSystem && !intel.isDependency;
+      })
+      .map((f) => f.id);
+    setSelectedIds(new Set(safeIds));
+  };
+
+  const selectedFilesList = useMemo(
+    () => filteredLargeFiles.filter((f) => selectedIds.has(f.id)),
+    [filteredLargeFiles, selectedIds]
+  );
+
+  const selectedTotalBytes = useMemo(
+    () => selectedFilesList.reduce((acc, f) => acc + f.size_bytes, 0),
+    [selectedFilesList]
+  );
+
+  const handleExecuteConfirmCleanup = async () => {
+    if (confirmTargets.length === 0) return;
+    setIsDeleting(true);
+    try {
+      const targets = confirmTargets.map((t) => ({
+        path: t.path,
+        expected_size: t.size_bytes,
+      }));
+      const res = await api.executeCleanup(targets, settings.prefer_trash);
+      const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
+      const pathBytesMap: Record<string, number> = {};
+      res.results
+        .filter((r) => r.success)
+        .forEach((r) => {
+          pathBytesMap[r.path] = r.bytes_freed;
+        });
+      applyCleanupResult(res.total_freed_bytes, successPaths, pathBytesMap, settings.prefer_trash);
+
+      const deletedPathSet = new Set(successPaths.map((p) => p.toLowerCase()));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        for (const f of filteredLargeFiles) {
+          if (deletedPathSet.has(f.path.toLowerCase())) {
+            next.delete(f.id);
+          }
+        }
+        return next;
+      });
+      setConfirmTargets([]);
+    } catch (err) {
+      console.error('Large file cleanup failed:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const totalLargeBytes = filteredLargeFiles.reduce(
     (acc, f) => acc + f.size_bytes,
     0
@@ -175,20 +258,12 @@ export const LargeFilesTab: React.FC = () => {
 
   if (!scanSummary) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-3 border-slate-900 shadow-[6px_6px_0px_#0f172a] select-none w-full">
-        <div className="w-20 h-20 rounded-2xl bg-amber-400 border-3 border-slate-900 shadow-[3px_3px_0px_#0f172a] flex items-center justify-center mb-4">
-          <ScoutAvatar isScanning={false} className="w-14 h-14" />
-        </div>
-        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2.5 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
-          Large Files Idle
-        </div>
-        <h3 className="font-comic text-2xl text-slate-900 uppercase tracking-wide mb-1 font-black">
-          No Storage Scouted Yet
-        </h3>
-        <p className="font-fredoka text-sm text-slate-600 max-w-sm font-semibold">
-          Click <strong>ANALYZE</strong> to scout your drive and detect the top space consumers eating your disk capacity.
-        </p>
-      </div>
+      <EmptyScanState
+        badge="Large Files Idle"
+        title="No Storage Scouted Yet"
+        description="Run a storage scan to detect the heaviest files eating your disk capacity and reclaim space directly."
+        onStartScan={onOpenScanModal}
+      />
     );
   }
 
@@ -209,14 +284,15 @@ export const LargeFilesTab: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 flex-wrap gap-2">
+        <div className="flex items-center space-x-2.5 flex-wrap gap-2">
           {selectedTier === 'all' && (
             <div className="flex items-center space-x-2 text-xs font-fredoka font-bold">
               <span className="text-slate-700">Min Threshold:</span>
               <select
+                aria-label="Minimum file size threshold"
                 value={thresholdMB}
                 onChange={(e) => setThresholdMB(Number(e.target.value))}
-                className="px-3 py-1.5 bg-slate-50 border-2.5 border-slate-900 rounded-xl font-comic text-xs uppercase font-bold text-slate-900 focus:outline-none shadow-[2px_2px_0px_#0f172a] cursor-pointer"
+                className="px-3 py-1.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-comic text-xs uppercase font-bold text-slate-900 focus:outline-none shadow-comic-sm cursor-pointer"
               >
                 <option value={10}>&gt; 10 MB</option>
                 <option value={50}>&gt; 50 MB</option>
@@ -229,12 +305,55 @@ export const LargeFilesTab: React.FC = () => {
           )}
 
           <button
+            type="button"
             onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl border-2.5 border-slate-900 bg-white hover:bg-yellow-300 font-comic text-xs uppercase font-black text-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-y-0.5 transition-all cursor-pointer"
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-yellow-300 font-comic text-xs uppercase font-black text-slate-900 shadow-comic-sm active:translate-y-0.5 transition-all cursor-pointer"
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
             <span>{sortOrder === 'desc' ? 'Largest First' : 'Smallest First'}</span>
           </button>
+
+          {filteredLargeFiles.length > 0 && (
+            <button
+              type="button"
+              onClick={handleSelectSafe}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 font-comic text-xs uppercase font-bold text-slate-900 shadow-comic-sm transition-all cursor-pointer"
+              title="Select non-system files in the current list"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+              <span>Select Safe</span>
+            </button>
+          )}
+
+          {selectedFilesList.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="px-2.5 py-1.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-slate-100 font-comic text-xs uppercase text-slate-700 shadow-comic-sm cursor-pointer"
+              >
+                Clear ({selectedFilesList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setConfirmTargets(
+                    selectedFilesList.map((f) => ({
+                      name: f.name,
+                      path: f.path,
+                      size_bytes: f.size_bytes,
+                    }))
+                  )
+                }
+                className="flex items-center space-x-1.5 px-4 py-1.5 rounded-xl border-2 border-slate-900 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-sm uppercase tracking-wider shadow-comic hover:-translate-y-0.5 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>
+                  Clean ({selectedFilesList.length} • {formatBytes(selectedTotalBytes, settings.unit)})
+                </span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -281,14 +400,14 @@ export const LargeFilesTab: React.FC = () => {
                 <BarChart data={histogramData} margin={{ top: 10, right: 15, left: -10, bottom: 5 }}>
                   <XAxis
                     dataKey="label"
-                    tick={{ fill: '#0f172a', fontSize: 11, fontWeight: 'bold' }}
-                    axisLine={{ stroke: '#0f172a', strokeWidth: 2 }}
-                    tickLine={{ stroke: '#0f172a' }}
+                    tick={{ fill: isDark ? '#94a3b8' : '#0f172a', fontSize: 11, fontWeight: 'bold' }}
+                    axisLine={{ stroke: isDark ? 'rgba(255,255,255,0.12)' : '#0f172a', strokeWidth: isDark ? 1 : 2 }}
+                    tickLine={{ stroke: isDark ? 'rgba(255,255,255,0.12)' : '#0f172a' }}
                   />
                   <YAxis
-                    tick={{ fill: '#0f172a', fontSize: 10, fontWeight: 'bold' }}
-                    axisLine={{ stroke: '#0f172a', strokeWidth: 2 }}
-                    tickLine={{ stroke: '#0f172a' }}
+                    tick={{ fill: isDark ? '#94a3b8' : '#0f172a', fontSize: 10, fontWeight: 'bold' }}
+                    axisLine={{ stroke: isDark ? 'rgba(255,255,255,0.12)' : '#0f172a', strokeWidth: isDark ? 1 : 2 }}
+                    tickLine={{ stroke: isDark ? 'rgba(255,255,255,0.12)' : '#0f172a' }}
                     allowDecimals={false}
                   />
                   <Tooltip
@@ -296,12 +415,12 @@ export const LargeFilesTab: React.FC = () => {
                       if (active && payload && payload.length) {
                         const d = payload[0].payload;
                         return (
-                          <div className="p-2.5 bg-yellow-50 border-2.5 border-slate-900 rounded-xl shadow-comic text-xs font-fredoka font-bold text-slate-900">
-                            <p className="font-comic uppercase text-xs text-slate-800">{d.label}</p>
-                            <p className="font-mono text-sm mt-0.5 text-amber-700">
+                          <div className="p-2.5 bg-yellow-50 dark:bg-[#171c28] border-2.5 border-slate-900 dark:border-white/15 rounded-xl shadow-comic text-xs font-fredoka font-bold text-slate-900 dark:text-slate-100">
+                            <p className="font-comic uppercase text-xs text-slate-800 dark:text-slate-200">{d.label}</p>
+                            <p className="font-mono text-sm mt-0.5 text-amber-700 dark:text-amber-300">
                               {formatNumber(d.count)} files ({formatBytes(d.totalBytes, settings.unit)})
                             </p>
-                            <p className="text-[10px] text-slate-500 mt-0.5">Click to filter table</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Click to filter table</p>
                           </div>
                         );
                       }
@@ -310,7 +429,7 @@ export const LargeFilesTab: React.FC = () => {
                   />
                   <Bar
                     dataKey="count"
-                    stroke="#0f172a"
+                    stroke={isDark ? '#131824' : '#0f172a'}
                     strokeWidth={2}
                     radius={[6, 6, 0, 0]}
                     onClick={(entry) => {
@@ -466,15 +585,34 @@ export const LargeFilesTab: React.FC = () => {
 
           const intel = getFileIntelligence(file.name, file.path);
           const ageBadge = getFileAgeBadge(file.modified_at);
+          const isProtected = file.is_system || intel.isSystem;
+          const isChecked = selectedIds.has(file.id);
 
           return (
             <div
               key={file.id}
-              className="p-3.5 flex flex-col md:flex-row md:items-center justify-between hover:bg-amber-50/80 transition-colors gap-3 w-full group"
+              className={`p-3.5 flex flex-col md:flex-row md:items-center justify-between hover:bg-amber-50/80 transition-colors gap-3 w-full group ${
+                isChecked ? 'bg-amber-50' : ''
+              }`}
             >
-              {/* Rank & File details */}
+              {/* Checkbox + Rank & File details */}
               <div className="flex items-start space-x-3 min-w-0 flex-1">
-                <span className="font-bangers text-xs text-slate-700 bg-amber-200 px-2 py-1 rounded-md border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a] shrink-0 mt-0.5">
+                <button
+                  type="button"
+                  disabled={isProtected}
+                  onClick={() => toggleSelectFile(file.id)}
+                  aria-label={isProtected ? `${file.name} is protected` : `Select ${file.name} for cleanup`}
+                  className="mt-1 shrink-0 text-slate-800 hover:text-amber-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  title={isProtected ? 'Protected system file' : 'Select for cleanup'}
+                >
+                  {isChecked ? (
+                    <CheckSquare className="w-4 h-4 text-amber-600" />
+                  ) : (
+                    <Square className="w-4 h-4" />
+                  )}
+                </button>
+
+                <span className="font-bangers text-xs text-slate-700 bg-amber-200 px-2 py-1 rounded-md border-2 border-slate-900 shadow-comic-sm shrink-0 mt-0.5">
                   #{idx + 1}
                 </span>
 
@@ -488,10 +626,9 @@ export const LargeFilesTab: React.FC = () => {
                       {file.name}
                     </span>
                     <span
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 dark:border-slate-600 shadow-[1.5px_1.5px_0px_#0f172a] text-slate-900 dark:text-slate-100"
                       style={{
-                        backgroundColor: `${catColor}25`,
-                        color: '#0f172a',
+                        backgroundColor: `${catColor}28`,
                       }}
                     >
                       <CategoryIcon category={file.category} className="w-3.5 h-3.5" />
@@ -531,14 +668,14 @@ export const LargeFilesTab: React.FC = () => {
 
                   {/* Plain-English context card for normal users */}
                   {intel.explanation && (
-                    <div className="mt-2 p-2 rounded-xl bg-amber-100/70 border-1.5 border-slate-900/40 text-[11px] font-fredoka text-slate-800 flex items-start space-x-2 shadow-xs">
-                      <Info className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" />
-                      <div className="space-y-0.5">
-                        <span className="font-medium text-slate-900 leading-snug block">
+                    <div className="mt-2 p-2.5 rounded-xl bg-amber-100/70 dark:bg-[#152238] border-1.5 border-slate-900/40 dark:border-amber-400/35 border-l-4 border-l-amber-400 text-[11px] font-fredoka text-slate-800 flex items-start space-x-2 shadow-xs">
+                      <Info className="w-4 h-4 text-amber-800 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <span className="font-medium text-slate-900 dark:text-slate-100 leading-snug block">
                           {intel.explanation}
                         </span>
                         {intel.actionGuidance && (
-                          <span className="text-[10px] font-bold text-amber-950 block bg-white/70 px-1.5 py-0.5 rounded border border-slate-900/20">
+                          <span className="text-[10px] font-bold text-amber-950 dark:text-amber-300 block bg-white/70 dark:bg-[#0d1627] px-2 py-1 rounded border border-slate-900/20 dark:border-amber-400/25">
                             👉 Action: {intel.actionGuidance}
                           </span>
                         )}
@@ -548,9 +685,9 @@ export const LargeFilesTab: React.FC = () => {
                 </div>
               </div>
 
-              {/* Size with visual mini-bar & Action */}
-              <div className="flex items-center space-x-4 shrink-0">
-                <div className="text-right w-32">
+              {/* Size with visual mini-bar & Actions */}
+              <div className="flex items-center space-x-2 shrink-0">
+                <div className="text-right w-32 mr-1">
                   <span className="font-mono font-bold text-sm text-slate-900 block tabular-nums">
                     {formatBytes(file.size_bytes, settings.unit)}
                   </span>
@@ -569,12 +706,39 @@ export const LargeFilesTab: React.FC = () => {
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => handleReveal(file.path)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border-2 border-slate-900 bg-white hover:bg-yellow-300 text-slate-900 active:translate-y-0.5 shadow-[2px_2px_0px_#0f172a] text-xs font-bangers uppercase tracking-wider transition-all cursor-pointer"
+                  aria-label={`Reveal ${file.name} in file explorer`}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border-2 border-slate-900 bg-white hover:bg-yellow-300 text-slate-900 active:translate-y-0.5 shadow-comic-sm text-xs font-bangers uppercase tracking-wider transition-all cursor-pointer"
                   title="Reveal in native file explorer"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span>Open</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isProtected}
+                  onClick={() =>
+                    setConfirmTargets([
+                      { name: file.name, path: file.path, size_bytes: file.size_bytes },
+                    ])
+                  }
+                  aria-label={
+                    isProtected
+                      ? `${file.name} is a protected system file`
+                      : `Move ${file.name} to Recycle Bin`
+                  }
+                  title={
+                    isProtected
+                      ? 'Protected system file cannot be deleted here'
+                      : settings.prefer_trash
+                      ? 'Move to Recycle Bin / Trash'
+                      : 'Delete permanently'
+                  }
+                  className="inline-flex items-center justify-center p-1.5 rounded-lg border-2 border-slate-900 bg-rose-100 hover:bg-rose-500 hover:text-white text-rose-700 active:translate-y-0.5 shadow-comic-sm transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -595,6 +759,16 @@ export const LargeFilesTab: React.FC = () => {
           </div>
         )}
       </div>
+
+      <ConfirmCleanupModal
+        isOpen={confirmTargets.length > 0}
+        targets={confirmTargets}
+        preferTrash={settings.prefer_trash}
+        unit={settings.unit}
+        isExecuting={isDeleting}
+        onConfirm={handleExecuteConfirmCleanup}
+        onCancel={() => setConfirmTargets([])}
+      />
     </div>
   );
 };

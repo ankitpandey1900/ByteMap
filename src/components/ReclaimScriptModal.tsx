@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Terminal, Copy, Check, Download, X, Sparkles } from 'lucide-react';
 import { formatBytes } from '@/lib/utils';
 
@@ -19,6 +19,18 @@ export const ReclaimScriptModal: React.FC<ReclaimScriptModalProps> = ({
 }) => {
   const [shellType, setShellType] = useState<'powershell' | 'bash'>('powershell');
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -105,7 +117,12 @@ echo "ByteMap: Done! Cleaned ${count} targets."
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reclaim-script-modal-title"
+    >
       <div className="relative w-full max-w-2xl bg-white border-4 border-slate-900 rounded-3xl shadow-[8px_8px_0px_#0f172a] p-6 text-slate-900 overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b-2.5 border-slate-900 mb-4 shrink-0">
@@ -116,7 +133,7 @@ echo "ByteMap: Done! Cleaned ${count} targets."
             <div>
               <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-md bg-sky-300 border border-slate-900 text-[10px] font-comic uppercase text-slate-900 mb-1">
                 <Sparkles className="w-3 h-3 text-slate-900" />
-                <span>What-If Sandbox Script Generator</span>
+                <span id="reclaim-script-modal-title">What-If Sandbox Script Generator</span>
               </div>
               <h3 className="font-bangers text-2xl text-slate-900 uppercase tracking-wide leading-none">
                 Export Audit Shell Script

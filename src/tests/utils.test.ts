@@ -17,12 +17,12 @@ describe('formatBytes utility', () => {
     expect(formatBytes(0, 'decimal')).toBe('0 B');
   });
 
-  it('formats binary units (1024 base) accurately', () => {
+  it('formats binary units (1024 base) cleanly with GB labels', () => {
     expect(formatBytes(512, 'binary')).toBe('512 B');
-    expect(formatBytes(1024, 'binary')).toBe('1.00 KiB');
-    expect(formatBytes(1024 * 1024, 'binary')).toBe('1.00 MiB');
-    expect(formatBytes(1536 * 1024 * 1024, 'binary')).toBe('1.50 GiB');
-    expect(formatBytes(1024 * 1024 * 1024 * 1024, 'binary')).toBe('1.00 TiB');
+    expect(formatBytes(1024, 'binary')).toBe('1.00 KB');
+    expect(formatBytes(1024 * 1024, 'binary')).toBe('1.00 MB');
+    expect(formatBytes(1536 * 1024 * 1024, 'binary')).toBe('1.50 GB');
+    expect(formatBytes(1024 * 1024 * 1024 * 1024, 'binary')).toBe('1.00 TB');
   });
 
   it('formats decimal units (1000 base) accurately', () => {
@@ -34,7 +34,7 @@ describe('formatBytes utility', () => {
   });
 
   it('handles negative bytes safely', () => {
-    expect(formatBytes(-1024, 'binary')).toBe('-1.00 KiB');
+    expect(formatBytes(-1024, 'binary')).toBe('-1.00 KB');
   });
 
   it('handles invalid input safely', () => {

@@ -18,11 +18,11 @@ const mockDrives: MockDrive[] = [
     used: 442,
     type: 'NTFS Fast Solid State',
     categories: [
-      { name: 'Apps & Games', size: 185, color: '#06b6d4', percent: 42 },
+      { name: 'Apps & Games', size: 185, color: '#ef4444', percent: 42 },
       { name: 'Video & Media', size: 110, color: '#3b82f6', percent: 25 },
       { name: 'Archives & Zips', size: 68, color: '#f59e0b', percent: 15 },
       { name: 'Documents & Code', size: 45, color: '#10b981', percent: 10 },
-      { name: 'System Temp Cache', size: 34, color: '#ef4444', percent: 8 },
+      { name: 'System Temp Cache', size: 34, color: '#6366f1', percent: 8 },
     ],
   },
   {
@@ -33,7 +33,7 @@ const mockDrives: MockDrive[] = [
     type: 'exFAT High Capacity',
     categories: [
       { name: '4K Footage & Renders', size: 320, color: '#3b82f6', percent: 52 },
-      { name: 'Git Repos & Node Modules', size: 140, color: '#6366f1', percent: 23 },
+      { name: 'Git Repos & Node Modules', size: 140, color: '#06b6d4', percent: 23 },
       { name: 'ISO Images & Installers', size: 110, color: '#f59e0b', percent: 18 },
       { name: 'Photos & RAW Assets', size: 50, color: '#ec4899', percent: 7 },
     ],
@@ -42,15 +42,13 @@ const mockDrives: MockDrive[] = [
 
 export const InteractiveDemo: React.FC = () => {
   const [selectedDriveIdx, setSelectedDriveIdx] = useState(0);
-  const [unit, setUnit] = useState<'gb' | 'gib'>('gb');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const drive = mockDrives[selectedDriveIdx];
   const percentUsed = Math.round((drive.used / drive.total) * 100);
   const freeSpace = drive.total - drive.used;
 
-  const multiplier = unit === 'gib' ? 0.9313 : 1;
-  const formatVal = (val: number) => (val * multiplier).toFixed(0);
+  const formatVal = (val: number) => val.toFixed(0);
 
   return (
     <section id="demo" className="py-20 px-4 sm:px-6 lg:px-8 bg-amber-50 border-y-3 border-slate-900 relative">
@@ -96,25 +94,12 @@ export const InteractiveDemo: React.FC = () => {
               ))}
             </div>
 
-            {/* Unit Switcher */}
-            <div className="flex items-center space-x-1 bg-white p-1 rounded-xl border-2 border-slate-900 shadow-comic-sm">
-              <span className="text-[11px] font-comic uppercase text-slate-600 px-2 font-bold">Unit:</span>
-              <button
-                onClick={() => setUnit('gb')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-comic font-bold transition-all cursor-pointer ${
-                  unit === 'gb' ? 'bg-amber-400 text-slate-900 border border-slate-900 shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                GB (1000)
-              </button>
-              <button
-                onClick={() => setUnit('gib')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-comic font-bold transition-all cursor-pointer ${
-                  unit === 'gib' ? 'bg-amber-400 text-slate-900 border border-slate-900 shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                GiB (1024)
-              </button>
+            {/* Unit Badge */}
+            <div className="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border-2 border-slate-900 shadow-comic-sm">
+              <span className="text-[11px] font-comic uppercase text-slate-600 font-bold">Unit:</span>
+              <span className="px-2 py-0.5 rounded-md bg-amber-400 text-slate-900 border border-slate-900 text-xs font-comic font-bold">
+                GB
+              </span>
             </div>
           </div>
 
@@ -131,7 +116,7 @@ export const InteractiveDemo: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs font-mono font-bold text-slate-500 mt-1">
-                  Used: {formatVal(drive.used)} {unit.toUpperCase()} of {formatVal(drive.total)} {unit.toUpperCase()} • Free: {formatVal(freeSpace)} {unit.toUpperCase()}
+                  Used: {formatVal(drive.used)} GB of {formatVal(drive.total)} GB • Free: {formatVal(freeSpace)} GB
                 </p>
               </div>
 
@@ -205,7 +190,7 @@ export const InteractiveDemo: React.FC = () => {
                         <div>
                           <p className="font-comic text-xs uppercase text-slate-900 font-bold">{cat.name}</p>
                           <p className="text-[11px] font-mono text-slate-500 font-semibold">
-                            {formatVal(cat.size)} {unit.toUpperCase()} • {cat.percent}% of drive
+                            {formatVal(cat.size)} GB • {cat.percent}% of drive
                           </p>
                         </div>
                       </div>

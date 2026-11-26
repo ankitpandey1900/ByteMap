@@ -83,10 +83,10 @@ export const DrivesTab: React.FC<DrivesTabProps> = ({ onStartScan }) => {
             <div
               key={drive.id}
               onClick={() => setSelectedDrive(drive)}
-              className={`p-4 rounded-2xl border-2.5 border-slate-900 cursor-pointer transition-all flex flex-col justify-between relative overflow-hidden comic-card-hover ${
+              className={`p-4 rounded-2xl border-2.5 cursor-pointer transition-all flex flex-col justify-between relative overflow-hidden comic-card-hover ${
                 isSelected
-                  ? 'bg-amber-100/70 shadow-[5px_5px_0px_#0f172a] -translate-y-0.5'
-                  : 'bg-white shadow-comic hover:bg-slate-50'
+                  ? 'bg-amber-100/70 dark:bg-[#16233d] border-slate-900 dark:border-amber-400 dark:ring-1 dark:ring-amber-400/40 shadow-[5px_5px_0px_#0f172a] -translate-y-0.5'
+                  : 'bg-white border-slate-900 shadow-comic hover:bg-slate-50'
               }`}
             >
               {/* Card texture */}

@@ -12,7 +12,7 @@ describe('useAppStore ephemeral state store', () => {
     const state = useAppStore.getState();
     expect(state.activeTab).toBe('overview');
     expect(state.settings.theme).toBe('light');
-    expect(state.settings.unit).toBe('binary');
+    expect(state.settings.unit).toBe('decimal');
     expect(state.settings.prefer_trash).toBe(true);
   });
 

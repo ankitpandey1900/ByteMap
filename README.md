@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.12-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.13-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
   <a href="https://bytemap.alltracker.online/"><img src="https://img.shields.io/badge/website-bytemap.alltracker.online-4F46E5?style=flat-square&logo=googlechrome&logoColor=white" alt="Website" /></a>
   <img src="https://img.shields.io/badge/platforms-Windows_%7C_macOS-0284C7?style=flat-square" alt="Platforms" />
   <img src="https://img.shields.io/badge/built_with-Rust_2021_+_Tauri_2-DEA584?style=flat-square&logo=rust" alt="Rust Tauri" />
@@ -20,9 +20,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.12/ByteMap_1.0.12_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.12/ByteMap_1.0.12_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.12/ByteMap_1.0.12_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.13/ByteMap_1.0.13_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.13/ByteMap_1.0.13_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.13/ByteMap_1.0.13_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
 </p>
 
 ---
@@ -42,7 +42,7 @@ Most disk space analyzers fall into one of two traps:
 I wanted something different:
 - **Native Rust Parallel Threads**: Chews through 100,000+ files in seconds without stuttering or dropping frames.
 - **Vibrant Pop-Art Interactive Map**: Squarified Treemap with category spotlighting instead of drab grey tables.
-- **Zero-DB Volatile Memory Architecture**: All scan metadata lives strictly in RAM while the app is running. The millisecond you close the window, **poof — zero databases, zero SQLite files, zero leftover cache**.
+- **Zero-DB Volatile Memory Architecture**: The full file scan index lives strictly in RAM while the app is running and vanishes when you close the window—zero SQLite databases or background indexers. Only lightweight Time Machine summary snapshots you opt to save are kept locally (and can be cleared anytime in Settings).
 - **Safe by Default**: Moves files to your OS Recycle Bin / Trash with instant parent folder size roll-down and a 1-click shortcut to empty the trash.
 
 ---
@@ -92,7 +92,7 @@ When you clean files or directories:
 
 ---
 
-### 6. Treemap Spotlight, AI Models Radar & Reclamation Sandbox *(New in v1.0.12)*
+### 6. Treemap Spotlight, AI Models Radar & Reclamation Sandbox *(v1.0.12)*
 - **Treemap Spotlight Search (`Ctrl+F` / `Cmd+F`)**: Instant electric yellow neon search across 500k+ files with aggregated matched bytes.
 - **AI & LLM Model Cache Radar**: Discovers and purges Ollama (`~/.ollama/models`), HuggingFace Hub, LM Studio, PyTorch checkpoints, and Chrome Gemini Nano weights.
 - **What-If Reclamation Sandbox**: Real-time visual drive expansion bar and non-destructive `.ps1` / `.sh` script generator.
@@ -112,7 +112,7 @@ Get an instant category donut breakdown, inspect the top large files from 10MB t
 
 ## Feature Comparison
 
-| Capability | ByteMap (v1.0.12) | Legacy WinDirStat | Commercial Cleaners |
+| Capability | ByteMap (v1.0.13) | Legacy WinDirStat | Commercial Cleaners |
 | :--- | :---: | :---: | :---: |
 | **Engine Speed** | Native Multi-Threaded Rust | Single-threaded Win32 | Heavy Node.js / Electron |
 | **Storage Architecture** | Zero Database (Volatile RAM) | In-Memory (No snapshots) | Persistent SQLite / Registry |

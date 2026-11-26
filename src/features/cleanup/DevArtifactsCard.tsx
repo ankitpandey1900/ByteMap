@@ -215,7 +215,7 @@ export const DevArtifactsCard: React.FC<DevArtifactsCardProps> = ({
   return (
     <div className="space-y-3">
       {/* Banner Card */}
-      <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
           <div className="w-11 h-11 rounded-xl bg-amber-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0">
             <Code2 className="w-6 h-6 text-slate-900" />

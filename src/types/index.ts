@@ -147,12 +147,13 @@ export interface TreemapNode {
 
 export interface AppSettings {
   theme: 'dark' | 'light' | 'system';
-  unit: 'binary' | 'decimal'; // binary = 1024 (GiB), decimal = 1000 (GB)
+  unit: 'binary' | 'decimal'; // decimal = 1000 (Standard GB), binary = 1024 (Windows GB)
   large_file_threshold_mb: number;
   auto_hash_duplicates: boolean;
   prefer_trash: boolean;
   show_system_files: boolean;
   default_excludes: string[];
+  auto_save_snapshot?: boolean;
 }
 
 export type ActiveTab =

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { useAppStore } from '@/lib/store';
-import { api } from '@/lib/api';
+import { api, isTauri } from '@/lib/api';
 import { ComicWallpaper } from '@/components/ComicWallpaper';
 import { ComicHeader } from '@/components/ComicHeader';
 import { ScanModal } from '@/components/ScanModal';
@@ -17,6 +18,7 @@ import { SettingsTab } from '@/features/settings/SettingsTab';
 export const App: React.FC = () => {
   const {
     activeTab,
+    settings,
     updateSettings,
     setDrives,
     setSelectedDrive,
@@ -30,14 +32,35 @@ export const App: React.FC = () => {
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [showZoomToast, setShowZoomToast] = useState(false);
 
-  // Apply zoom to document root
+  // Apply native WebView zoom in Tauri desktop app, or smooth rem scaling in browser preview
   useEffect(() => {
-    (document.documentElement.style as any).zoom = `${zoomLevel}%`;
+    let cancelled = false;
+    (document.documentElement.style as any).zoom = '';
+
+    if (isTauri) {
+      document.documentElement.style.fontSize = '';
+      getCurrentWebview()
+        .setZoom(zoomLevel / 100)
+        .catch(() => {
+          if (!cancelled) {
+            document.documentElement.style.fontSize =
+              zoomLevel === 100 ? '' : `${(16 * zoomLevel) / 100}px`;
+          }
+        });
+    } else {
+      document.documentElement.style.fontSize =
+        zoomLevel === 100 ? '' : `${(16 * zoomLevel) / 100}px`;
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [zoomLevel]);
 
   // Global Ctrl + / Ctrl - / Ctrl 0 and Ctrl + MouseWheel zoom listener
   useEffect(() => {
     let toastTimer: any = null;
+    let lastWheelAt = 0;
     const triggerZoomToast = () => {
       setShowZoomToast(true);
       if (toastTimer) clearTimeout(toastTimer);
@@ -62,10 +85,19 @@ export const App: React.FC = () => {
       }
     };
 
-    // Prevent browser default pinch-to-zoom from touchpad while restricting zoom to keyboard only
+    // Standard desktop Ctrl + MouseWheel zoom support
     const handleWheel = (e: WheelEvent) => {
       if (e.ctrlKey || e.metaKey) {
-        e.preventDefault(); // Block touchpad pinch zoom
+        e.preventDefault();
+        const now = Date.now();
+        if (now - lastWheelAt < 90 || Math.abs(e.deltaY) < 4) return;
+        lastWheelAt = now;
+        if (e.deltaY < 0) {
+          zoomIn();
+        } else {
+          zoomOut();
+        }
+        triggerZoomToast();
       }
     };
 
@@ -99,38 +131,57 @@ export const App: React.FC = () => {
     init();
   }, [setDrives, setSelectedDrive, setScanPath, updateSettings]);
 
-  // Force light comic theme
+  // Apply configured light / dark / system theme
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('dark');
-    root.classList.add('light');
-  }, []);
+    const applyTheme = (isDark: boolean) => {
+      root.classList.toggle('dark', isDark);
+      root.classList.toggle('light', !isDark);
+    };
+
+    if (settings.theme === 'dark') {
+      applyTheme(true);
+      return;
+    }
+    if (settings.theme === 'light') {
+      applyTheme(false);
+      return;
+    }
+
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+    applyTheme(Boolean(media?.matches));
+    const listener = (e: MediaQueryListEvent) => applyTheme(e.matches);
+    media?.addEventListener?.('change', listener);
+    return () => media?.removeEventListener?.('change', listener);
+  }, [settings.theme]);
 
   const handleStartScanFromDrive = (targetPath: string) => {
     setScanPath(targetPath);
     setIsScanModalOpen(true);
   };
 
+  const openScanModal = () => setIsScanModalOpen(true);
+
   const renderActiveTab = () => {
     switch (activeTab) {
       case 'overview':
-        return <DigitalKingdomView onOpenScanModal={() => setIsScanModalOpen(true)} />;
+        return <DigitalKingdomView onOpenScanModal={openScanModal} />;
       case 'drives':
         return <DrivesTab onStartScan={handleStartScanFromDrive} />;
       case 'explore':
-        return <ExplorerTab />;
+        return <ExplorerTab onOpenScanModal={openScanModal} />;
       case 'large-files':
-        return <LargeFilesTab />;
+        return <LargeFilesTab onOpenScanModal={openScanModal} />;
       case 'file-types':
-        return <FileTypesTab />;
+        return <FileTypesTab onOpenScanModal={openScanModal} />;
       case 'duplicates':
-        return <DuplicatesTab />;
+        return <DuplicatesTab onOpenScanModal={openScanModal} />;
       case 'cleanup':
-        return <CleanupTab />;
+        return <CleanupTab onOpenScanModal={openScanModal} />;
       case 'settings':
         return <SettingsTab />;
       default:
-        return <DigitalKingdomView onOpenScanModal={() => setIsScanModalOpen(true)} />;
+        return <DigitalKingdomView onOpenScanModal={openScanModal} />;
     }
   };
 

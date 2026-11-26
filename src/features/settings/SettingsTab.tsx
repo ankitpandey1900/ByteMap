@@ -9,15 +9,23 @@ import {
   Globe,
   ExternalLink,
   ZoomIn,
+  Sun,
+  Moon,
+  Monitor,
+  History,
+  Trash2,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
+import { downloadTextFile } from '@/lib/utils';
+import { getSavedSnapshots, clearAllSnapshots } from '@/lib/snapshots';
 import packageJson from '../../../package.json';
 
 export const SettingsTab: React.FC = () => {
   const { settings, updateSettings, scanSummary, zoomLevel, setZoomLevel, zoomIn, zoomOut, resetZoom } = useAppStore();
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [newExcludePattern, setNewExcludePattern] = useState('');
+  const [snapshotCount, setSnapshotCount] = useState<number>(() => getSavedSnapshots().length);
 
   const handleSave = async () => {
     try {
@@ -27,6 +35,11 @@ export const SettingsTab: React.FC = () => {
     } catch (err) {
       console.error('Failed to save settings:', err);
     }
+  };
+
+  const handleClearSnapshots = () => {
+    clearAllSnapshots();
+    setSnapshotCount(0);
   };
 
   const handleAddExclude = () => {
@@ -47,13 +60,11 @@ export const SettingsTab: React.FC = () => {
 
   const handleExportJSON = () => {
     if (!scanSummary) return;
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(scanSummary, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `bytemap-scan-report-${Date.now()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    downloadTextFile(
+      `bytemap-scan-report-${Date.now()}.json`,
+      JSON.stringify(scanSummary, null, 2),
+      'application/json;charset=utf-8'
+    );
   };
 
   const handleExportCSV = () => {
@@ -68,13 +79,11 @@ export const SettingsTab: React.FC = () => {
         f.extension,
       ]),
     ];
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n');
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', encodeURI(csvContent));
-    downloadAnchor.setAttribute('download', `bytemap-files-${Date.now()}.csv`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    downloadTextFile(
+      `bytemap-files-${Date.now()}.csv`,
+      rows.map((e) => e.join(',')).join('\n'),
+      'text/csv;charset=utf-8'
+    );
   };
 
   return (
@@ -112,6 +121,38 @@ export const SettingsTab: React.FC = () => {
         </button>
       </div>
 
+      {/* Appearance & Theme */}
+      <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
+        <h3 className="font-bangers text-base uppercase tracking-wider text-slate-900 flex items-center space-x-2">
+          <Sun className="w-4 h-4 text-amber-500" />
+          <span>Appearance & Theme</span>
+        </h3>
+        <p className="text-xs font-fredoka font-semibold text-slate-600">
+          Switch between ByteMap&apos;s signature sunny pop-art light mode, high-contrast dark mode, or follow your OS preference.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: 'light' as const, label: 'Light Comic', icon: <Sun className="w-3.5 h-3.5" /> },
+            { id: 'dark' as const, label: 'Dark Mode', icon: <Moon className="w-3.5 h-3.5" /> },
+            { id: 'system' as const, label: 'Follow OS', icon: <Monitor className="w-3.5 h-3.5" /> },
+          ].map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => updateSettings({ theme: opt.id })}
+              className={`inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase transition-all cursor-pointer ${
+                settings.theme === opt.id
+                  ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5 font-bold'
+                  : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
+              }`}
+            >
+              {opt.icon}
+              <span>{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Storage Units */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
         <h3 className="font-bangers text-base uppercase tracking-wider text-slate-900 flex items-center space-x-2">
@@ -124,8 +165,8 @@ export const SettingsTab: React.FC = () => {
             onChange={(e) => updateSettings({ unit: e.target.value as 'binary' | 'decimal' })}
             className="w-full max-w-md px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl font-comicNeue font-bold text-xs uppercase text-slate-900 focus:outline-none"
           >
-            <option value="binary">Binary Base 2 (1024 B = 1 KiB, MiB, GiB) - OS Standard</option>
-            <option value="decimal">Decimal Base 10 (1000 B = 1 KB, MB, GB) - Drive Label</option>
+            <option value="decimal">Decimal Base 10 (1000 B = 1 KB, MB, GB) - Standard</option>
+            <option value="binary">Base-1024 (1024 B = 1 KB, MB, GB) - Windows Style</option>
           </select>
         </div>
       </div>
@@ -163,7 +204,7 @@ export const SettingsTab: React.FC = () => {
             <button
               type="button"
               onClick={zoomOut}
-              disabled={zoomLevel <= 70}
+              disabled={zoomLevel <= 75}
               className="w-8 h-8 rounded-lg font-mono font-bold text-sm bg-white border border-slate-900 flex items-center justify-center hover:bg-amber-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-comic-sm"
               title="Zoom Out (Ctrl -)"
             >
@@ -175,7 +216,7 @@ export const SettingsTab: React.FC = () => {
             <button
               type="button"
               onClick={zoomIn}
-              disabled={zoomLevel >= 160}
+              disabled={zoomLevel >= 150}
               className="w-8 h-8 rounded-lg font-mono font-bold text-sm bg-white border border-slate-900 flex items-center justify-center hover:bg-amber-300 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-comic-sm"
               title="Zoom In (Ctrl +)"
             >
@@ -184,7 +225,7 @@ export const SettingsTab: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">
-            {[75, 85, 90, 95, 100, 105, 110, 125, 150].map((preset) => (
+            {[75, 80, 90, 100, 110, 125, 150].map((preset) => (
               <button
                 key={preset}
                 type="button"
@@ -305,34 +346,66 @@ export const SettingsTab: React.FC = () => {
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic space-y-3">
         <h3 className="font-comic text-sm uppercase text-slate-900 flex items-center space-x-2">
           <FileDown className="w-4 h-4 text-blue-600" />
-          <span>Report Export & Volatile Memory Privacy</span>
+          <span>Report Export, Time Machine & Privacy</span>
         </h3>
 
         <div className="p-3 bg-amber-50 rounded-xl border-2 border-slate-900 text-xs text-slate-700 font-fredoka font-semibold space-y-1">
           <div className="flex items-center space-x-2 font-comic text-slate-900 uppercase">
             <Shield className="w-4 h-4 text-emerald-600" />
-            <span>Strict Zero-Database Architecture</span>
+            <span>Volatile Scan Index + Local-Only Snapshots</span>
           </div>
           <p>
-            ByteMap stores all scan data exclusively in volatile system RAM while running. On shutdown,
-            all scanned files and paths are wiped. No local SQLite databases, no hidden background indexes,
-            and zero external telemetry network requests exist.
+            ByteMap keeps the full scan index strictly in volatile RAM and wipes it when you close the window—no
+            SQLite database and zero outbound telemetry. Only lightweight Time Machine summary snapshots you choose
+            to save (and preferences) are stored locally on your device.
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 pt-2">
+        <div className="p-3 bg-slate-50 rounded-xl border-2 border-slate-900 flex flex-wrap items-center justify-between gap-3">
+          <label className="flex items-start space-x-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={Boolean(settings.auto_save_snapshot)}
+              onChange={(e) => updateSettings({ auto_save_snapshot: e.target.checked })}
+              className="mt-0.5 w-4 h-4 rounded border-2 border-slate-900 text-blue-600 accent-blue-600 focus:ring-0 cursor-pointer"
+            />
+            <div>
+              <p className="font-comic text-xs uppercase text-slate-900 flex items-center space-x-1.5">
+                <History className="w-3.5 h-3.5 text-amber-600" />
+                <span>Auto-save Time Machine snapshot after each scan</span>
+              </p>
+              <p className="text-[11px] font-fredoka font-semibold text-slate-600">
+                Builds real Burn Velocity trends automatically without extra clicks ({snapshotCount} saved locally).
+              </p>
+            </div>
+          </label>
+
           <button
+            type="button"
+            onClick={handleClearSnapshots}
+            disabled={snapshotCount === 0}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-rose-100 hover:bg-rose-500 hover:text-white text-rose-800 font-comic text-xs uppercase shadow-comic-sm disabled:opacity-40 transition-all cursor-pointer disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Clear Snapshots ({snapshotCount})</span>
+          </button>
+        </div>
+
+        <div className="flex items-center space-x-3 pt-1">
+          <button
+            type="button"
             onClick={handleExportJSON}
             disabled={!scanSummary}
-            className="flex items-center space-x-2 px-4 py-2 border-2 border-slate-900 bg-white hover:bg-amber-200 font-comic text-xs uppercase text-slate-900 rounded-xl shadow-comic-sm disabled:opacity-40 transition-all"
+            className="flex items-center space-x-2 px-4 py-2 border-2 border-slate-900 bg-white hover:bg-amber-200 font-comic text-xs uppercase text-slate-900 rounded-xl shadow-comic-sm disabled:opacity-40 transition-all cursor-pointer disabled:cursor-not-allowed"
           >
             <FileDown className="w-4 h-4 text-slate-900" />
             <span>Export Report (JSON)</span>
           </button>
           <button
+            type="button"
             onClick={handleExportCSV}
             disabled={!scanSummary}
-            className="flex items-center space-x-2 px-4 py-2 border-2 border-slate-900 bg-white hover:bg-amber-200 font-comic text-xs uppercase text-slate-900 rounded-xl shadow-comic-sm disabled:opacity-40 transition-all"
+            className="flex items-center space-x-2 px-4 py-2 border-2 border-slate-900 bg-white hover:bg-amber-200 font-comic text-xs uppercase text-slate-900 rounded-xl shadow-comic-sm disabled:opacity-40 transition-all cursor-pointer disabled:cursor-not-allowed"
           >
             <FileDown className="w-4 h-4 text-slate-900" />
             <span>Export Table (CSV)</span>

@@ -17,6 +17,7 @@ use crate::security::PathValidator;
 
 pub struct AppScanState {
     pub current_summary: Mutex<Option<ScanSummary>>,
+    pub last_scan_options: Mutex<Option<ScanOptions>>,
     pub cancel_token: Arc<AtomicBool>,
     pub is_scanning: Arc<AtomicBool>,
 }
@@ -25,6 +26,7 @@ impl Default for AppScanState {
     fn default() -> Self {
         Self {
             current_summary: Mutex::new(None),
+            last_scan_options: Mutex::new(None),
             cancel_token: Arc::new(AtomicBool::new(false)),
             is_scanning: Arc::new(AtomicBool::new(false)),
         }
@@ -56,6 +58,7 @@ pub async fn start_scan(
 
     let mut sanitized_options = options.clone();
     sanitized_options.root_path = validated_root.to_string_lossy().to_string();
+    let options_to_store = sanitized_options.clone();
 
     let app_clone = app.clone();
     let scan_res = tauri::async_runtime::spawn_blocking(move || {
@@ -70,6 +73,10 @@ pub async fn start_scan(
 
     match scan_res {
         Ok(summary) => {
+            {
+                let mut opts_lock = state.last_scan_options.lock().unwrap();
+                *opts_lock = Some(options_to_store);
+            }
             let mut lock = state.current_summary.lock().unwrap();
             *lock = Some(summary.clone());
             let _ = app.emit(
@@ -131,8 +138,12 @@ pub fn get_scan_summary(state: State<'_, AppScanState>) -> Option<ScanSummary> {
 
 #[tauri::command]
 pub fn clear_scan_data(state: State<'_, AppScanState>) {
-    let mut lock = state.current_summary.lock().unwrap();
-    *lock = None;
+    {
+        let mut lock = state.current_summary.lock().unwrap();
+        *lock = None;
+    }
+    let mut opts_lock = state.last_scan_options.lock().unwrap();
+    *opts_lock = None;
 }
 
 #[tauri::command]
@@ -140,10 +151,21 @@ pub async fn find_duplicates(
     app: AppHandle,
     state: State<'_, AppScanState>,
 ) -> Result<Vec<DuplicateGroup>, AppError> {
-    let files = {
-        let lock = state.current_summary.lock().unwrap();
-        let summary = lock.as_ref().ok_or(AppError::NoScanData)?;
-        summary.largest_files.clone()
+    let scan_options = {
+        let opts_lock = state.last_scan_options.lock().unwrap();
+        if let Some(opts) = opts_lock.as_ref() {
+            opts.clone()
+        } else {
+            let lock = state.current_summary.lock().unwrap();
+            let summary = lock.as_ref().ok_or(AppError::NoScanData)?;
+            ScanOptions {
+                root_path: summary.root_path.clone(),
+                exclude_hidden: false,
+                exclude_patterns: vec![],
+                follow_symlinks: false,
+                deep_duplicate_scan: false,
+            }
+        }
     };
 
     let cancel_token = state.cancel_token.clone();
@@ -151,9 +173,13 @@ pub async fn find_duplicates(
 
     let app_clone = app.clone();
     let dup_res = tauri::async_runtime::spawn_blocking(move || {
-        DuplicateDetector::find_duplicates(&files, cancel_token, |processed, total| {
-            let _ = app_clone.emit("duplicate_progress", (processed, total));
-        })
+        DuplicateDetector::find_duplicates_in_root(
+            &scan_options,
+            cancel_token,
+            |processed, total| {
+                let _ = app_clone.emit("duplicate_progress", (processed, total));
+            },
+        )
     })
     .await
     .map_err(|_| AppError::General("Duplicate detection thread panicked".to_string()))??;

@@ -328,7 +328,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
   // 1. Initial State: No automatic scan on mount (user clicks when they want to scan)
   if (devCaches === null && !isScanningDevCaches) {
     return (
-      <div className="p-8 bg-gradient-to-r from-sky-50 via-indigo-50 to-amber-50 border-3 border-slate-900 rounded-2xl shadow-comic flex flex-col items-center justify-center text-center space-y-4">
+      <div className="p-8 bg-gradient-to-r from-sky-50 via-indigo-50 to-amber-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 border-3 border-slate-900 rounded-2xl shadow-comic flex flex-col items-center justify-center text-center space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-amber-400 border-3 border-slate-900 flex items-center justify-center shadow-comic-sm">
           <Sparkles className="w-8 h-8 text-slate-900" />
         </div>
@@ -377,7 +377,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Banner Card */}
-      <div className="p-4 bg-gradient-to-r from-sky-50 via-indigo-50 to-amber-50 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 bg-gradient-to-r from-sky-50 via-indigo-50 to-amber-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-3.5">
           <div className="w-12 h-12 rounded-xl bg-sky-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0">
             <Sparkles className="w-6 h-6 text-slate-900" />

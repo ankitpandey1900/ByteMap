@@ -97,6 +97,18 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Filter snapshots based on selected date range
   const filteredSnapshots = useMemo(() => {
     return filterSnapshotsByDate(snapshots, fromDate, toDate);
@@ -250,7 +262,12 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
   const targetSnapObj = snapshots.find((s) => s.id === targetSnapshotId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-xs font-sans">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-xs font-sans"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="time-machine-modal-title"
+    >
       <div className="bg-white border-3 border-slate-900 rounded-3xl max-w-4xl w-full p-4 sm:p-6 shadow-comic-xl flex flex-col max-h-[94vh] overflow-hidden text-slate-900">
         {/* Header */}
         <div className="flex items-center justify-between pb-3.5 border-b-2.5 border-slate-900 shrink-0">
@@ -263,14 +280,19 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                 <Camera className="w-3 h-3" />
                 <span>Time Machine • Storage Evolution</span>
               </div>
-              <h2 className="font-bangers text-xl sm:text-2xl uppercase tracking-wider text-slate-900 leading-tight">
+              <h2
+                id="time-machine-modal-title"
+                className="font-bangers text-xl sm:text-2xl uppercase tracking-wider text-slate-900 leading-tight"
+              >
                 Where Did My Space Go?
               </h2>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close Time Machine dialog"
             className="p-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 transition-colors shadow-comic-sm cursor-pointer"
             title="Close"
           >

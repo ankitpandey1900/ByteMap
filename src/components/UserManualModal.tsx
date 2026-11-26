@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Search,
@@ -419,8 +419,25 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
     onClose();
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-xs font-sans text-slate-900">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-xs font-sans text-slate-900"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="user-manual-modal-title"
+    >
       <div className="bg-white border-3 border-slate-900 rounded-3xl max-w-4xl w-full p-4 sm:p-6 shadow-comic-xl flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header with Creator Avatar & Badge */}
         <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 pb-3 sm:pb-4 border-b-2.5 border-slate-900 shrink-0">
@@ -437,14 +454,19 @@ export const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClos
                 <Sparkles className="w-3 h-3 text-slate-900" />
                 <span>Ankit's Handbook • Written by the Creator</span>
               </div>
-              <h2 className="font-bangers text-xl sm:text-2xl uppercase tracking-wider text-slate-900 leading-tight truncate mt-0.5">
+              <h2
+                id="user-manual-modal-title"
+                className="font-bangers text-xl sm:text-2xl uppercase tracking-wider text-slate-900 leading-tight truncate mt-0.5"
+              >
                 Hey, Let's Fix Your Storage — Ankit's Survival Guide
               </h2>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close User Guide"
             className="p-2 rounded-xl border-2 border-slate-900 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 transition-colors shadow-comic-sm cursor-pointer shrink-0"
             title="Close Guide"
           >

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   ExternalLink,
@@ -7,6 +7,7 @@ import {
   Layers,
   X,
   Calendar,
+  Trash2,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import {
@@ -23,26 +24,68 @@ import {
   ComicExploreIcon,
 } from '@/components/icons/ComicIcons';
 import { CategoryIcon } from '@/components/CategoryIcon';
-import { ScoutAvatar } from '@/components/ScoutMascot';
+import { EmptyScanState } from '@/components/EmptyScanState';
+import { ConfirmCleanupModal, ConfirmCleanupTarget } from '@/components/ConfirmCleanupModal';
 import { api } from '@/lib/api';
 
 type SortColumn = 'name' | 'size' | 'category' | 'date';
 
-export const ExplorerTab: React.FC = () => {
-  const { scanSummary, settings, setTreemapCurrentPath, setActiveTab } = useAppStore();
+interface ExplorerTabProps {
+  onOpenScanModal?: () => void;
+}
+
+export const ExplorerTab: React.FC<ExplorerTabProps> = ({ onOpenScanModal }) => {
+  const {
+    scanSummary,
+    settings,
+    setTreemapCurrentPath,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    applyCleanupResult,
+  } = useAppStore();
   const [viewMode, setViewMode] = useState<'files' | 'folders'>('files');
-  const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortCol, setSortCol] = useState<SortColumn>('size');
   const [sortDesc, setSortDesc] = useState(true);
   const [page, setPage] = useState(1);
+  const [pendingDelete, setPendingDelete] = useState<ConfirmCleanupTarget | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const pageSize = 50;
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
 
   const handleReveal = async (path: string) => {
     try {
       await api.revealInFolder(path);
     } catch (err) {
       console.error('Failed to reveal file:', err);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await api.executeCleanup(
+        [{ path: pendingDelete.path, expected_size: pendingDelete.size_bytes }],
+        settings.prefer_trash
+      );
+      const successPaths = res.results.filter((r) => r.success).map((r) => r.path);
+      const pathBytesMap: Record<string, number> = {};
+      res.results
+        .filter((r) => r.success)
+        .forEach((r) => {
+          pathBytesMap[r.path] = r.bytes_freed;
+        });
+      applyCleanupResult(res.total_freed_bytes, successPaths, pathBytesMap, settings.prefer_trash);
+      setPendingDelete(null);
+    } catch (err) {
+      console.error('Failed to clean item from Explorer:', err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -68,9 +111,9 @@ export const ExplorerTab: React.FC = () => {
     let files = scanSummary.largest_files.filter((f) => {
       if (categoryFilter !== 'all' && f.category !== categoryFilter) return false;
       if (
-        searchTerm &&
-        !f.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !f.path.toLowerCase().includes(searchTerm.toLowerCase())
+        searchQuery &&
+        !f.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !f.path.toLowerCase().includes(searchQuery.toLowerCase())
       ) {
         return false;
       }
@@ -88,16 +131,16 @@ export const ExplorerTab: React.FC = () => {
     });
 
     return files;
-  }, [scanSummary, searchTerm, categoryFilter, sortCol, sortDesc]);
+  }, [scanSummary, searchQuery, categoryFilter, sortCol, sortDesc]);
 
   const filteredFolders = useMemo(() => {
     if (!scanSummary) return [];
 
     let folders = scanSummary.largest_folders.filter((f) => {
       if (
-        searchTerm &&
-        !f.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !f.path.toLowerCase().includes(searchTerm.toLowerCase())
+        searchQuery &&
+        !f.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !f.path.toLowerCase().includes(searchQuery.toLowerCase())
       ) {
         return false;
       }
@@ -114,7 +157,7 @@ export const ExplorerTab: React.FC = () => {
     });
 
     return folders;
-  }, [scanSummary, searchTerm, sortCol, sortDesc]);
+  }, [scanSummary, searchQuery, sortCol, sortDesc]);
 
   const currentList = viewMode === 'files' ? filteredFiles : filteredFolders;
   const totalPages = Math.max(1, Math.ceil(currentList.length / pageSize));
@@ -132,57 +175,51 @@ export const ExplorerTab: React.FC = () => {
 
   if (!scanSummary) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-3 border-slate-900 shadow-[6px_6px_0px_#0f172a] select-none w-full">
-        <div className="w-20 h-20 rounded-2xl bg-amber-400 border-3 border-slate-900 shadow-[3px_3px_0px_#0f172a] flex items-center justify-center mb-4">
-          <ScoutAvatar isScanning={false} className="w-14 h-14" />
-        </div>
-        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2.5 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-bangers text-xs uppercase tracking-wider text-slate-900 mb-2">
-          Storage Explorer Idle
-        </div>
-        <h3 className="font-bangers text-3xl text-slate-900 uppercase tracking-wide mb-1 font-black">
-          Uncharted Explorer
-        </h3>
-        <p className="font-comicNeue text-sm text-slate-700 max-w-sm font-bold">
-          No files have been scouted yet. Click the <strong>ANALYZE</strong> button at the top to scout your drive and explore every file and directory.
-        </p>
-      </div>
+      <EmptyScanState
+        badge="Storage Explorer Idle"
+        title="Uncharted Explorer"
+        description="No files have been scouted yet. Run a storage scan to explore the top space-consuming files and directories."
+        onStartScan={onOpenScanModal}
+      />
     );
   }
 
   return (
     <div className="space-y-3 flex flex-col h-full w-full font-sans text-slate-900 min-h-0">
       {/* Search and Filters comic toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border-3 border-slate-900 rounded-2xl shadow-[4px_4px_0px_#0f172a]">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic">
         <div className="flex items-center space-x-3 flex-1 flex-wrap gap-2">
           {/* Mode Switcher */}
-          <div className="flex items-center p-1 bg-slate-100 border-2.5 border-slate-900 rounded-xl space-x-1 shadow-[2px_2px_0px_#0f172a]">
+          <div className="flex items-center p-1 bg-slate-100 border-2 border-slate-900 rounded-xl space-x-1 shadow-comic-sm">
             <button
+              type="button"
               onClick={() => {
                 setViewMode('files');
                 setPage(1);
               }}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bangers text-sm uppercase tracking-wider transition-all ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bangers text-sm uppercase tracking-wider transition-all cursor-pointer ${
                 viewMode === 'files'
-                  ? 'bg-amber-400 text-slate-900 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]'
+                  ? 'bg-amber-400 text-slate-900 border-2 border-slate-900 shadow-comic-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <ComicCategoryFileIcon category="document" className="w-4 h-4" />
-              <span>Files ({formatNumber(scanSummary.largest_files.length)})</span>
+              <span>Top Files ({formatNumber(scanSummary.largest_files.length)})</span>
             </button>
             <button
+              type="button"
               onClick={() => {
                 setViewMode('folders');
                 setPage(1);
               }}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bangers text-sm uppercase tracking-wider transition-all ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bangers text-sm uppercase tracking-wider transition-all cursor-pointer ${
                 viewMode === 'folders'
-                  ? 'bg-amber-400 text-slate-900 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]'
+                  ? 'bg-amber-400 text-slate-900 border-2 border-slate-900 shadow-comic-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <ComicFolderIcon className="w-4 h-4" />
-              <span>Folders ({formatNumber(scanSummary.largest_folders.length)})</span>
+              <span>Top Folders ({formatNumber(scanSummary.largest_folders.length)})</span>
             </button>
           </div>
 
@@ -191,18 +228,21 @@ export const ExplorerTab: React.FC = () => {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
             <input
               type="text"
-              placeholder={`Search ${viewMode === 'files' ? 'files by name or directory...' : 'folders...'}`}
-              value={searchTerm}
+              aria-label={`Filter ${viewMode} by name, extension, or path`}
+              placeholder={`Search top ${viewMode === 'files' ? 'files by name, .ext, or path...' : 'folders...'}`}
+              value={searchQuery}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
+                setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-9 pr-8 py-2 bg-slate-50 border-2.5 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-amber-50 focus:border-amber-500 shadow-inner"
+              className="w-full pl-9 pr-8 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-fredoka font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-amber-50 focus:border-amber-500 shadow-inner"
             />
-            {searchTerm && (
+            {searchQuery && (
               <button
-                onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                type="button"
+                aria-label="Clear search filter"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -216,12 +256,13 @@ export const ExplorerTab: React.FC = () => {
             <div className="flex items-center space-x-1.5">
               <Filter className="w-4 h-4 text-slate-800" />
               <select
+                aria-label="Filter by file category"
                 value={categoryFilter}
                 onChange={(e) => {
                   setCategoryFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-1.5 bg-slate-50 border-2.5 border-slate-900 rounded-xl font-comic text-xs uppercase font-bold text-slate-900 focus:outline-none shadow-[2px_2px_0px_#0f172a] cursor-pointer"
+                className="px-3 py-1.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-comic text-xs uppercase font-bold text-slate-900 focus:outline-none shadow-comic-sm cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 <option value="video">🎬 Videos</option>
@@ -237,55 +278,55 @@ export const ExplorerTab: React.FC = () => {
             </div>
           )}
 
-          <div className="flex items-center space-x-1.5 font-comic text-xs uppercase font-black text-slate-900 px-3 py-1.5 rounded-xl bg-yellow-300 border-2.5 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+          <div className="flex items-center space-x-1.5 font-comic text-xs uppercase font-black text-slate-900 px-3 py-1.5 rounded-xl bg-yellow-300 border-2 border-slate-900 shadow-comic-sm">
             <ComicExploreIcon className="w-4 h-4" />
-            <span>{formatNumber(currentList.length)} Items</span>
+            <span>{formatNumber(currentList.length)} Matches</span>
           </div>
         </div>
       </div>
 
       {/* Explorer Comic Table */}
-      <div className="flex-1 bg-white rounded-2xl border-3 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden flex flex-col min-h-0 w-full">
+      <div className="flex-1 bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic overflow-hidden flex flex-col min-h-0 w-full">
         <div className="overflow-x-auto flex-1 w-full">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b-3 border-slate-900 bg-amber-200 text-slate-900 font-bangers uppercase tracking-wider select-none text-sm">
+              <tr className="border-b-2 border-slate-900 bg-amber-200 dark:bg-slate-800 text-slate-900 dark:text-amber-300 font-bangers uppercase tracking-wider select-none text-sm">
                 <th
                   onClick={() => handleSort('name')}
-                  className="py-3 px-4 cursor-pointer hover:bg-amber-300 transition-colors w-auto"
+                  className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors w-auto"
                 >
                   <div className="flex items-center space-x-1">
                     <span>Name & Location</span>
-                    <ArrowUpDown className="w-3.5 h-3.5 text-slate-700" />
+                    <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('size')}
-                  className="py-3 px-4 cursor-pointer hover:bg-amber-300 transition-colors text-right w-40"
+                  className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors text-right w-40"
                 >
                   <div className="flex items-center justify-end space-x-1">
                     <span>Size</span>
-                    <ArrowUpDown className="w-3.5 h-3.5 text-slate-700" />
+                    <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
                   </div>
                 </th>
                 {viewMode === 'files' ? (
                   <>
                     <th
                       onClick={() => handleSort('category')}
-                      className="py-3 px-4 cursor-pointer hover:bg-amber-300 transition-colors w-36 text-center"
+                      className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors w-36 text-center"
                     >
                       <div className="flex items-center justify-center space-x-1">
                         <span>Category</span>
-                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-700" />
+                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
                       </div>
                     </th>
                     <th
                       onClick={() => handleSort('date')}
-                      className="py-3 px-4 cursor-pointer hover:bg-amber-300 transition-colors w-44 text-right"
+                      className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors w-44 text-right"
                     >
                       <div className="flex items-center justify-end space-x-1">
                         <span>Modified</span>
-                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-700" />
+                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
                       </div>
                     </th>
                   </>
@@ -371,10 +412,9 @@ export const ExplorerTab: React.FC = () => {
                         {/* Category Pill */}
                         <td className="py-2.5 px-4 text-center whitespace-nowrap">
                           <span
-                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-bangers uppercase tracking-wider border-2 border-slate-900 dark:border-slate-600 shadow-[2px_2px_0px_#0f172a] text-slate-900 dark:text-slate-100"
                             style={{
-                              backgroundColor: `${catColor}25`,
-                              color: '#0f172a',
+                              backgroundColor: `${catColor}28`,
                             }}
                           >
                             <CategoryIcon category={file.category} className="w-3.5 h-3.5" />
@@ -390,16 +430,46 @@ export const ExplorerTab: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Action: Reveal in Folder */}
+                        {/* Actions: Reveal in Folder + Direct Trash */}
                         <td className="py-2.5 px-4 text-center whitespace-nowrap">
-                          <button
-                            onClick={() => handleReveal(file.path)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-yellow-300 active:translate-y-0.5 shadow-[2px_2px_0px_#0f172a] text-xs font-bangers uppercase tracking-wider transition-all"
-                            title="Reveal in File Explorer"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5 text-slate-900" />
-                            <span>Open</span>
-                          </button>
+                          <div className="flex items-center justify-center space-x-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleReveal(file.path)}
+                              aria-label={`Reveal ${file.name} in file explorer`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-yellow-300 active:translate-y-0.5 shadow-comic-sm text-xs font-bangers uppercase tracking-wider transition-all cursor-pointer"
+                              title="Reveal in File Explorer"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-slate-900" />
+                              <span>Open</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={file.is_system || intel.isSystem}
+                              onClick={() =>
+                                setPendingDelete({
+                                  name: file.name,
+                                  path: file.path,
+                                  size_bytes: file.size_bytes,
+                                })
+                              }
+                              aria-label={
+                                file.is_system || intel.isSystem
+                                  ? `${file.name} is a protected system file`
+                                  : `Move ${file.name} to Recycle Bin`
+                              }
+                              title={
+                                file.is_system || intel.isSystem
+                                  ? 'Protected system file cannot be deleted here'
+                                  : settings.prefer_trash
+                                  ? 'Move to Recycle Bin / Trash'
+                                  : 'Delete permanently'
+                              }
+                              className="inline-flex items-center justify-center p-1.5 rounded-lg border-2 border-slate-900 bg-rose-100 hover:bg-rose-500 hover:text-white text-rose-700 active:translate-y-0.5 shadow-comic-sm transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -482,32 +552,44 @@ export const ExplorerTab: React.FC = () => {
         </div>
 
         {/* Comic Pagination Bar */}
-        <div className="p-3 border-t-3 border-slate-900 bg-amber-50 flex items-center justify-between flex-wrap gap-2 text-xs font-fredoka font-bold text-slate-700 w-full">
+        <div className="p-3 border-t-2.5 border-slate-900 bg-amber-50 dark:bg-[#131d31] flex items-center justify-between flex-wrap gap-2 text-xs font-fredoka font-bold text-slate-700 w-full">
           <span className="font-comic font-bold text-slate-800">
-            Showing {(page - 1) * pageSize + 1}–
+            Showing {currentList.length === 0 ? 0 : (page - 1) * pageSize + 1}–
             {Math.min(page * pageSize, currentList.length)} of {formatNumber(currentList.length)} items
           </span>
           <div className="flex items-center space-x-2">
             <button
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-amber-300 font-comic uppercase font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-40 transition-all active:translate-y-0.5 cursor-pointer"
+              className="px-3 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-amber-300 font-comic uppercase font-black shadow-comic-sm disabled:opacity-40 transition-all active:translate-y-0.5 cursor-pointer"
             >
               Prev
             </button>
-            <span className="font-comic font-black text-slate-900 px-3 py-1 rounded-md bg-amber-200 border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]">
+            <span className="font-comic font-black text-slate-900 px-3 py-1 rounded-md bg-amber-200 border-2 border-slate-900 shadow-comic-sm">
               {page} / {totalPages}
             </span>
             <button
+              type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-amber-300 font-comic uppercase font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-40 transition-all active:translate-y-0.5 cursor-pointer"
+              className="px-3 py-1 rounded-lg border-2 border-slate-900 bg-white hover:bg-amber-300 font-comic uppercase font-black shadow-comic-sm disabled:opacity-40 transition-all active:translate-y-0.5 cursor-pointer"
             >
               Next
             </button>
           </div>
         </div>
       </div>
+
+      <ConfirmCleanupModal
+        isOpen={Boolean(pendingDelete)}
+        targets={pendingDelete ? [pendingDelete] : []}
+        preferTrash={settings.prefer_trash}
+        unit={settings.unit}
+        isExecuting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 };

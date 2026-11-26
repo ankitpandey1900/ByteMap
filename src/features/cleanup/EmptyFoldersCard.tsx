@@ -127,7 +127,7 @@ export const EmptyFoldersCard: React.FC<EmptyFoldersCardProps> = ({
   return (
     <div className="space-y-3">
       {/* Banner */}
-      <div className="p-4 bg-gradient-to-r from-sky-50 to-blue-50 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
           <div className="w-11 h-11 rounded-xl bg-sky-300 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0">
             <FolderMinus className="w-6 h-6 text-slate-900" />

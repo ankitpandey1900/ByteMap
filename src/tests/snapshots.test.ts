@@ -4,6 +4,8 @@ import {
   filterSnapshotsByDate,
   computeSnapshotToSnapshotDiff,
   computeStorageDiff,
+  getSavedSnapshots,
+  clearAllSnapshots,
 } from '@/lib/snapshots';
 import { ScanSummary } from '@/types';
 
@@ -125,5 +127,12 @@ describe('Snapshots & Time Machine helpers', () => {
     const diff = computeStorageDiff(scan, mockSnapA);
     expect(diff.delta_bytes).toBe(150 * 1024 * 1024);
     expect(diff.delta_files).toBe(70);
+  });
+
+  it('clearAllSnapshots removes persisted snapshots from localStorage', () => {
+    localStorage.setItem('bytemap_storage_snapshots_v1', JSON.stringify([mockSnapA]));
+    expect(getSavedSnapshots()).toHaveLength(1);
+    clearAllSnapshots();
+    expect(getSavedSnapshots()).toHaveLength(0);
   });
 });

@@ -20,8 +20,13 @@ import {
 import { api, CleanupExecutionResult } from '@/lib/api';
 import { DuplicateGroup, ScannedFile } from '@/types';
 import { CategoryIcon } from '@/components/CategoryIcon';
+import { EmptyScanState } from '@/components/EmptyScanState';
 
-export const DuplicatesTab: React.FC = () => {
+interface DuplicatesTabProps {
+  onOpenScanModal?: () => void;
+}
+
+export const DuplicatesTab: React.FC<DuplicatesTabProps> = ({ onOpenScanModal }) => {
   const {
     scanSummary,
     settings,
@@ -196,20 +201,12 @@ export const DuplicatesTab: React.FC = () => {
 
   if (!scanSummary) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
-        <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
-          <Copy className="w-8 h-8 text-slate-900" />
-        </div>
-        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
-          Duplicate Engine Idle
-        </div>
-        <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
-          Scan Required First
-        </h3>
-        <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
-          All scan data lives exclusively in volatile RAM. Start a scan on any drive or directory, then run the BLAKE3 duplicate engine.
-        </p>
-      </div>
+      <EmptyScanState
+        badge="Duplicate Engine Idle"
+        title="Scan Required First"
+        description="Run a scan on any drive or directory, then launch the cryptographic BLAKE3 duplicate detector across the scanned tree."
+        onStartScan={onOpenScanModal}
+      />
     );
   }
 

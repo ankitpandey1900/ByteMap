@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Layers,
-  FileCode,
-  Film,
-  Image,
-  Music,
-  Archive,
-  Terminal,
-  Gamepad,
-  File,
-  Shield,
-} from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBytes, formatNumber, getCategoryColor } from '@/lib/utils';
-import { FileCategory } from '@/types';
+import { EmptyScanState } from '@/components/EmptyScanState';
+import { CategoryIcon } from '@/components/CategoryIcon';
 
-export const FileTypesTab: React.FC = () => {
+interface FileTypesTabProps {
+  onOpenScanModal?: () => void;
+}
+
+export const FileTypesTab: React.FC<FileTypesTabProps> = ({ onOpenScanModal }) => {
   const { scanSummary, settings, setActiveTab, setSearchQuery } = useAppStore();
   const [selectedCat, setSelectedCat] = useState<string>('all');
 
@@ -32,47 +26,14 @@ export const FileTypesTab: React.FC = () => {
     return ext.category === selectedCat;
   });
 
-  const getCategoryIcon = (category: FileCategory) => {
-    switch (category) {
-      case 'video':
-        return <Film className="w-4 h-4 text-blue-600" />;
-      case 'image':
-        return <Image className="w-4 h-4 text-pink-600" />;
-      case 'audio':
-        return <Music className="w-4 h-4 text-purple-600" />;
-      case 'document':
-        return <File className="w-4 h-4 text-emerald-600" />;
-      case 'archive':
-        return <Archive className="w-4 h-4 text-amber-600" />;
-      case 'app':
-        return <Terminal className="w-4 h-4 text-cyan-600" />;
-      case 'system':
-        return <Shield className="w-4 h-4 text-indigo-600" />;
-      case 'dev':
-        return <FileCode className="w-4 h-4 text-indigo-600" />;
-      case 'game':
-        return <Gamepad className="w-4 h-4 text-orange-600" />;
-      default:
-        return <Layers className="w-4 h-4 text-slate-600" />;
-    }
-  };
-
   if (!scanSummary || categories.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[420px] p-8 text-center bg-white rounded-2xl border-2.5 border-slate-900 shadow-comic select-none">
-        <div className="w-16 h-16 rounded-2xl bg-amber-400 border-2.5 border-slate-900 shadow-comic flex items-center justify-center mb-4">
-          <Layers className="w-8 h-8 text-slate-900" />
-        </div>
-        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-comic text-xs uppercase tracking-wide text-slate-900 mb-2">
-          File Types Idle
-        </div>
-        <h3 className="font-comic text-xl text-slate-900 uppercase tracking-wide mb-1">
-          No File Types Scouted Yet
-        </h3>
-        <p className="font-fredoka text-xs text-slate-600 max-w-sm font-semibold">
-          Click <strong>ANALYZE</strong> to scout your drive and analyze category distributions and file extension volumes.
-        </p>
-      </div>
+      <EmptyScanState
+        badge="File Types Idle"
+        title="No File Types Scouted Yet"
+        description="Run a storage scan to break down your disk space by file category and top space-consuming extensions."
+        onStartScan={onOpenScanModal}
+      />
     );
   }
 
@@ -101,10 +62,10 @@ export const FileTypesTab: React.FC = () => {
             <div
               key={cat.category}
               onClick={() => setSelectedCat(isSelected ? 'all' : cat.category)}
-              className={`p-3.5 rounded-2xl border-2.5 border-slate-900 cursor-pointer transition-all flex flex-col justify-between comic-card-hover ${
+              className={`p-3.5 rounded-2xl border-2.5 cursor-pointer transition-all flex flex-col justify-between comic-card-hover ${
                 isSelected
-                  ? 'bg-amber-100 shadow-[5px_5px_0px_#0f172a] -translate-y-0.5'
-                  : 'bg-white shadow-comic hover:bg-slate-50'
+                  ? 'bg-amber-100 dark:bg-[#16233d] border-slate-900 dark:border-amber-400 dark:ring-1 dark:ring-amber-400/40 shadow-[5px_5px_0px_#0f172a] -translate-y-0.5'
+                  : 'bg-white border-slate-900 shadow-comic hover:bg-slate-50'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
@@ -117,7 +78,7 @@ export const FileTypesTab: React.FC = () => {
                     {cat.category}
                   </h3>
                 </div>
-                {getCategoryIcon(cat.category)}
+                <CategoryIcon category={cat.category} className="w-4 h-4" />
               </div>
 
               <div className="text-2xl font-mono font-bold text-slate-900 mt-1 tabular-nums">

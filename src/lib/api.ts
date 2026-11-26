@@ -276,6 +276,7 @@ export const api = {
         '.git',
         'node_modules',
       ],
+      auto_save_snapshot: false,
     };
   },
 

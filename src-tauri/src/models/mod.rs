@@ -173,13 +173,15 @@ pub struct AppSettings {
     pub prefer_trash: bool,
     pub show_system_files: bool,
     pub default_excludes: Vec<String>,
+    #[serde(default)]
+    pub auto_save_snapshot: bool,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            theme: "dark".to_string(),
-            unit: "binary".to_string(),
+            theme: "light".to_string(),
+            unit: "decimal".to_string(),
             large_file_threshold_mb: 100,
             auto_hash_duplicates: false,
             prefer_trash: true,
@@ -190,6 +192,7 @@ impl Default for AppSettings {
                 ".git".to_string(),
                 "node_modules".to_string(),
             ],
+            auto_save_snapshot: false,
         }
     }
 }

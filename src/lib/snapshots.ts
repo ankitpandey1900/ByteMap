@@ -97,6 +97,14 @@ export function deleteSnapshot(id: string): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshots));
 }
 
+export function clearAllSnapshots(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (err) {
+    console.warn('Failed to clear snapshots:', err);
+  }
+}
+
 export function computeStorageDiff(
   current: ScanSummary,
   snapshot: StorageSnapshot

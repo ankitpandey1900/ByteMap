@@ -2,14 +2,14 @@ import React from 'react';
 
 export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#38bdf8] flex flex-col p-1 sm:p-1.5 md:p-2 min-h-0 min-w-0">
-      {/* Background Effects Layer */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Authentic Ben-Day halftone print dots overlay — flat retro newsprint style */}
-        <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:16px_16px]" />
+    <div className="relative w-full h-full overflow-hidden bg-[#38bdf8] dark:bg-[#06080d] flex flex-col p-1 sm:p-1.5 md:p-2 min-h-0 min-w-0 transition-colors duration-200">
+      {/* Light Mode Pop-Art Sky Backdrop */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden dark:hidden">
+        {/* Authentic Ben-Day halftone print dots overlay */}
+        <div className="absolute inset-0 opacity-25 dark:opacity-10 bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:16px_16px]" />
 
         {/* Floating cloud — left, gently bouncing */}
-        <div className="absolute top-6 left-6 opacity-90 animate-comic-float">
+        <div className="absolute top-6 left-6 opacity-90 dark:opacity-10 animate-comic-float">
           <svg width="180" height="90" viewBox="0 0 180 90" fill="none">
             <path
               d="M30 70 C15 70 0 58 0 42 C0 28 12 16 28 16 C34 6 48 0 65 0 C86 0 102 10 110 26 C116 22 124 20 132 20 C148 20 160 32 160 48 C172 48 180 58 180 70 C180 82 170 90 156 90 L30 90 Z"
@@ -22,7 +22,7 @@ export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ childr
         </div>
 
         {/* Floating cloud — right, with slight delay */}
-        <div className="absolute top-10 right-8 opacity-90" style={{ animation: 'comic-float 4s ease-in-out 0.5s infinite' }}>
+        <div className="absolute top-10 right-8 opacity-90 dark:opacity-10" style={{ animation: 'comic-float 4s ease-in-out 0.5s infinite' }}>
           <svg width="220" height="110" viewBox="0 0 220 110" fill="none">
             <path
               d="M36 85 C18 85 0 70 0 52 C0 34 16 20 34 20 C42 8 58 0 80 0 C105 0 124 12 134 32 C142 27 152 25 162 25 C182 25 196 40 196 60 C210 60 220 72 220 86 C220 100 208 110 190 110 L36 110 Z"
@@ -35,7 +35,7 @@ export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ childr
         </div>
 
         {/* Small accent cloud — center-top, very gentle float */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/3 opacity-60" style={{ animation: 'comic-float 5s ease-in-out 1s infinite' }}>
+        <div className="absolute top-4 left-1/2 -translate-x-1/3 opacity-60 dark:opacity-5" style={{ animation: 'comic-float 5s ease-in-out 1s infinite' }}>
           <svg width="100" height="50" viewBox="0 0 100 50" fill="none">
             <path
               d="M15 40 C7 40 0 33 0 24 C0 16 7 10 16 10 C18 4 26 0 36 0 C48 0 56 6 60 14 C63 12 67 11 72 11 C82 11 88 18 88 27 C94 27 100 32 100 39 C100 45 94 50 86 50 L15 50 Z"
@@ -48,9 +48,9 @@ export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ childr
         </div>
 
         {/* Playful cartoon sparkle stars */}
-        <div className="absolute top-16 left-[20%] text-xl opacity-40 animate-pulse-subtle">✦</div>
-        <div className="absolute top-28 right-[15%] text-lg opacity-30" style={{ animation: 'pulse-subtle 2.5s ease-in-out 0.7s infinite' }}>✧</div>
-        <div className="absolute top-8 right-[40%] text-sm opacity-25 animate-pulse-subtle">⭐</div>
+        <div className="absolute top-16 left-[20%] text-xl opacity-40 dark:opacity-15 animate-pulse-subtle">✦</div>
+        <div className="absolute top-28 right-[15%] text-lg opacity-30 dark:opacity-10" style={{ animation: 'pulse-subtle 2.5s ease-in-out 0.7s infinite' }}>✧</div>
+        <div className="absolute top-8 right-[40%] text-sm opacity-25 dark:opacity-10 animate-pulse-subtle">⭐</div>
 
         {/* Mountain Silhouettes at bottom — layered for depth */}
         <div className="absolute bottom-0 inset-x-0 h-44 opacity-30">
@@ -71,8 +71,19 @@ export const ComicWallpaper: React.FC<{ children: React.ReactNode }> = ({ childr
         </div>
       </div>
 
+      {/* Dark Mode Ambient Studio Glow */}
+      <div className="hidden dark:block absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        <div
+          className="w-full h-full"
+          style={{
+            background:
+              'radial-gradient(ellipse 80% 45% at 50% -10%, rgba(56, 189, 248, 0.14), transparent 70%), radial-gradient(ellipse 60% 40% at 85% 105%, rgba(245, 158, 11, 0.08), transparent 65%)',
+          }}
+        />
+      </div>
+
       {/* Main ByteMap Window Container */}
-      <div className="relative z-10 flex-1 flex flex-col rounded-2xl border-3 border-slate-900 bg-slate-100 dark:bg-slate-950 shadow-comic-xl overflow-hidden min-h-0 min-w-0">
+      <div className="relative z-10 flex-1 flex flex-col rounded-2xl border-3 border-slate-900 dark:border dark:border-white/10 bg-slate-100 dark:bg-[#0b0e14] shadow-comic-xl overflow-hidden min-h-0 min-w-0">
         {/* Inner App Content (Clean full height without fake titlebar) */}
         <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
           {children}

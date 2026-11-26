@@ -82,8 +82,8 @@ impl Scanner {
         let mut scanned_bytes: u64 = 0;
         let mut errors: Vec<ScanError> = Vec::new();
 
-        // 1. Fixed-size streaming Min-Heap for Top 100 largest files (drops RAM from 800MB to <50KB)
-        const MAX_LARGEST_FILES: usize = 100;
+        // 1. Fixed-size streaming Min-Heap for Top 500 largest files (keeps RAM tiny while expanding Explorer coverage)
+        const MAX_LARGEST_FILES: usize = 500;
         let mut largest_files_heap: BinaryHeap<LargestFileCandidate> =
             BinaryHeap::with_capacity(MAX_LARGEST_FILES + 1);
 
@@ -402,8 +402,8 @@ impl Scanner {
         // Bottom-up hierarchical rollup: compute recursive folder sizes in one quick pass
         let rolled_up_folders = Self::rollup_directory_hierarchy(direct_dir_sizes);
 
-        // Top 50 largest folders
-        let largest_folders: Vec<ScannedFolder> = rolled_up_folders.into_iter().take(50).collect();
+        // Top 250 largest folders (enables deeper Explorer & Treemap drilldown)
+        let largest_folders: Vec<ScannedFolder> = rolled_up_folders.into_iter().take(250).collect();
 
         // Category summaries
         let mut categories: Vec<CategorySummary> = category_map
