@@ -2,7 +2,7 @@
 // Google Analytics 4 (GA4) integration for ByteMap
 
 // Reads from Vercel / Vite environment variables (GA_MEASUREMENT_ID)
-export const GA_MEASUREMENT_ID: string =
+const GA_MEASUREMENT_ID: string =
   (import.meta as any)?.env?.GA_MEASUREMENT_ID ||
   (import.meta as any)?.env?.VITE_GA_MEASUREMENT_ID ||
   (import.meta as any)?.env?.VITE_GA_ID ||

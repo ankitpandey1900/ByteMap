@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   ShieldAlert,
   Trash2,
-  AlertTriangle,
   CheckCircle2,
   Sparkles,
 } from 'lucide-react';
@@ -16,10 +15,12 @@ import {
   formatDate,
   cleanDisplayPath,
   getFileIntelligence,
+  buildFreedBytesMap,
 } from '@/lib/utils';
 import { api, CleanupExecutionResult } from '@/lib/api';
 import { DuplicateGroup, ScannedFile } from '@/types';
 import { CategoryIcon } from '@/components/CategoryIcon';
+import { ConfirmCleanupModal } from '@/components/ConfirmCleanupModal';
 import { EmptyScanState } from '@/components/EmptyScanState';
 
 interface DuplicatesTabProps {
@@ -158,16 +159,12 @@ export const DuplicatesTab: React.FC<DuplicatesTabProps> = ({ onOpenScanModal })
       const successPaths = new Set(
         res.results.filter((r) => r.success).map((r) => r.path.toLowerCase())
       );
-      const pathBytesMap: Record<string, number> = {};
-      res.results.filter((r) => r.success).forEach((r) => {
-        pathBytesMap[r.path] = r.bytes_freed;
-      });
 
       // Update in-memory storage gauges and scanSummary with 0ms delay
       applyCleanupResult(
         res.total_freed_bytes,
         res.results.filter((r) => r.success).map((r) => r.path),
-        pathBytesMap,
+        buildFreedBytesMap(res.results),
         settings.prefer_trash
       );
 
@@ -528,69 +525,21 @@ export const DuplicatesTab: React.FC<DuplicatesTabProps> = ({ onOpenScanModal })
         </div>
       )}
 
-      {/* Direct Deletion Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border-3 border-slate-900 p-6 max-w-md w-full shadow-comic-lg space-y-4 animate-comic-pop">
-            <div className="flex items-center space-x-3 text-rose-600">
-              <AlertTriangle className="w-8 h-8 shrink-0" />
-              <div>
-                <h3 className="font-bangers text-xl text-slate-900 uppercase tracking-wide">
-                  Move Duplicate Copies to Trash?
-                </h3>
-                <p className="text-xs font-fredoka font-bold text-slate-600">
-                  {settings.prefer_trash
-                    ? 'Target files will be moved safely to your OS Recycle Bin / Trash.'
-                    : 'Target files will be permanently deleted from disk.'}
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3 bg-amber-50 border-2 border-slate-900 rounded-xl space-y-1.5 text-xs font-fredoka">
-              <div className="flex justify-between font-bold text-slate-900">
-                <span>Selected duplicate copies:</span>
-                <span className="font-comic">{selectedDuplicateFiles.length} files</span>
-              </div>
-              <div className="flex justify-between font-bold text-slate-900">
-                <span>Disk space to reclaim:</span>
-                <span className="font-comic text-emerald-700">
-                  {formatBytes(totalSelectedBytes, settings.unit)}
-                </span>
-              </div>
-              <div className="flex justify-between text-slate-600 text-[11px] pt-1 border-t border-slate-300">
-                <span>Original copies:</span>
-                <span className="text-emerald-700 font-bold">100% Preserved</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end space-x-3 pt-2">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 border-2 border-slate-900 rounded-xl font-comic text-xs uppercase hover:bg-slate-100 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExecuteDelete}
-                disabled={isDeleting}
-                className="flex items-center space-x-2 px-5 py-2 bg-rose-500 hover:bg-rose-400 text-white font-bangers text-sm uppercase tracking-wider border-2 border-slate-900 rounded-xl shadow-comic transition-all cursor-pointer disabled:opacity-50"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Cleaning...</span>
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4" />
-                    <span>Confirm & Move to Trash</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Shared Accessible Confirmation Modal */}
+      <ConfirmCleanupModal
+        isOpen={showConfirmModal}
+        targets={selectedDuplicateFiles.map((f) => ({
+          name: f.name,
+          path: f.path,
+          size_bytes: f.size_bytes,
+        }))}
+        preferTrash={settings.prefer_trash}
+        unit={settings.unit}
+        isExecuting={isDeleting}
+        title={settings.prefer_trash ? 'Move Duplicate Copies to Trash?' : 'Permanently Delete Duplicates?'}
+        onConfirm={handleExecuteDelete}
+        onCancel={() => setShowConfirmModal(false)}
+      />
     </div>
   );
 };

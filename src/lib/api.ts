@@ -215,7 +215,6 @@ export const api = {
     if (isTauri) {
       return await invoke<void>('reveal_in_folder', { path });
     }
-    console.log('Reveal in explorer (web preview):', path);
   },
 
   // Open native OS Recycle Bin / Trash folder
@@ -227,7 +226,6 @@ export const api = {
         console.error('Failed to open recycle bin:', err);
       }
     }
-    console.log('Open recycle bin (web preview)');
   },
 
   // Open external URL in system browser

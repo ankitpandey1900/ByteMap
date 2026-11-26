@@ -16,7 +16,7 @@ import { useAppStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { cleanDisplayPath } from '@/lib/utils';
 
-export interface ComicFolderPickerModalProps {
+interface ComicFolderPickerModalProps {
   isOpen: boolean;
   initialPath?: string;
   onClose: () => void;

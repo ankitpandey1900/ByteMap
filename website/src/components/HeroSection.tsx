@@ -2,63 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Download, ShieldCheck, Zap, HardDrive, CheckCircle2, Sparkles, Apple, Eye } from 'lucide-react';
 import { GithubIcon } from './GithubIcon';
 import { trackDownloadClick } from '../lib/analytics';
+import { useReleaseAssets } from '../lib/useReleaseAssets';
 
 export const HeroSection: React.FC = () => {
-  const [downloadCount, setDownloadCount] = useState<number>(57);
+  const { downloadCount, exeUrl, dmgUrl, msiUrl } = useReleaseAssets();
   const [visitorCount, setVisitorCount] = useState<number>(330);
-  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_x64-setup.exe');
-  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_universal.dmg');
-  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_x64_en-US.msi');
 
   useEffect(() => {
-    // 1. Fetch live GitHub Release download metrics
-    fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          let total = 0;
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              for (const asset of rel.assets) {
-                total += asset.download_count || 0;
-              }
-            }
-          }
-          if (total > 0) setDownloadCount(total);
-
-          // Find direct asset URLs across releases
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              const dmg = rel.assets.find((a: any) => a.name.endsWith('.dmg'));
-              if (dmg && dmg.browser_download_url) {
-                setDmgUrl(dmg.browser_download_url);
-                break;
-              }
-            }
-          }
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              const exe = rel.assets.find((a: any) => a.name.endsWith('.exe'));
-              if (exe && exe.browser_download_url) {
-                setExeUrl(exe.browser_download_url);
-                break;
-              }
-            }
-          }
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              const msi = rel.assets.find((a: any) => a.name.endsWith('.msi'));
-              if (msi && msi.browser_download_url) {
-                setMsiUrl(msi.browser_download_url);
-                break;
-              }
-            }
-          }
-        }
-      })
-      .catch(() => {});
-
-    // 2. Free live visitor counter with baseline for past visitors
+    // Live visitor counter with baseline for prior visitors
     const BASELINE_PREVIOUS_VISITORS = 180;
     try {
       const hasCountedSession = sessionStorage.getItem('bytemap_visitor_counted');

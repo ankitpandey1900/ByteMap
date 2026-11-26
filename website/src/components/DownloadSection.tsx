@@ -1,62 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Download, ShieldCheck, Check, Copy, ExternalLink, HardDrive, Terminal, Apple } from 'lucide-react';
 import { trackDownloadClick } from '../lib/analytics';
+import { useReleaseAssets } from '../lib/useReleaseAssets';
 
 export const DownloadSection: React.FC = () => {
   const [copiedWinget, setCopiedWinget] = useState(false);
   const [copiedMac, setCopiedMac] = useState(false);
-  const [downloadCount, setDownloadCount] = useState<number>(57);
-  const [exeUrl, setExeUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_x64-setup.exe');
-  const [dmgUrl, setDmgUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_universal.dmg');
-  const [msiUrl, setMsiUrl] = useState<string>('https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_x64_en-US.msi');
-
-  useEffect(() => {
-    fetch('https://api.github.com/repos/ankitpandey1900/ByteMap/releases')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          let total = 0;
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              for (const asset of rel.assets) {
-                total += asset.download_count || 0;
-              }
-            }
-          }
-          if (total > 0) setDownloadCount(total);
-
-          // Find direct asset URLs across releases
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              const dmg = rel.assets.find((a: any) => a.name.endsWith('.dmg'));
-              if (dmg && dmg.browser_download_url) {
-                setDmgUrl(dmg.browser_download_url);
-                break;
-              }
-            }
-          }
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              const exe = rel.assets.find((a: any) => a.name.endsWith('.exe'));
-              if (exe && exe.browser_download_url) {
-                setExeUrl(exe.browser_download_url);
-                break;
-              }
-            }
-          }
-          for (const rel of data) {
-            if (Array.isArray(rel.assets)) {
-              const msi = rel.assets.find((a: any) => a.name.endsWith('.msi'));
-              if (msi && msi.browser_download_url) {
-                setMsiUrl(msi.browser_download_url);
-                break;
-              }
-            }
-          }
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const { downloadCount, exeUrl, dmgUrl, msiUrl } = useReleaseAssets();
 
   const handleCopyWinget = () => {
     navigator.clipboard.writeText('winget install ankitpandey1900.ByteMap');

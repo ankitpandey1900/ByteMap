@@ -1,7 +1,7 @@
 import React from 'react';
 import { Compass, ShieldCheck } from 'lucide-react';
 
-export interface ScoutAvatarProps {
+interface ScoutAvatarProps {
   className?: string;
   isScanning?: boolean;
 }
@@ -225,7 +225,7 @@ export const ScoutAvatar: React.FC<ScoutAvatarProps> = ({
   );
 };
 
-export interface ScoutMascotProps {
+interface ScoutMascotProps {
   className?: string;
   isScanning?: boolean;
   statusText?: string;

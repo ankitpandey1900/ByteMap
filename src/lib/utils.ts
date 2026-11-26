@@ -263,3 +263,18 @@ export function getFileIntelligence(fileName: string, filePath: string): FileInt
     isDependency: false,
   };
 }
+
+/**
+ * Builds a path-to-freed-bytes lookup map from successful cleanup results.
+ */
+export function buildFreedBytesMap(
+  results: Array<{ path: string; success: boolean; bytes_freed: number }>
+): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const r of results) {
+    if (r.success) {
+      map[r.path] = r.bytes_freed;
+    }
+  }
+  return map;
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Zap, Flame, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
-export interface ComicStorageBarProps {
+interface ComicStorageBarProps {
   percent: number;
   className?: string;
   heightClass?: string;
@@ -10,7 +10,7 @@ export interface ComicStorageBarProps {
   label?: string;
 }
 
-export interface StorageStage {
+interface StorageStage {
   fillColor: string;
   badgeBg: string;
   badgeText: string;
@@ -20,7 +20,7 @@ export interface StorageStage {
   icon: React.ReactNode;
 }
 
-export function getStorageStage(percent: number): StorageStage {
+function getStorageStage(percent: number): StorageStage {
   const clamped = Math.min(100, Math.max(0, percent));
 
   if (clamped >= 90) {

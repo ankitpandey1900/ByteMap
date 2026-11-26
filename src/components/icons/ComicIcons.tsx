@@ -1,6 +1,6 @@
 import React from 'react';
 
-export interface ComicIconProps {
+interface ComicIconProps {
   className?: string;
 }
 
@@ -218,7 +218,7 @@ export const ComicZapIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }
 /**
  * 🎬 Comic Video / Movie Clapperboard Icon
  */
-export const ComicVideoIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicVideoIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -241,7 +241,7 @@ export const ComicVideoIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5'
  * ⚙️ Comic App / Executable Icon
  * Cartoon terminal / app window with candy red header
  */
-export const ComicAppIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicAppIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -263,7 +263,7 @@ export const ComicAppIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }
 /**
  * 📄 Comic Document Icon
  */
-export const ComicDocIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicDocIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -289,7 +289,7 @@ export const ComicDocIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }
  * 🖼️ Comic Image Icon
  * Instant polaroid photo with mountains and sun
  */
-export const ComicImageIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicImageIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -315,7 +315,7 @@ export const ComicImageIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5'
 /**
  * 📦 Comic Archive / Box Icon
  */
-export const ComicArchiveIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicArchiveIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -471,7 +471,7 @@ export const ComicFolderIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5
 /**
  * 💻 Comic Dev / Source Code Icon (Cyan #06b6d4)
  */
-export const ComicDevIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicDevIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -488,7 +488,7 @@ export const ComicDevIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }
 /**
  * 🎵 Comic Audio / Music Icon (Violet #8b5cf6)
  */
-export const ComicAudioIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicAudioIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -505,7 +505,7 @@ export const ComicAudioIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5'
 /**
  * 🎮 Comic Game Icon (Orange #f97316)
  */
-export const ComicGameIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicGameIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}
@@ -528,7 +528,7 @@ export const ComicGameIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' 
 /**
  * 📄 Comic Other / Generic File Icon (Slate #64748b)
  */
-export const ComicOtherIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
+const ComicOtherIcon: React.FC<ComicIconProps> = ({ className = 'w-5 h-5' }) => (
   <svg
     viewBox="0 0 24 24"
     className={`${className} drop-shadow-[1.5px_1.5px_0px_rgba(15,23,42,0.9)] overflow-visible`}

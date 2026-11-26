@@ -12,7 +12,7 @@ import { ScannedFolder } from '@/types';
 import { formatBytes, cleanDisplayPath } from '@/lib/utils';
 import { api, CleanupExecutionResult } from '@/lib/api';
 
-export interface DevArtifactItem {
+interface DevArtifactItem {
   id: string;
   name: string;
   projectName: string;

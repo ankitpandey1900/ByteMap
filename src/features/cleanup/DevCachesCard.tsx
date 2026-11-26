@@ -19,7 +19,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { DevCacheItem, DevCacheCleanSummary } from '@/types';
-import { formatBytes, cleanDisplayPath } from '@/lib/utils';
+import { formatBytes, cleanDisplayPath, buildFreedBytesMap } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 
@@ -192,11 +192,12 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
         .map((r) => r.path);
 
       // LIVE STORAGE SYNCHRONIZER: Instantly update store drives, scan metrics, and caches (0ms latency!)
-      const pathBytesMap: Record<string, number> = {};
-      summary.results.filter((r) => r.success).forEach((r) => {
-        pathBytesMap[r.path] = r.bytes_freed;
-      });
-      applyCleanupResult(summary.total_freed_bytes, successfulPaths, pathBytesMap, preferTrash);
+      applyCleanupResult(
+        summary.total_freed_bytes,
+        successfulPaths,
+        buildFreedBytesMap(summary.results),
+        preferTrash
+      );
 
       // Instantly remove successfully purged cache items from local store so UI updates with 0ms delay!
       const successfulIds = new Set(

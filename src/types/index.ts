@@ -135,16 +135,6 @@ export interface ScanSummary {
   timestamp: string;
 }
 
-export interface TreemapNode {
-  name: string;
-  path: string;
-  value: number;
-  category?: FileCategory;
-  is_dir: boolean;
-  children?: TreemapNode[];
-  file_count?: number;
-}
-
 export interface AppSettings {
   theme: 'dark' | 'light' | 'system';
   unit: 'binary' | 'decimal'; // decimal = 1000 (Standard GB), binary = 1024 (Windows GB)

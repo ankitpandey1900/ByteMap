@@ -8,6 +8,7 @@ import {
   cleanDisplayPath,
   findDriveForPath,
   getFileIntelligence,
+  buildFreedBytesMap,
 } from '@/lib/utils';
 import { DriveInfo } from '@/types';
 
@@ -204,6 +205,20 @@ describe('getFileIntelligence utility', () => {
     const intel = getFileIntelligence('movie.mp4', 'D:\\Videos\\movie.mp4');
     expect(intel.isSystem).toBe(false);
     expect(intel.isDependency).toBe(false);
+  });
+});
+
+describe('buildFreedBytesMap utility', () => {
+  it('maps only successful cleanup paths to freed bytes', () => {
+    const map = buildFreedBytesMap([
+      { path: 'D:\\temp\\a.tmp', success: true, bytes_freed: 1024 },
+      { path: 'D:\\temp\\b.tmp', success: false, bytes_freed: 2048 },
+      { path: 'D:\\temp\\c.tmp', success: true, bytes_freed: 512 },
+    ]);
+    expect(map).toEqual({
+      'D:\\temp\\a.tmp': 1024,
+      'D:\\temp\\c.tmp': 512,
+    });
   });
 });
 
