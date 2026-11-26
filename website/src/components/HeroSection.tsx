@@ -210,13 +210,13 @@ export const HeroSection: React.FC = () => {
           {/* Floating real proof badge top left */}
           <div className="hidden sm:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl bg-amber-300 border-2.5 border-slate-900 shadow-comic font-comic text-xs uppercase font-bold text-slate-900 absolute -top-5 left-6 z-20 hover:scale-105 transition-transform">
             <Zap className="w-4 h-4 text-slate-900" />
-            <span>1,319,645 Files Scanned • 2,891 files/sec</span>
+            <span>929,869 Files Scanned • 3,086 files/sec</span>
           </div>
 
           {/* Floating real proof badge bottom right */}
           <div className="hidden sm:inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl bg-emerald-400 border-2.5 border-slate-900 shadow-comic font-comic text-xs uppercase font-bold text-slate-900 absolute -bottom-4 right-6 z-20 hover:scale-105 transition-transform">
             <CheckCircle2 className="w-4 h-4 text-slate-900" />
-            <span>7.77 GB Reclaimable Space Located</span>
+            <span>897 MB Junk + 6.20 GB Dev Caches Found</span>
           </div>
 
           {/* Comic background accent backdrop */}
@@ -227,18 +227,18 @@ export const HeroSection: React.FC = () => {
             <a href="#proof" title="Click to view full uncompressed screenshots and proof" className="block relative">
               <img
                 src="/screenshots/overview.webp"
-                alt="ByteMap Storage Intelligence Dashboard Screenshot showing 1,319,645 files scanned"
-                width={1920}
-                height={988}
+                alt="ByteMap v1.0.13 Storage Intelligence Dashboard Screenshot showing 929,869 files scanned"
+                width={1024}
+                height={520}
                 fetchPriority="high"
                 decoding="async"
                 className="w-full h-auto block select-none group-hover:scale-[1.005] transition-transform duration-200"
-                style={{ imageRendering: '-webkit-optimize-contrast', aspectRatio: '1920 / 988' }}
+                style={{ imageRendering: '-webkit-optimize-contrast', aspectRatio: '1024 / 520' }}
               />
               {/* Subtle hover prompt */}
               <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                 <div className="px-4 py-2 rounded-xl bg-amber-400 border-2.5 border-slate-900 shadow-comic font-bangers text-sm text-slate-900 uppercase tracking-wide">
-                  View Full 1.3M File Proof Breakdown →
+                  View Full 929k File Proof Breakdown →
                 </div>
               </div>
             </a>
@@ -247,12 +247,12 @@ export const HeroSection: React.FC = () => {
 
         {/* Caption below screenshot */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-comic font-bold text-slate-700">
-          <span>Actual unedited desktop scan on Windows-SSD (C:).</span>
+          <span>Actual unedited v1.0.13 desktop scan on WINDOWS-SSD (C:).</span>
           <a
             href="#proof"
             className="text-slate-900 underline decoration-amber-400 decoration-2 hover:text-amber-600 transition-colors"
           >
-            Inspect the 1.3M treemap, BLAKE3 duplicate results & Time Machine delta →
+            Inspect the Treemap, AI Cache Purger, BLAKE3 duplicates & Time Machine delta →
           </a>
         </div>
       </div>

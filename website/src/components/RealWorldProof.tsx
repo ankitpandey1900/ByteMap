@@ -35,93 +35,138 @@ interface ProofTab {
 const proofTabs: ProofTab[] = [
   {
     id: 'treemap',
-    tabLabel: '1.3M+ Files Treemap',
+    tabLabel: '929k Files Treemap',
     icon: <HardDrive className="w-4 h-4" />,
-    badge: '1,319,645 Files In One Scan',
+    badge: '929,869 Files In One Scan',
     badgeColor: 'bg-amber-300',
-    title: 'Real-Time Squarified Treemap on Windows-SSD (C:)',
+    title: 'Real-Time Squarified Treemap on WINDOWS-SSD (C:)',
     subtitle:
-      'Actual unedited run scanning a 300GB NVMe SSD at 91% capacity. Traversed over 1.3 million files at 2,891 files/second without freezing the desktop.',
+      'Actual unedited v1.0.13 run scanning a 300 GB NVMe SSD at 69% capacity (207.6 GB used). Traversed 929,869 files at 3,086 files/second without freezing the desktop.',
     imageSrc: '/screenshots/proof-treemap.webp',
-    imageAlt: 'ByteMap 1.3M Files Scanned Real Desktop Run',
+    imageAlt: 'ByteMap v1.0.13 929,869 Files Scanned Real Desktop Run',
     metrics: [
       {
         label: 'Total Files Scanned',
-        value: '1,319,645',
+        value: '929,869',
         detail: 'Walked in pure Rust via Rayon',
         color: 'bg-amber-100 text-amber-900 border-amber-400',
       },
       {
         label: 'Traversal Speed',
-        value: '2,891 files/s',
+        value: '3,086 files/s',
         detail: 'Instant responsive UI rendering',
         color: 'bg-sky-100 text-sky-900 border-sky-400',
       },
       {
-        label: 'Top Storage Hog',
-        value: 'Users (168.1 GB)',
-        detail: 'Windows.old (38.4 GB) spotted',
+        label: 'Top Storage Hogs',
+        value: 'Users (87.62 GB)',
+        detail: 'Windows (40.06 GB) mapped live',
         color: 'bg-rose-100 text-rose-900 border-rose-400',
       },
       {
-        label: 'Immediate Reclaim',
-        value: '7.77 GB',
-        detail: '100 safe targets queued',
+        label: 'Junk + Dev Caches',
+        value: '7.10 GB',
+        detail: '897 MB temp + 6.20 GB caches',
         color: 'bg-emerald-100 text-emerald-900 border-emerald-400',
       },
     ],
     findings: [
-      'Discovered a forgotten 38.43 GB Windows.old directory leftover from the previous Windows feature update.',
-      'Spotted oversized root virtual memory allocations: pagefile.sys (10.20 GB) and hiberfil.sys (6.74 GB).',
-      'Pinpointed 100 safe junk targets in Reclaim Station worth 7.77 GB recoverable storage with one click.',
+      'Mapped Users (87.62 GB), Windows (40.06 GB), Program Files (13.52 GB), and ProgramData (4.58 GB) cleanly inside the interactive treemap.',
+      'Spotted oversized root virtual memory allocations: pagefile.sys (14.50 GB) and hiberfil.sys (6.74 GB) right on C:\\.',
+      'Flagged 100 safe Junk & Temp targets (897.0 MB) plus 8 developer & AI caches (6.20 GB) ready for one-click recovery.',
     ],
     verdict:
-      'Zero spinning wheels. 1.3M files parsed and laid out into color-coded interactive rectangles in seconds.',
+      'Zero spinning wheels. 929k+ files parsed and laid out into color-synced interactive rectangles in seconds.',
   },
   {
     id: 'categories',
     tabLabel: '9-Category Analytics',
     icon: <PieChart className="w-4 h-4" />,
-    badge: '473,339 Dev Files Tracked',
+    badge: '341,891 Dev Files Tracked',
     badgeColor: 'bg-cyan-300',
-    title: 'Aggregated Storage Breakdown Across 9 Categories',
+    title: 'Aggregated Storage Breakdown Across All File Types',
     subtitle:
-      'ByteMap maps file extensions into 9 distinct buckets. Every single byte is accounted for without dumping heavy cache databases on your machine.',
+      'ByteMap maps file extensions into 9 distinct color-synced buckets. Every gigabyte is categorized cleanly without dumping heavy SQLite databases on your machine.',
     imageSrc: '/screenshots/proof-categories.webp',
-    imageAlt: 'ByteMap 9 Category Storage Analytics Breakdown',
+    imageAlt: 'ByteMap v1.0.13 File Type Storage Analytics Breakdown',
     metrics: [
       {
-        label: 'Other & System Data',
-        value: '158.6 GB (61%)',
-        detail: '625,113 total files cataloged',
-        color: 'bg-slate-100 text-slate-900 border-slate-400',
-      },
-      {
-        label: 'Installed Apps',
-        value: '43.85 GB (16.9%)',
-        detail: '27,851 application binaries',
-        color: 'bg-red-100 text-red-900 border-red-400',
-      },
-      {
-        label: 'Developer Source & Builds',
-        value: '10.64 GB (4.1%)',
-        detail: '473,339 dev files & node_modules',
+        label: 'System Data',
+        value: '72.60 GB (38.4%)',
+        detail: '74,027 OS & runtime files',
         color: 'bg-indigo-100 text-indigo-900 border-indigo-400',
       },
       {
-        label: 'Images & Photos',
-        value: '16.79 GB (6.5%)',
-        detail: '152,287 visual assets',
-        color: 'bg-pink-100 text-pink-900 border-pink-400',
+        label: 'Installed Apps',
+        value: '18.44 GB (9.7%)',
+        detail: '6,967 application binaries',
+        color: 'bg-red-100 text-red-900 border-red-400',
+      },
+      {
+        label: 'Developer & Builds',
+        value: '14.15 GB (7.5%)',
+        detail: '341,891 code & package files',
+        color: 'bg-cyan-100 text-cyan-900 border-cyan-400',
+      },
+      {
+        label: 'Video & Media',
+        value: '19.03 GB (10.1%)',
+        detail: '129 video files + 10.96 GB images',
+        color: 'bg-sky-100 text-sky-900 border-sky-400',
       },
     ],
     findings: [
-      'Developer workspace footprint isolated: 473,339 files inside code repositories accounted for 10.64 GB.',
-      'Media audit: 2,008 video files consumed 22.09 GB (8.5%), while 152,287 image files took 16.79 GB (6.5%).',
-      'Zero orphaned categories: Documents (1.93 GB), Games (3.51 GB), and Archives (2.23 GB) instantly viewable.',
+      'Developer footprint isolated cleanly: 341,891 source and dependency files accounted for 14.15 GB (7.5%).',
+      'Media audit separated 129 video assets (19.03 GB • 10.1%) from 136,061 image assets (10.96 GB • 5.8%).',
+      'Other (47.25 GB • 25.0%), Archives (2.67 GB), Games (2.58 GB), and Documents (1.45 GB) all accounted for.',
     ],
     verdict:
-      'Instant clarity on what is really eating your drive: binaries, video footage, or nested developer builds.',
+      'Instant clarity on what is really eating your drive: OS binaries, edited video exports, or nested developer builds.',
+  },
+  {
+    id: 'cleanup',
+    tabLabel: 'AI & Dev Caches',
+    icon: <Zap className="w-4 h-4" />,
+    badge: '6.20 GB Safe Purge',
+    badgeColor: 'bg-purple-300',
+    title: 'Coding, AI Model & Package Cache Purger',
+    subtitle:
+      'Detects hidden browser AI weights (Chrome Gemini Nano 4.27 GB), npm (1.25 GB), pnpm (571.6 MB), and Cargo crates without scanning every folder first.',
+    imageSrc: '/screenshots/proof-cleanup.webp',
+    imageAlt: 'ByteMap v1.0.13 Coding and AI Cache Purger',
+    metrics: [
+      {
+        label: 'Total Caches Detected',
+        value: '6.20 GB',
+        detail: 'Across 8 safe developer targets',
+        color: 'bg-amber-100 text-amber-900 border-amber-400',
+      },
+      {
+        label: 'On-Device AI Weights',
+        value: '4.27 GB',
+        detail: 'Chrome OptGuide Gemini Nano',
+        color: 'bg-purple-100 text-purple-900 border-purple-400',
+      },
+      {
+        label: 'npm & pnpm Tarballs',
+        value: '1.82 GB',
+        detail: '5,281 cached package files',
+        color: 'bg-rose-100 text-rose-900 border-rose-400',
+      },
+      {
+        label: 'Selected For Clean',
+        value: '6.19 GB',
+        detail: '100% safe Recycle Bin recovery',
+        color: 'bg-emerald-100 text-emerald-900 border-emerald-400',
+      },
+    ],
+    findings: [
+      'Isolated Google Chrome on-device AI weights (4.27 GB) automatically categorized under AI Models (LLM).',
+      'Flagged 1.25 GB global npm cache (3,851 files), 571.6 MB pnpm cache (1,430 files), and 71.62 MB Rust Cargo cache.',
+      'One-click Safe Only selection keeps source code and active project workspaces completely untouched.',
+    ],
+    verdict:
+      'Reclaim 6+ GB of invisible developer & AI model caches in seconds with plain-English safety explanations.',
   },
   {
     id: 'duplicates',
@@ -235,10 +280,10 @@ export const RealWorldProof: React.FC = () => {
             <span>Unedited Field Proof • Real Desktop Scans</span>
           </div>
           <h2 className="font-bangers text-4xl sm:text-5xl md:text-6xl text-slate-900 uppercase tracking-wide">
-            REAL PRODUCTION PROOF ON 1,300,000+ FILES
+            REAL PRODUCTION PROOF ACROSS 929,000+ FILES
           </h2>
           <p className="max-w-3xl mx-auto font-comicNeue text-base sm:text-lg font-bold text-slate-700 mt-2">
-            No marketing renders or fake mockups. Below are actual unedited screenshots from a live Windows 11 system with 1.3M+ files, 21.4 GB in verified duplicates, and a +205.5 GB Time Machine storage delta.
+            No marketing renders or fake mockups. Below are unedited desktop captures from live Windows 11 scans—including 929k+ files mapped live, 6.20 GB in AI &amp; dev caches, 21.4 GB in BLAKE3 duplicates, and Time Machine deltas.
           </p>
         </div>
 
@@ -306,12 +351,12 @@ export const RealWorldProof: React.FC = () => {
                 <img
                   src={currentTab.imageSrc}
                   alt={currentTab.imageAlt}
-                  width={1920}
-                  height={988}
+                  width={1024}
+                  height={520}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-auto object-contain block hover:scale-[1.008] transition-transform duration-200"
-                  style={{ imageRendering: '-webkit-optimize-contrast', aspectRatio: '1920 / 988' }}
+                  style={{ imageRendering: '-webkit-optimize-contrast', aspectRatio: '1024 / 520' }}
                 />
                 {/* Hover overlay hint */}
                 <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">

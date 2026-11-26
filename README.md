@@ -79,8 +79,12 @@ Never guess based on filename alone. ByteMap uses a staged 3-tier engine:
 
 ---
 
-### 4. Developer Build Bloat & Ghost Sweeper
+### 4. Developer Build Bloat, AI Models & Ghost Sweeper
 Reclaim gigabytes from hidden AI caches, IDE session artifacts, package managers (`npm`, `pnpm`, `Cargo`, `pip`, `Gradle`, `Go`), and stale build folders (`node_modules`, `target`, `.venv`, `.next`, `dist`). Also prunes 0-byte ghost folders while keeping your source code 100% untouched.
+
+<p align="center">
+  <img src="./website/public/screenshots/proof-cleanup.webp" width="880" alt="ByteMap Coding & IDE Cache Purger" style="border-radius: 12px; border: 2px solid #0f172a;" />
+</p>
 
 ---
 
@@ -92,12 +96,15 @@ When you clean files or directories:
 
 ---
 
-### 6. Treemap Spotlight, AI Models Radar & Reclamation Sandbox *(v1.0.12)*
-- **Treemap Spotlight Search (`Ctrl+F` / `Cmd+F`)**: Instant electric yellow neon search across 500k+ files with aggregated matched bytes.
-- **AI & LLM Model Cache Radar**: Discovers and purges Ollama (`~/.ollama/models`), HuggingFace Hub, LM Studio, PyTorch checkpoints, and Chrome Gemini Nano weights.
-- **What-If Reclamation Sandbox**: Real-time visual drive expansion bar and non-destructive `.ps1` / `.sh` script generator.
-- **Interactive User Survival Guide**: Accordion problem-solver with cross-platform macOS Trash and Windows Recycle Bin parity.
-- **macOS APFS Physical Sizing**: Native sparse-file block allocation (`st_blocks * 512`) eliminates Docker.raw phantom bloat, with strict `/Volumes` and firmlink containment.
+### 6. Treemap Spotlight, File Intelligence & Reclamation Sandbox *(v1.0.13)*
+- **Treemap Spotlight Search (`Ctrl+F` / `Cmd+F`)**: Instant search across 900k+ files with aggregated matched bytes.
+- **AI & LLM Model Cache Radar**: Discovers and purges Ollama (`~/.ollama/models`), HuggingFace Hub, LM Studio, PyTorch checkpoints, and Chrome Gemini Nano weights (`4.27 GB`).
+- **Plain-English File Intelligence**: Automatically explains mysterious system/model blobs (`pagefile.sys`, `hiberfil.sys`, `weights.bin`) with actionable cleanup guidance.
+- **Native Carbon Dark Mode & WebView Zoom**: High-contrast dark theme, Figtree typography, standardized `GB` metrics, and crisp `Ctrl +` / `Ctrl -` native scaling.
+
+<p align="center">
+  <img src="./website/public/screenshots/proof-largefiles.webp" width="880" alt="ByteMap Large Files Intelligence View" style="border-radius: 12px; border: 2px solid #0f172a;" />
+</p>
 
 ---
 
