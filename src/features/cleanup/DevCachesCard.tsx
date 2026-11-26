@@ -308,7 +308,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
     switch (level) {
       case 'safe':
         return (
-          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-comic uppercase bg-emerald-400 text-slate-900 border border-slate-900 shadow-comic-sm">
+          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-comic uppercase bg-emerald-400 dark:!bg-[#141923] text-slate-900 dark:!text-emerald-400 border border-slate-900 dark:!border-emerald-500/45 shadow-comic-sm">
             <ShieldCheck className="w-3 h-3" />
             <span>100% Safe</span>
           </span>
@@ -317,7 +317,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
       case 'low_risk':
       default:
         return (
-          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-comic uppercase bg-amber-300 text-slate-900 border border-slate-900 shadow-comic-sm">
+          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-comic uppercase bg-amber-300 dark:!bg-[#141923] text-slate-900 dark:!text-amber-300 border border-slate-900 dark:!border-amber-400/45 shadow-comic-sm">
             <Info className="w-3 h-3" />
             <span>Re-downloads</span>
           </span>
@@ -333,7 +333,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
           <Sparkles className="w-8 h-8 text-slate-900" />
         </div>
         <div>
-          <div className="inline-block bg-sky-400 text-slate-900 text-xs font-bangers uppercase tracking-wider px-3 py-1 border-2 border-slate-900 rounded-full shadow-comic-sm mb-2">
+          <div className="inline-block bg-sky-400 dark:!bg-[#1b2232] text-slate-900 dark:!text-sky-300 text-xs font-bangers uppercase tracking-wider px-3 py-1 border-2 border-slate-900 dark:!border-white/[0.12] rounded-full shadow-comic-sm mb-2">
             Developer Toolchain Intelligence
           </div>
           <h3 className="font-bangers text-3xl uppercase tracking-wider text-slate-900">
@@ -379,15 +379,15 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
       {/* Top Banner Card */}
       <div className="p-4 bg-gradient-to-r from-sky-50 via-indigo-50 to-amber-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-3.5">
-          <div className="w-12 h-12 rounded-xl bg-sky-400 border-2.5 border-slate-900 flex items-center justify-center shadow-comic-sm shrink-0">
-            <Sparkles className="w-6 h-6 text-slate-900" />
+          <div className="w-12 h-12 rounded-xl bg-sky-400 dark:!bg-[#1b2232] border-2.5 border-slate-900 dark:!border-white/[0.12] flex items-center justify-center shadow-comic-sm shrink-0">
+            <Sparkles className="w-6 h-6 text-slate-900 dark:!text-sky-400" />
           </div>
           <div>
             <div className="flex items-center space-x-2 flex-wrap gap-1">
               <h3 className="font-bangers text-xl uppercase tracking-wider text-slate-900">
                 Coding & IDE Cache Purger
               </h3>
-              <span className="font-mono font-bold text-xs bg-amber-300 px-2 py-0.5 rounded-md border border-slate-900 shadow-comic-sm">
+              <span className="font-mono font-bold text-xs bg-amber-300 dark:!bg-[#1b2232] dark:!text-slate-200 px-2 py-0.5 rounded-md border border-slate-900 dark:!border-white/[0.12] shadow-comic-sm">
                 {caches.length} Caches • {formatBytes(totalDiscoveredBytes, unit)}
               </span>
             </div>
@@ -496,12 +496,16 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
               onClick={() => setActiveCategory(cat.id as any)}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 font-comic text-xs uppercase tracking-wide transition-all cursor-pointer ${
                 activeCategory === cat.id
-                  ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5 font-bold'
+                  ? 'bg-amber-400 dark:!bg-slate-100 text-slate-900 dark:!text-slate-950 dark:!border-transparent shadow-comic -translate-y-0.5 font-bold'
                   : 'bg-white hover:bg-amber-100 text-slate-700 shadow-comic-sm'
               }`}
             >
               <span>{cat.label}</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-full bg-slate-900 text-white font-bold">
+              <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                activeCategory === cat.id
+                  ? 'bg-slate-900 text-white dark:!bg-slate-900 dark:!text-white'
+                  : 'bg-slate-900 text-white dark:!bg-white/10 dark:!text-slate-200'
+              }`}>
                 {cat.count}
               </span>
             </button>
@@ -556,7 +560,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
                       className="cursor-pointer"
                     >
                       {selectedIds.size === filteredCaches.length && filteredCaches.length > 0 ? (
-                        <CheckSquare className="w-4 h-4 text-slate-900" />
+                        <CheckSquare className="w-4 h-4 text-slate-900 dark:!text-amber-300" />
                       ) : (
                         <Square className="w-4 h-4 text-slate-400" />
                       )}
@@ -586,7 +590,7 @@ export const DevCachesCard: React.FC<DevCachesCardProps> = ({
                           className="cursor-pointer"
                         >
                           {isSelected ? (
-                            <CheckSquare className="w-4 h-4 text-slate-900" />
+                            <CheckSquare className="w-4 h-4 text-slate-900 dark:!text-amber-300" />
                           ) : (
                             <Square className="w-4 h-4 text-slate-300 hover:text-slate-600" />
                           )}

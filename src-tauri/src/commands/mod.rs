@@ -173,11 +173,15 @@ pub async fn find_duplicates(
 
     let app_clone = app.clone();
     let dup_res = tauri::async_runtime::spawn_blocking(move || {
+        let mut last_emit = std::time::Instant::now();
         DuplicateDetector::find_duplicates_in_root(
             &scan_options,
             cancel_token,
             |processed, total| {
-                let _ = app_clone.emit("duplicate_progress", (processed, total));
+                if processed == total || last_emit.elapsed().as_millis() >= 80 {
+                    last_emit = std::time::Instant::now();
+                    let _ = app_clone.emit("duplicate_progress", (processed, total));
+                }
             },
         )
     })

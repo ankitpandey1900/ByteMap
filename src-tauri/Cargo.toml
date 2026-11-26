@@ -1,6 +1,6 @@
 [package]
 name = "bytemap"
-version = "1.0.13"
+version = "1.0.14"
 description = "ByteMap - Desktop Storage Intelligence"
 authors = ["Ankit Pandey <ankit1pandey11@gmail.com>"]
 license = "MIT"

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useState, useMemo, useEffect, useRef } from 'react';
 import {
   ExternalLink,
   ArrowRight,
@@ -40,8 +40,11 @@ import {
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { ScoutAvatar } from '@/components/ScoutMascot';
 import { ComicStorageBar } from '@/components/ComicStorageBar';
-import { StorageDiffModal } from '@/components/StorageDiffModal';
 import { ConfirmCleanupModal, ConfirmCleanupTarget } from '@/components/ConfirmCleanupModal';
+
+const StorageDiffModal = lazy(() =>
+  import('@/components/StorageDiffModal').then((m) => ({ default: m.StorageDiffModal }))
+);
 import { exportStorageAuditHtml } from '@/lib/exportAuditReport';
 import { getSavedSnapshots } from '@/lib/snapshots';
 import { api } from '@/lib/api';
@@ -69,21 +72,28 @@ function squarify(
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  balancedScale = true
 ): RectNode[] {
   if (items.length === 0 || width <= 0 || height <= 0) return [];
-  const totalValue = items.reduce((acc, it) => acc + it.size, 0);
-  if (totalValue <= 0) return [];
 
   const sorted = [...items]
     .filter((it) => it.size > 0)
     .sort((a, b) => b.size - a.size);
   if (sorted.length === 0) return [];
 
+  // Use perceptual area weighting when balancedScale is active so one 85%+ folder
+  // doesn't crush sibling directories into unreadable hairline strips, while preserving
+  // exact raw byte sizes on every label, percentage, and tooltip.
+  const weightOf = (size: number) =>
+    balancedScale && sorted.length > 2 ? Math.pow(size, 0.68) : size;
+  const totalWeight = sorted.reduce((acc, it) => acc + weightOf(it.size), 0);
+  if (totalWeight <= 0) return [];
+
   const totalArea = width * height;
   const normalized = sorted.map((it) => ({
     ...it,
-    area: (it.size / totalValue) * totalArea,
+    area: (weightOf(it.size) / totalWeight) * totalArea,
   }));
 
   const result: RectNode[] = [];
@@ -309,6 +319,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   } = useAppStore();
 
   const [minThresholdMB, setMinThresholdMB] = useState<number>(10);
+  const [balancedTreemapScale, setBalancedTreemapScale] = useState<boolean>(true);
   const [hoveredNode, setHoveredNode] = useState<RectNode | null>(null);
   const [contextMenu, setContextMenu] = useState<{ node: RectNode; xPct: number; yPct: number } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<ConfirmCleanupTarget | null>(null);
@@ -586,8 +597,8 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
   }, [scanSummary, treemapCurrentPath]);
 
   const rects = useMemo(() => {
-    return squarify(treemapItems, 0, 0, 1000, 700);
-  }, [treemapItems]);
+    return squarify(treemapItems, 0, 0, 1000, 700, balancedTreemapScale);
+  }, [treemapItems, balancedTreemapScale]);
 
   const matchesSearch = (node: RectNode, query: string) => {
     if (!query.trim()) return false;
@@ -982,10 +993,10 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
           <button
             type="button"
             onClick={() => setShowTimeMachine(true)}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-300 hover:bg-amber-400 border-2 border-slate-900 shadow-comic-sm text-xs font-bold uppercase text-slate-900 transition-all cursor-pointer"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-300 hover:bg-amber-400 dark:!bg-[#1b2232] dark:hover:!bg-[#252f45] border-2 border-slate-900 dark:!border-white/[0.12] shadow-comic-sm text-xs font-bold uppercase text-slate-900 dark:!text-slate-100 transition-all cursor-pointer"
             title="Compare snapshots over time in Time Machine"
           >
-            <History className="w-3.5 h-3.5" />
+            <History className="w-3.5 h-3.5 dark:text-amber-400" />
             <span>Time Machine</span>
             <span className="px-1.5 py-0.5 rounded bg-slate-900 text-amber-300 dark:!bg-slate-900 dark:!text-amber-300 font-mono text-[10px] leading-none font-bold">
               {snapshotCount}
@@ -995,10 +1006,10 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
           <button
             type="button"
             onClick={() => exportStorageAuditHtml(scanSummary, settings, activeDrive)}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-300 hover:bg-sky-200 border-2 border-slate-900 shadow-comic-sm text-xs font-bold uppercase text-slate-900 transition-all cursor-pointer"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-300 hover:bg-sky-200 dark:!bg-[#1b2232] dark:hover:!bg-[#252f45] border-2 border-slate-900 dark:!border-white/[0.12] shadow-comic-sm text-xs font-bold uppercase text-slate-900 dark:!text-slate-100 transition-all cursor-pointer"
             title="Export standalone HTML storage audit report"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <FileSpreadsheet className="w-3.5 h-3.5 dark:text-sky-400" />
             <span>HTML Report</span>
           </button>
 
@@ -1046,67 +1057,77 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
               </button>
             </div>
 
-            <div className="relative h-32 w-full my-0.5 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoriesData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={30}
-                    outerRadius={50}
-                    stroke={isDark ? '#131824' : '#0f172a'}
-                    strokeWidth={2}
-                    paddingAngle={2.5}
+            <div className="relative h-36 w-full my-0.5 flex items-center justify-center">
+              <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[70px] h-[70px] rounded-full bg-slate-50/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.06] flex flex-col items-center justify-center px-1">
+                  <span
+                    className={`${scanSummary.total_files >= 1_000_000 ? 'text-[11px]' : 'text-[13px]'
+                      } font-sans font-extrabold text-slate-900 dark:text-slate-100 leading-none tabular-nums tracking-tight text-center`}
                   >
-                    {categoriesData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(val: number, name: string) => [
-                      `${formatBytes(val, settings.unit)} (${categoriesData.find((c) => c.name === name)?.percentage.toFixed(1) || '0'
-                      }%)`,
-                      name,
-                    ]}
-                    contentStyle={
-                      isDark
-                        ? {
-                          backgroundColor: '#161b26',
-                          borderColor: 'rgba(255, 255, 255, 0.14)',
-                          borderWidth: '1px',
-                          borderRadius: '10px',
-                          color: '#f8fafc',
-                          fontWeight: 'bold',
-                          fontSize: '11px',
-                          boxShadow: '0 10px 28px rgba(0, 0, 0, 0.65)',
-                          fontFamily: "'Figtree', sans-serif",
-                        }
-                        : {
-                          backgroundColor: '#fef08a',
-                          borderColor: '#0f172a',
-                          borderWidth: '2px',
-                          borderRadius: '10px',
-                          color: '#0f172a',
-                          fontWeight: 'bold',
-                          fontSize: '11px',
-                          boxShadow: '3px 3px 0px #0f172a',
-                          fontFamily: "'Figtree', sans-serif",
-                        }
-                    }
-                    itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-xs font-mono font-bold text-slate-900 leading-none tabular-nums">
-                  {formatNumber(scanSummary.total_files)}
-                </span>
-                <span className="text-[9px] font-bold text-slate-500 uppercase leading-none mt-0.5">
-                  Files
-                </span>
+                    {formatNumber(scanSummary.total_files)}
+                  </span>
+                  <span className="text-[8.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">
+                    Files
+                  </span>
+                </div>
+              </div>
+              <div className="relative z-10 w-full h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoriesData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={60}
+                      cornerRadius={5}
+                      minAngle={8}
+                      stroke={isDark ? '#131824' : '#ffffff'}
+                      strokeWidth={2}
+                      paddingAngle={3}
+                    >
+                      {categoriesData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      wrapperStyle={{ zIndex: 50, pointerEvents: 'none' }}
+                      formatter={(val: number, name: string) => [
+                        `${formatBytes(val, settings.unit)} (${categoriesData.find((c) => c.name === name)?.percentage.toFixed(1) || '0'
+                        }%)`,
+                        name,
+                      ]}
+                      contentStyle={
+                        isDark
+                          ? {
+                            backgroundColor: '#161b26',
+                            borderColor: 'rgba(255, 255, 255, 0.14)',
+                            borderWidth: '1px',
+                            borderRadius: '10px',
+                            color: '#f8fafc',
+                            fontWeight: 'bold',
+                            fontSize: '11px',
+                            boxShadow: '0 10px 28px rgba(0, 0, 0, 0.65)',
+                            fontFamily: "'Figtree', sans-serif",
+                          }
+                          : {
+                            backgroundColor: '#fef08a',
+                            borderColor: '#0f172a',
+                            borderWidth: '2px',
+                            borderRadius: '10px',
+                            color: '#0f172a',
+                            fontWeight: 'bold',
+                            fontSize: '11px',
+                            boxShadow: '3px 3px 0px #0f172a',
+                            fontFamily: "'Figtree', sans-serif",
+                          }
+                      }
+                      itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
@@ -1120,7 +1141,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                     onClick={() => setHighlightCategory(isSpotlight ? 'all' : c.category)}
                     title={`Click to spotlight ${c.name.toLowerCase()} blocks in the map`}
                     className={`flex items-center justify-between px-2 py-1 rounded-xl border transition-all truncate cursor-pointer text-left ${isSpotlight
-                      ? 'bg-amber-300 border-slate-900 ring-1 ring-slate-900 shadow-comic-sm -translate-y-0.5'
+                      ? 'bg-amber-300 dark:!bg-[#242e44] border-slate-900 dark:!border-white/30 ring-1 ring-slate-900 dark:!ring-white/25 shadow-comic-sm -translate-y-0.5'
                       : 'bg-slate-50/80 border-slate-300 hover:border-slate-900 hover:bg-amber-50'
                       }`}
                   >
@@ -1168,11 +1189,11 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center space-x-2 shrink-0">
-                      <div className="w-14 h-2 rounded-full border border-slate-900 overflow-hidden bg-slate-200">
+                      <div className="w-14 h-2 rounded-full border border-slate-900 dark:!border-white/10 overflow-hidden bg-slate-200 dark:!bg-slate-800/90">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
-                            backgroundColor: item.color,
+                            backgroundColor: isDark && item.color === '#64748b' ? '#94a3b8' : item.color,
                             width: `${Math.min(100, item.percent * 3)}%`,
                           }}
                         />
@@ -1205,30 +1226,45 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setShowSearch((prev) => !prev);
-                  if (!showSearch) setTimeout(() => searchInputRef.current?.focus(), 80);
-                }}
-                className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-xl border-2 border-slate-900 shadow-comic-sm text-xs font-bold uppercase transition-all cursor-pointer ${showSearch
-                  ? 'bg-amber-400 text-slate-900'
-                  : 'bg-white hover:bg-amber-100 text-slate-800'
-                  }`}
-                title="Spotlight Search (Ctrl+F / Cmd+F)"
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>Spotlight</span>
-                <span className="hidden sm:inline-block text-[10px] bg-slate-200 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300 font-mono border border-slate-300 dark:border-slate-700">
-                  ⌘F
-                </span>
-              </button>
+              <div className="flex items-center space-x-1.5">
+                <button
+                  type="button"
+                  onClick={() => setBalancedTreemapScale((prev) => !prev)}
+                  title={
+                    balancedTreemapScale
+                      ? 'Balanced readability scale active — click for strict 1:1 raw size proportions'
+                      : 'Strict 1:1 raw proportions active — click for Balanced readability scale'
+                  }
+                  className="inline-flex items-center space-x-1 px-2 py-1 rounded-xl border-2 border-slate-900 bg-slate-50 hover:bg-amber-100 text-[10px] font-bold uppercase text-slate-700 transition-all cursor-pointer shadow-comic-sm"
+                >
+                  <span>{balancedTreemapScale ? 'Balanced' : '1:1 Exact'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSearch((prev) => !prev);
+                    if (!showSearch) setTimeout(() => searchInputRef.current?.focus(), 80);
+                  }}
+                  className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-xl border-2 border-slate-900 shadow-comic-sm text-xs font-bold uppercase transition-all cursor-pointer ${showSearch
+                    ? 'bg-amber-400 text-slate-900'
+                    : 'bg-white hover:bg-amber-100 text-slate-800'
+                    }`}
+                  title="Spotlight Search (Ctrl+F / Cmd+F)"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Spotlight</span>
+                  <span className="hidden sm:inline-block text-[10px] bg-slate-200 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300 font-mono border border-slate-300 dark:border-slate-700">
+                    ⌘F
+                  </span>
+                </button>
+              </div>
             </div>
 
             {showSearch && (
-              <div className="flex items-center justify-between gap-2 p-2 bg-amber-300 border-2 border-slate-900 rounded-xl shadow-comic-sm">
+              <div className="flex items-center justify-between gap-2 p-2 bg-amber-300 dark:!bg-[#1b2232] border-2 border-slate-900 dark:!border-white/[0.14] rounded-xl shadow-comic-sm">
                 <div className="flex items-center space-x-2 flex-1 min-w-0">
-                  <Search className="w-4 h-4 text-slate-900 shrink-0" />
+                  <Search className="w-4 h-4 text-slate-900 dark:!text-slate-300 shrink-0" />
                   <input
                     ref={searchInputRef}
                     type="text"
@@ -1252,7 +1288,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                     setShowSearch(false);
                   }}
                   aria-label="Close Spotlight search"
-                  className="p-1 hover:bg-amber-400 rounded-md text-slate-900 cursor-pointer"
+                  className="p-1 hover:bg-amber-400 dark:hover:!bg-white/10 rounded-md text-slate-900 dark:!text-slate-200 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1262,12 +1298,12 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
             {/* Breadcrumbs + 1:1 Synced Category Legend */}
             <div className="flex items-center justify-between flex-wrap gap-2 px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-300">
               <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 min-w-0 max-w-full overflow-x-auto">
-                <Compass className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <Compass className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <button
                   type="button"
                   onClick={() => setTreemapCurrentPath('')}
                   className={`px-2 py-0.5 rounded-md border border-slate-900 uppercase text-[11px] transition-all cursor-pointer shrink-0 ${!isDrilledDown
-                    ? 'bg-amber-300 text-slate-900 font-bold'
+                    ? 'bg-amber-300 dark:!bg-slate-100 text-slate-900 dark:!text-slate-950 dark:!border-transparent font-bold'
                     : 'bg-white hover:bg-amber-100 text-slate-700'
                     }`}
                 >
@@ -1283,7 +1319,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                           type="button"
                           onClick={() => setTreemapCurrentPath(b.path)}
                           className={`px-2 py-0.5 rounded-md border border-slate-900 text-[11px] transition-all cursor-pointer shrink-0 max-w-[160px] truncate ${i === breadcrumbs.length - 1
-                            ? 'bg-amber-300 text-slate-900'
+                            ? 'bg-amber-300 dark:!bg-slate-100 text-slate-900 dark:!text-slate-950 dark:!border-transparent font-bold'
                             : 'bg-white hover:bg-amber-100 text-slate-700'
                             }`}
                         >
@@ -1306,7 +1342,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                     <button
                       type="button"
                       onClick={handleTreemapBack}
-                      className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-rose-200 hover:bg-rose-300 text-[10px] text-slate-900 uppercase border border-slate-900 cursor-pointer shrink-0"
+                      className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-rose-200 hover:bg-rose-300 dark:!bg-[#1b2232] dark:hover:!bg-[#262f44] text-[10px] text-slate-900 dark:!text-slate-200 uppercase border border-slate-900 dark:!border-white/[0.12] cursor-pointer shrink-0"
                     >
                       <CornerUpLeft className="w-3 h-3" />
                       <span>Back</span>
@@ -1443,23 +1479,34 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                         height={Math.max(0, node.h - 4)}
                         rx={8}
                         fill={fill}
-                        fillOpacity={isDark ? (isHighlighted ? 0.84 : 0.16) : 1}
-                        stroke={isMatch ? '#fbbf24' : isDark ? '#090c12' : '#0f172a'}
-                        strokeWidth={isMatch ? (isHovered ? 6 : 4.5) : isHovered ? 4 : isHighlighted ? 2.5 : 1}
+                        fillOpacity={isDark ? (isHighlighted ? (cat === 'other' ? 0.36 : 0.62) : 0.12) : 1}
+                        stroke={isMatch ? '#fbbf24' : isDark ? 'rgba(255, 255, 255, 0.14)' : '#0f172a'}
+                        strokeWidth={isMatch ? (isHovered ? 6 : 4.5) : isHovered ? 4 : isHighlighted ? (isDark ? 1.5 : 2.5) : 1}
                         opacity={isDark ? 1 : isHighlighted ? 1 : 0.18}
                         style={{
                           transition: 'stroke-width 0.15s ease, opacity 0.2s ease, fill-opacity 0.2s ease',
                           filter: isMatch
                             ? 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.9))'
                             : isHovered
-                              ? 'brightness(1.1)'
+                              ? 'brightness(1.12)'
                               : isHighlighted
                                 ? 'none'
                                 : 'grayscale(0.7)',
                         }}
                       />
 
-                      {!isDark && (
+                      {isDark ? (
+                        <rect
+                          x={node.x + 2}
+                          y={node.y + 2}
+                          width={Math.max(0, node.w - 4)}
+                          height={Math.max(0, node.h - 4)}
+                          rx={8}
+                          fill="url(#dark-tile-sheen)"
+                          pointerEvents="none"
+                          opacity={isHighlighted ? 1 : 0.25}
+                        />
+                      ) : (
                         <rect
                           x={node.x + 2}
                           y={node.y + 2}
@@ -1501,9 +1548,9 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                                 {(showTopCat || showRightBadge) && (
                                   <div className="w-full flex items-center justify-between pointer-events-none">
                                     {showTopCat ? (
-                                      <div className="px-1.5 py-0.5 rounded-md bg-white dark:!bg-[#090d16]/85 border border-slate-900 dark:border-white/20 shadow-[1px_1px_0px_#0f172a] flex items-center space-x-1">
+                                      <div className="px-1.5 py-0.5 rounded-md bg-white dark:!bg-black/45 border border-slate-900 dark:!border-white/10 shadow-[1px_1px_0px_#0f172a] dark:shadow-none flex items-center space-x-1">
                                         <CategoryIcon category={cat} className="w-2.5 h-2.5 shrink-0" />
-                                        <span className="font-bold text-[9px] uppercase text-slate-900 dark:!text-slate-100 leading-none">
+                                        <span className="font-bold text-[9px] uppercase text-slate-900 dark:!text-slate-200 leading-none">
                                           {cat}
                                         </span>
                                       </div>
@@ -1531,7 +1578,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
 
                                 <div className="flex flex-col items-center justify-center my-auto w-full px-1 min-w-0">
                                   {showCenterIcon && (
-                                    <div className="w-7 h-7 rounded-xl bg-white dark:!bg-[#090d16]/85 border-1.5 border-slate-900 dark:border-white/20 shadow-[1.5px_1.5px_0px_#0f172a] flex items-center justify-center mb-1 shrink-0">
+                                    <div className="w-7 h-7 rounded-xl bg-white dark:!bg-[#0b101b]/90 border-1.5 border-slate-900 dark:!border-white/10 shadow-[1.5px_1.5px_0px_#0f172a] dark:shadow-none flex items-center justify-center mb-1 shrink-0">
                                       <CategoryIcon category={cat} className="w-4 h-4" />
                                     </div>
                                   )}
@@ -1540,13 +1587,13 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                                     className={`font-bold ${node.w < 90
                                       ? 'text-[10px] px-1.5 py-0.5'
                                       : 'text-xs sm:text-[13px] px-2.5 py-0.5'
-                                      } text-slate-900 dark:!text-slate-100 truncate max-w-[92%] bg-white/95 dark:!bg-[#090d16]/85 rounded-md border border-slate-900 dark:border-white/20 shadow-[1px_1px_0px_#0f172a] leading-tight ${showSizePill ? 'mb-1' : ''}`}
+                                      } text-slate-900 dark:!text-slate-100 truncate max-w-[92%] bg-white/95 dark:!bg-[#0b101b]/90 rounded-md border border-slate-900 dark:!border-white/10 shadow-[1px_1px_0px_#0f172a] dark:shadow-none leading-tight ${showSizePill ? 'mb-1' : ''}`}
                                   >
                                     {node.name}
                                   </p>
 
                                   {showSizePill && (
-                                    <span className="inline-flex items-center font-mono font-bold text-[10px] text-slate-900 dark:!text-amber-300 px-1.5 py-0.5 rounded-md bg-white dark:!bg-[#090d16]/85 border-1.5 border-slate-900 dark:border-white/20 shadow-[1.5px_1.5px_0px_#0f172a] tabular-nums shrink-0 max-w-[95%] truncate">
+                                    <span className="inline-flex items-center font-mono font-bold text-[10px] text-slate-900 dark:!text-amber-300 px-1.5 py-0.5 rounded-md bg-white dark:!bg-[#0b101b]/90 border-1.5 border-slate-900 dark:!border-white/10 shadow-[1.5px_1.5px_0px_#0f172a] dark:shadow-none tabular-nums shrink-0 max-w-[95%] truncate">
                                       {formatBytes(node.size, settings.unit)}
                                     </span>
                                   )}
@@ -1563,6 +1610,11 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                 })}
 
                 <defs>
+                  <linearGradient id="dark-tile-sheen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.08" />
+                    <stop offset="45%" stopColor="#ffffff" stopOpacity="0" />
+                    <stop offset="100%" stopColor="#000000" stopOpacity="0.22" />
+                  </linearGradient>
                   <pattern id="comic-dots-pattern" width="8" height="8" patternUnits="userSpaceOnUse">
                     <circle cx="2" cy="2" r="1" fill="#ffffff" fillOpacity="0.09" />
                   </pattern>
@@ -1704,8 +1756,8 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                     type="button"
                     onClick={() => setMinThresholdMB(mb)}
                     className={`flex-1 py-0.5 rounded-md border text-[10px] font-bold uppercase transition-all cursor-pointer ${isActive
-                      ? 'bg-amber-400 border-slate-900 text-slate-900 shadow-comic-sm'
-                      : 'bg-slate-100 border-slate-300 text-slate-600 hover:bg-slate-200 hover:border-slate-400'
+                      ? 'bg-amber-400 dark:!bg-slate-100 border-slate-900 dark:!border-transparent text-slate-900 dark:!text-slate-950 shadow-comic-sm'
+                      : 'bg-slate-100 dark:!bg-white/[0.04] border-slate-300 dark:!border-white/[0.08] text-slate-600 dark:!text-slate-400 hover:bg-slate-200 dark:hover:!bg-white/[0.08] hover:border-slate-400'
                       }`}
                   >
                     {labels[i]}
@@ -1722,7 +1774,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                     className="flex items-center justify-between p-1.5 rounded-xl bg-slate-50/80 border border-slate-200 hover:border-slate-400 hover:bg-amber-50/70 transition-all"
                   >
                     <div className="flex items-center space-x-2 truncate mr-2">
-                      <div className="w-7 h-7 rounded-lg border border-slate-300 flex items-center justify-center shrink-0 bg-white">
+                      <div className="w-7 h-7 rounded-lg border border-slate-300 dark:!border-transparent flex items-center justify-center shrink-0 bg-white dark:!bg-transparent">
                         <CategoryIcon category={file.category} className="w-4 h-4" />
                       </div>
                       <div className="truncate">
@@ -1762,22 +1814,31 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
             </div>
 
             {/* Duplicate Summary Row */}
-            <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-500/[0.06] border border-slate-900/80 dark:border-amber-400/20 space-y-1.5">
+            <div className="p-2.5 rounded-xl bg-amber-50/90 dark:!bg-[#161b26] border border-amber-300 dark:border-white/[0.08] space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <div>
-                  <span className="text-[10px] font-bold uppercase text-slate-600 block">
-                    Exact Duplicates (BLAKE3)
-                  </span>
-                  <span className="font-heading text-sm text-slate-900">
-                    {duplicateReclaimable > 0
-                      ? `${formatBytes(duplicateReclaimable, settings.unit)} Reclaimable`
-                      : 'Check for Duplicates'}
-                  </span>
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-amber-100 dark:!bg-white/[0.05] border border-amber-300/80 dark:!border-white/[0.08] flex items-center justify-center shrink-0">
+                    {isDark ? (
+                      <Copy className="w-3.5 h-3.5 text-amber-400" />
+                    ) : (
+                      <ComicDuplicatesIcon className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:text-amber-300/90 block leading-tight">
+                      Exact Duplicates • BLAKE3
+                    </span>
+                    <span className="font-heading text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight block whitespace-nowrap mt-0.5">
+                      {duplicateReclaimable > 0
+                        ? `${formatBytes(duplicateReclaimable, settings.unit)} Reclaimable`
+                        : 'Ready to Scan'}
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setActiveTab('duplicates')}
-                  className="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 border-2 border-slate-900 text-[11px] font-bold uppercase text-slate-900 shadow-comic-sm cursor-pointer shrink-0"
+                  className="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 border-2 border-slate-900 dark:border-amber-300/40 text-[11px] font-bold uppercase text-slate-900 shadow-comic-sm cursor-pointer shrink-0 transition-transform hover:-translate-y-0.5"
                 >
                   Inspect &gt;
                 </button>
@@ -1791,7 +1852,7 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
                       <div
                         key={grp.hash || idx}
                         onClick={() => grp.files[1] && toggleCleanupSelection(grp.files[1].id)}
-                        className="flex items-center justify-between px-2 py-1 rounded-lg bg-white/90 border border-slate-300 hover:border-slate-500 cursor-pointer text-[11px]"
+                        className="flex items-center justify-between px-2 py-1 rounded-lg bg-white/90 dark:!bg-[#0e131d] border border-slate-300 dark:border-white/[0.08] hover:border-slate-500 dark:hover:border-white/20 cursor-pointer text-[11px]"
                       >
                         <span className="truncate font-bold text-slate-900 mr-2">
                           {grp.files[0]?.name || 'Duplicate'} ({formatBytes(grp.reclaimable_bytes, settings.unit)})
@@ -1811,19 +1872,33 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
             </div>
 
             {/* Safe Cleanup Summary Row */}
-            <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-500/[0.07] border border-rose-300 dark:border-rose-400/25 flex items-center justify-between gap-2">
-              <div>
-                <span className="text-[10px] font-bold uppercase text-slate-600 block">
-                  Junk &amp; Temp ({scanSummary.cleanup_candidates.length})
-                </span>
-                <span className="font-heading text-sm text-slate-900">
-                  {formatBytes(cleanupReclaimable, settings.unit)}
-                </span>
+            <div className="p-2.5 rounded-xl bg-rose-50/90 dark:!bg-[#161b26] border border-rose-300 dark:border-white/[0.08] flex items-center justify-between gap-2">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-rose-100 dark:!bg-white/[0.05] border border-rose-300/80 dark:!border-white/[0.08] flex items-center justify-center shrink-0">
+                  {isDark ? (
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                  ) : (
+                    <ComicTrashIcon className="w-3.5 h-3.5 text-rose-700" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:text-rose-300/90 whitespace-nowrap">
+                      Junk &amp; Temp
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-rose-200/80 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 font-mono text-[9px] font-bold leading-none">
+                      {scanSummary.cleanup_candidates.length}
+                    </span>
+                  </div>
+                  <span className="font-heading text-sm font-extrabold text-slate-900 dark:text-white tabular-nums leading-tight block whitespace-nowrap mt-0.5">
+                    {formatBytes(cleanupReclaimable, settings.unit)}
+                  </span>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveTab('cleanup')}
-                className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-400 text-white border-2 border-slate-900 text-[11px] font-bold uppercase shadow-comic-sm cursor-pointer shrink-0"
+                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-400 text-white border-2 border-slate-900 dark:border-rose-400/40 text-[11px] font-bold uppercase shadow-comic-sm cursor-pointer shrink-0 transition-transform hover:-translate-y-0.5 whitespace-nowrap"
               >
                 <span>Clean Now</span>
                 <ArrowRight className="w-3 h-3" />
@@ -1835,12 +1910,14 @@ export const DigitalKingdomView: React.FC<DigitalKingdomViewProps> = ({
 
       {/* Storage Diff Time Machine Modal */}
       {showTimeMachine && (
-        <StorageDiffModal
-          isOpen={showTimeMachine}
-          onClose={() => setShowTimeMachine(false)}
-          scanSummary={scanSummary}
-          unit={settings.unit}
-        />
+        <Suspense fallback={null}>
+          <StorageDiffModal
+            isOpen={showTimeMachine}
+            onClose={() => setShowTimeMachine(false)}
+            scanSummary={scanSummary}
+            unit={settings.unit}
+          />
+        </Suspense>
       )}
 
       {/* Direct Treemap Cleanup Confirmation Modal */}

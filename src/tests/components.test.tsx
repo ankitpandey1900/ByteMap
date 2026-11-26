@@ -52,6 +52,17 @@ describe('ComicHeader Component', () => {
     expect(screen.getByText(/settings/i)).toBeDefined();
     expect(screen.getByLabelText(/switch to dark theme/i)).toBeDefined();
   });
+
+  it('opens the full documentation dialog when User Guide is clicked without crashing', () => {
+    render(<ComicHeader onOpenScanModal={() => {}} />);
+    const guideBtn = screen.getByLabelText(/open user guide/i);
+    fireEvent.click(guideBtn);
+
+    expect(screen.getByRole('dialog')).toBeDefined();
+    expect(screen.getByText(/ByteMap Documentation/i)).toBeDefined();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
 });
 
 describe('ScoutMascot Component', () => {

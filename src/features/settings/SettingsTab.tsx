@@ -11,7 +11,6 @@ import {
   ZoomIn,
   Sun,
   Moon,
-  Monitor,
   History,
   Trash2,
 } from 'lucide-react';
@@ -128,13 +127,12 @@ export const SettingsTab: React.FC = () => {
           <span>Appearance & Theme</span>
         </h3>
         <p className="text-xs font-fredoka font-semibold text-slate-600">
-          Switch between ByteMap&apos;s signature sunny pop-art light mode, high-contrast dark mode, or follow your OS preference.
+          Light Comic mode is the default. Switch manually to Dark Mode anytime here or from the top bar toggle.
         </p>
         <div className="flex flex-wrap gap-2">
           {[
-            { id: 'light' as const, label: 'Light Comic', icon: <Sun className="w-3.5 h-3.5" /> },
+            { id: 'light' as const, label: 'Light Comic (Default)', icon: <Sun className="w-3.5 h-3.5" /> },
             { id: 'dark' as const, label: 'Dark Mode', icon: <Moon className="w-3.5 h-3.5" /> },
-            { id: 'system' as const, label: 'Follow OS', icon: <Monitor className="w-3.5 h-3.5" /> },
           ].map((opt) => (
             <button
               key={opt.id}

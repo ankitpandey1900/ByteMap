@@ -30,6 +30,7 @@ import {
 } from 'recharts';
 import { ScanSummary } from '@/types';
 import { formatBytes, cleanDisplayPath } from '@/lib/utils';
+import { useAppStore } from '@/lib/store';
 import { CategoryIcon } from './CategoryIcon';
 import {
   StorageSnapshot,
@@ -64,6 +65,7 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
   scanSummary,
   unit,
 }) => {
+  const isDark = useAppStore((s) => s.settings.theme === 'dark');
   const [snapshots, setSnapshots] = useState<StorageSnapshot[]>([]);
   const [selectedSnapshotId, setSelectedSnapshotId] = useState<string>('');
   const [targetSnapshotId, setTargetSnapshotId] = useState<string>('');
@@ -276,8 +278,8 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
               <History className="w-6 h-6 text-slate-900" />
             </div>
             <div>
-              <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-300 border border-slate-900 text-[10px] font-comic uppercase tracking-wider text-slate-900">
-                <Camera className="w-3 h-3" />
+              <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-lg bg-amber-300 dark:!bg-[#1b2232] border border-slate-900 dark:!border-white/[0.12] text-[10px] font-comic uppercase tracking-wider text-slate-900 dark:!text-slate-200">
+                <Camera className="w-3 h-3 dark:text-amber-400" />
                 <span>Time Machine • Storage Evolution</span>
               </div>
               <h2
@@ -332,7 +334,7 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                     onClick={() => handleSelectPreset(preset)}
                     className={`px-2.5 py-1 rounded-lg border-1.5 border-slate-900 font-comic uppercase tracking-wider text-[11px] transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-amber-400 font-bold text-slate-900 shadow-comic-sm -translate-y-0.5'
+                        ? 'bg-amber-400 dark:!bg-slate-100 dark:!border-transparent font-bold text-slate-900 dark:!text-slate-950 shadow-comic-sm -translate-y-0.5'
                         : 'bg-white hover:bg-amber-100 text-slate-700'
                     }`}
                   >
@@ -482,7 +484,7 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                     onClick={() => setCompareMode('live')}
                     className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
                       compareMode === 'live'
-                        ? 'bg-amber-400 font-bold text-slate-900 shadow-comic-sm'
+                        ? 'bg-amber-400 dark:!bg-slate-100 dark:!text-slate-950 font-bold text-slate-900 shadow-comic-sm'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
@@ -499,7 +501,7 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                     }}
                     className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
                       compareMode === 'snapshot'
-                        ? 'bg-sky-400 font-bold text-slate-900 shadow-comic-sm'
+                        ? 'bg-sky-400 dark:!bg-slate-100 dark:!text-slate-950 font-bold text-slate-900 shadow-comic-sm'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
@@ -514,7 +516,7 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
               {!showNameInput ? (
                 <button
                   onClick={() => setShowNameInput(true)}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-sky-400 hover:bg-sky-300 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border-2 border-slate-900 dark:!border-white/[0.12] bg-sky-400 hover:bg-sky-300 dark:!bg-[#1b2232] dark:hover:!bg-[#252f45] dark:!text-slate-100 font-comic text-xs uppercase tracking-wide shadow-comic-sm transition-transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Take Snapshot Now</span>
@@ -564,11 +566,11 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                     onClick={() => setSelectedSnapshotId(snap.id)}
                     className={`group flex items-center space-x-2 px-3 py-1.5 rounded-xl border-2 border-slate-900 text-xs font-comic tracking-wide cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-amber-400 text-slate-900 shadow-comic -translate-y-0.5 font-bold'
+                        ? 'bg-amber-400 dark:!bg-slate-100 dark:!border-transparent text-slate-900 dark:!text-slate-950 shadow-comic -translate-y-0.5 font-bold'
                         : 'bg-white hover:bg-amber-100 text-slate-800 shadow-comic-sm'
                     }`}
                   >
-                    <Calendar className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                    <Calendar className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-slate-700 dark:text-slate-900' : 'text-slate-700 dark:text-amber-400'}`} />
                     <span className="whitespace-normal leading-tight font-comic">
                       {snap.name}
                     </span>
@@ -739,27 +741,27 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                         >
                           <XAxis
                             dataKey="category"
-                            tick={{ fill: '#0f172a', fontSize: 10, fontWeight: 'bold' }}
-                            axisLine={{ stroke: '#0f172a', strokeWidth: 1.5 }}
-                            tickLine={{ stroke: '#0f172a' }}
+                            tick={{ fill: isDark ? '#cbd5e1' : '#0f172a', fontSize: 10, fontWeight: 'bold' }}
+                            axisLine={{ stroke: isDark ? '#475569' : '#0f172a', strokeWidth: 1.5 }}
+                            tickLine={{ stroke: isDark ? '#475569' : '#0f172a' }}
                           />
                           <YAxis
-                            tick={{ fill: '#0f172a', fontSize: 10, fontWeight: 'bold' }}
-                            axisLine={{ stroke: '#0f172a', strokeWidth: 1.5 }}
-                            tickLine={{ stroke: '#0f172a' }}
+                            tick={{ fill: isDark ? '#cbd5e1' : '#0f172a', fontSize: 10, fontWeight: 'bold' }}
+                            axisLine={{ stroke: isDark ? '#475569' : '#0f172a', strokeWidth: 1.5 }}
+                            tickLine={{ stroke: isDark ? '#475569' : '#0f172a' }}
                             unit=" MB"
                           />
-                          <ReferenceLine y={0} stroke="#0f172a" strokeWidth={2} />
+                          <ReferenceLine y={0} stroke={isDark ? '#64748b' : '#0f172a'} strokeWidth={2} />
                           <Tooltip
                             content={({ active, payload }) => {
                               if (active && payload && payload.length) {
                                 const d = payload[0].payload;
                                 return (
-                                  <div className="p-2 bg-yellow-50 border-2 border-slate-900 rounded-xl shadow-comic text-xs font-fredoka font-bold text-slate-900">
-                                    <p className="font-comic uppercase text-[11px] text-slate-800">{d.category}</p>
+                                  <div className="p-2 bg-yellow-50 dark:!bg-[#161b26] border-2 border-slate-900 dark:!border-white/15 rounded-xl shadow-comic text-xs font-fredoka font-bold text-slate-900 dark:!text-slate-100">
+                                    <p className="font-comic uppercase text-[11px] text-slate-800 dark:!text-slate-300">{d.category}</p>
                                     <p
                                       className={`font-mono text-sm mt-0.5 ${
-                                        d.isPositive ? 'text-rose-600' : 'text-emerald-600'
+                                        d.isPositive ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
                                       }`}
                                     >
                                       {d.isPositive ? '+' : ''}
@@ -771,7 +773,7 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                               return null;
                             }}
                           />
-                          <Bar dataKey="deltaMB" stroke="#0f172a" strokeWidth={2} radius={[4, 4, 0, 0]}>
+                          <Bar dataKey="deltaMB" stroke={isDark ? '#0f172a' : '#0f172a'} strokeWidth={isDark ? 1 : 2} radius={[4, 4, 0, 0]}>
                             {categoryDeltaData.map((entry, index) => (
                               <Cell
                                 key={`cell-${index}`}
@@ -817,10 +819,10 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                           <span
                             className={`px-2 py-0.5 rounded-md font-mono text-[11px] font-bold border border-slate-900 ${
                               isGrowth
-                                ? 'bg-rose-200 text-rose-900'
+                                ? 'bg-rose-200 dark:!bg-[#141923] text-rose-900 dark:!text-rose-400 dark:!border-rose-500/45'
                                 : isShrink
-                                ? 'bg-emerald-200 text-emerald-900'
-                                : 'bg-slate-200 text-slate-700'
+                                ? 'bg-emerald-200 dark:!bg-[#141923] text-emerald-900 dark:!text-emerald-400 dark:!border-emerald-500/45'
+                                : 'bg-slate-200 dark:!bg-white/[0.06] text-slate-700 dark:!text-slate-300'
                             }`}
                           >
                             {isGrowth ? '+' : ''}
@@ -866,8 +868,8 @@ export const StorageDiffModal: React.FC<StorageDiffModalProps> = ({
                             <span
                               className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold border border-slate-900 ${
                                 isGrowth
-                                  ? 'bg-rose-200 text-rose-900'
-                                  : 'bg-emerald-200 text-emerald-900'
+                                  ? 'bg-rose-200 dark:!bg-[#141923] text-rose-900 dark:!text-rose-400 dark:!border-rose-500/45'
+                                  : 'bg-emerald-200 dark:!bg-[#141923] text-emerald-900 dark:!text-emerald-400 dark:!border-emerald-500/45'
                               }`}
                             >
                               {isGrowth ? '+' : ''}

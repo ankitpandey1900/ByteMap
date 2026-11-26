@@ -658,9 +658,15 @@ html.dark .comic-text-shadow {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }
 
+html.dark svg[class*="drop-shadow-"] {
+  filter: none;
+}
+
 /* Carbon Graphite Surface Ladder */
 html.dark .bg-white,
 html.dark .bg-white\/95,
+html.dark .bg-white\/90,
+html.dark .bg-white\/85,
 html.dark .bg-white\/80,
 html.dark .bg-white\/70 {
   background-color: #131824;
@@ -876,7 +882,7 @@ html.dark :is(.bg-amber-400,
   .bg-rose-400,
   .bg-rose-200,
   .bg-purple-400,
-  .bg-purple-300):not(header):not([class*="dark:bg-"]) {
+  .bg-purple-300):not(header):not([class*="dark:bg-"]):not([class*="dark:!bg-"]) {
   color: #0f172a !important;
   border-color: rgba(15, 23, 42, 0.85) !important;
 }
@@ -900,7 +906,7 @@ html.dark :is(.bg-amber-400,
   .bg-rose-400,
   .bg-rose-200,
   .bg-purple-400,
-  .bg-purple-300):not(header):not([class*="dark:bg-"]) :is(span, p, h1, h2, h3, h4, svg):not([class*="dark:!bg-"]):not([class*="dark:!text-"]):not(.bg-slate-900):not(.text-amber-300):not([class*="dark:text-"]) {
+  .bg-purple-300):not(header):not([class*="dark:bg-"]):not([class*="dark:!bg-"]) :is(span, p, h1, h2, h3, h4, svg):not([class*="dark:!bg-"]):not([class*="dark:!text-"]):not(.bg-slate-900):not(.text-amber-300):not([class*="dark:text-"]) {
   color: #0f172a !important;
 }
 
@@ -935,23 +941,23 @@ html.dark .hover\:bg-slate-100:hover {
   background-color: #1f2e47 !important;
 }
 
-html.dark .hover\:bg-yellow-300:hover,
-html.dark .hover\:bg-amber-400:hover,
-html.dark .hover\:bg-amber-300:hover,
-html.dark .hover\:bg-amber-200:hover,
-html.dark .hover\:bg-cyan-200:hover,
-html.dark .hover\:bg-sky-200:hover,
-html.dark .hover\:bg-emerald-200:hover,
-html.dark .hover\:bg-rose-200:hover {
+html.dark :is(.hover\:bg-yellow-300,
+  .hover\:bg-amber-400,
+  .hover\:bg-amber-300,
+  .hover\:bg-amber-200,
+  .hover\:bg-cyan-200,
+  .hover\:bg-sky-200,
+  .hover\:bg-emerald-200,
+  .hover\:bg-rose-200):not([class*="dark:hover:!bg-"]):not([class*="dark:hover:bg-"]):hover {
   color: #0f172a !important;
 }
 
-html.dark .hover\:bg-yellow-300:hover *,
-html.dark .hover\:bg-amber-400:hover *,
-html.dark .hover\:bg-amber-300:hover *,
-html.dark .hover\:bg-amber-200:hover *,
-html.dark .hover\:bg-cyan-200:hover *,
-html.dark .hover\:bg-sky-200:hover * {
+html.dark :is(.hover\:bg-yellow-300,
+  .hover\:bg-amber-400,
+  .hover\:bg-amber-300,
+  .hover\:bg-amber-200,
+  .hover\:bg-cyan-200,
+  .hover\:bg-sky-200):not([class*="dark:hover:!bg-"]):not([class*="dark:hover:bg-"]):hover * {
   color: #0f172a !important;
 }
 

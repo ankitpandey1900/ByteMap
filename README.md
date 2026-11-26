@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.13-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.14-amber?style=flat-square&logo=github" alt="Latest Release" /></a>
   <a href="https://bytemap.alltracker.online/"><img src="https://img.shields.io/badge/website-bytemap.alltracker.online-4F46E5?style=flat-square&logo=googlechrome&logoColor=white" alt="Website" /></a>
   <img src="https://img.shields.io/badge/platforms-Windows_%7C_macOS-0284C7?style=flat-square" alt="Platforms" />
   <img src="https://img.shields.io/badge/built_with-Rust_2021_+_Tauri_2-DEA584?style=flat-square&logo=rust" alt="Rust Tauri" />
@@ -20,9 +20,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.13/ByteMap_1.0.13_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.13/ByteMap_1.0.13_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
-  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.13/ByteMap_1.0.13_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_x64-setup.exe"><strong>🪟 Download for Windows (.exe)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_universal.dmg"><strong>🍏 Download for Mac (.dmg Universal)</strong></a> &nbsp;•&nbsp;
+  <a href="https://github.com/ankitpandey1900/ByteMap/releases/download/v1.0.14/ByteMap_1.0.14_x64_en-US.msi"><strong>🏢 Windows MSI Package</strong></a>
 </p>
 
 ---
@@ -96,11 +96,11 @@ When you clean files or directories:
 
 ---
 
-### 6. Treemap Spotlight, File Intelligence & Reclamation Sandbox *(v1.0.13)*
+### 6. Treemap Spotlight, File Intelligence & Reclamation Sandbox *(v1.0.14)*
 - **Treemap Spotlight Search (`Ctrl+F` / `Cmd+F`)**: Instant search across 900k+ files with aggregated matched bytes.
 - **AI & LLM Model Cache Radar**: Discovers and purges Ollama (`~/.ollama/models`), HuggingFace Hub, LM Studio, PyTorch checkpoints, and Chrome Gemini Nano weights (`4.27 GB`).
 - **Plain-English File Intelligence**: Automatically explains mysterious system/model blobs (`pagefile.sys`, `hiberfil.sys`, `weights.bin`) with actionable cleanup guidance.
-- **Native Carbon Dark Mode & WebView Zoom**: High-contrast dark theme, Figtree typography, standardized `GB` metrics, and crisp `Ctrl +` / `Ctrl -` native scaling.
+- **Light-First Design & Refined Dark Mode**: Crisp comic-pop Light Mode default with Carbon Slate + Pearl Dark Mode, Figtree typography, full-screen User Documentation (`F1`/Guide), Balanced Treemap scaling, parallel BLAKE3 duplicate hashing, and native `Ctrl +` / `Ctrl -` scaling.
 
 <p align="center">
   <img src="./website/public/screenshots/proof-largefiles.webp" width="880" alt="ByteMap Large Files Intelligence View" style="border-radius: 12px; border: 2px solid #0f172a;" />
@@ -119,7 +119,7 @@ Get an instant category donut breakdown, inspect the top large files from 10MB t
 
 ## Feature Comparison
 
-| Capability | ByteMap (v1.0.13) | Legacy WinDirStat | Commercial Cleaners |
+| Capability | ByteMap (v1.0.14) | Legacy WinDirStat | Commercial Cleaners |
 | :--- | :---: | :---: | :---: |
 | **Engine Speed** | Native Multi-Threaded Rust | Single-threaded Win32 | Heavy Node.js / Electron |
 | **Storage Architecture** | Zero Database (Volatile RAM) | In-Memory (No snapshots) | Persistent SQLite / Registry |

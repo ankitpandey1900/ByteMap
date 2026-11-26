@@ -1,19 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { useAppStore } from '@/lib/store';
 import { api, isTauri } from '@/lib/api';
 import { ComicWallpaper } from '@/components/ComicWallpaper';
 import { ComicHeader } from '@/components/ComicHeader';
 import { ScanModal } from '@/components/ScanModal';
-import { ComicUpdateModal } from '@/components/ComicUpdateModal';
 import { DigitalKingdomView } from '@/features/overview/DigitalKingdomView';
-import { DrivesTab } from '@/features/drives/DrivesTab';
-import { ExplorerTab } from '@/features/explorer/ExplorerTab';
-import { LargeFilesTab } from '@/features/large-files/LargeFilesTab';
-import { FileTypesTab } from '@/features/file-types/FileTypesTab';
-import { DuplicatesTab } from '@/features/duplicates/DuplicatesTab';
-import { CleanupTab } from '@/features/cleanup/CleanupTab';
-import { SettingsTab } from '@/features/settings/SettingsTab';
+
+const ComicUpdateModal = lazy(() =>
+  import('@/components/ComicUpdateModal').then((m) => ({ default: m.ComicUpdateModal }))
+);
+const DrivesTab = lazy(() =>
+  import('@/features/drives/DrivesTab').then((m) => ({ default: m.DrivesTab }))
+);
+const ExplorerTab = lazy(() =>
+  import('@/features/explorer/ExplorerTab').then((m) => ({ default: m.ExplorerTab }))
+);
+const LargeFilesTab = lazy(() =>
+  import('@/features/large-files/LargeFilesTab').then((m) => ({ default: m.LargeFilesTab }))
+);
+const FileTypesTab = lazy(() =>
+  import('@/features/file-types/FileTypesTab').then((m) => ({ default: m.FileTypesTab }))
+);
+const DuplicatesTab = lazy(() =>
+  import('@/features/duplicates/DuplicatesTab').then((m) => ({ default: m.DuplicatesTab }))
+);
+const CleanupTab = lazy(() =>
+  import('@/features/cleanup/CleanupTab').then((m) => ({ default: m.CleanupTab }))
+);
+const SettingsTab = lazy(() =>
+  import('@/features/settings/SettingsTab').then((m) => ({ default: m.SettingsTab }))
+);
 
 export const App: React.FC = () => {
   const {
@@ -116,7 +133,9 @@ export const App: React.FC = () => {
     async function init() {
       try {
         const loadedSettings = await api.loadSettings();
-        updateSettings(loadedSettings);
+        // Default to Light Mode unless user explicitly chose Dark Mode
+        const normalizedTheme = loadedSettings.theme === 'dark' ? 'dark' : 'light';
+        updateSettings({ ...loadedSettings, theme: normalizedTheme });
 
         const loadedDrives = await api.getDrives();
         setDrives(loadedDrives);
@@ -131,28 +150,12 @@ export const App: React.FC = () => {
     init();
   }, [setDrives, setSelectedDrive, setScanPath, updateSettings]);
 
-  // Apply configured light / dark / system theme
+  // Apply configured light / dark theme (Light default; user manually switches to Dark)
   useEffect(() => {
     const root = document.documentElement;
-    const applyTheme = (isDark: boolean) => {
-      root.classList.toggle('dark', isDark);
-      root.classList.toggle('light', !isDark);
-    };
-
-    if (settings.theme === 'dark') {
-      applyTheme(true);
-      return;
-    }
-    if (settings.theme === 'light') {
-      applyTheme(false);
-      return;
-    }
-
-    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
-    applyTheme(Boolean(media?.matches));
-    const listener = (e: MediaQueryListEvent) => applyTheme(e.matches);
-    media?.addEventListener?.('change', listener);
-    return () => media?.removeEventListener?.('change', listener);
+    const isDark = settings.theme === 'dark';
+    root.classList.toggle('dark', isDark);
+    root.classList.toggle('light', !isDark);
   }, [settings.theme]);
 
   const handleStartScanFromDrive = (targetPath: string) => {
@@ -192,7 +195,15 @@ export const App: React.FC = () => {
 
       {/* Main Content Body */}
       <main className="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-2.5 md:p-3 bg-slate-100 min-h-0 min-w-0 flex flex-col">
-        {renderActiveTab()}
+        <Suspense
+          fallback={
+            <div className="flex-1 flex items-center justify-center p-8 text-xs font-comic uppercase tracking-wider text-slate-500">
+              Loading view...
+            </div>
+          }
+        >
+          {renderActiveTab()}
+        </Suspense>
       </main>
 
       {/* Scan Configuration & Progress Modal */}
@@ -202,7 +213,9 @@ export const App: React.FC = () => {
       />
 
       {/* Comic Auto-Update Notification Modal */}
-      <ComicUpdateModal />
+      <Suspense fallback={null}>
+        <ComicUpdateModal />
+      </Suspense>
 
       {/* Zoom HUD Floating Toast */}
       {showZoomToast && (

@@ -215,8 +215,8 @@ export const DuplicatesTab: React.FC<DuplicatesTabProps> = ({ onOpenScanModal })
       {/* Top Banner Card */}
       <div className="p-4 bg-white border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 border-2 border-slate-900 shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 mb-1">
-            <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-amber-400 dark:!bg-[#1b2232] border-2 border-slate-900 dark:!border-white/[0.12] shadow-comic-sm font-bangers text-xs uppercase tracking-wider text-slate-900 dark:!text-slate-200 mb-1">
+            <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5] dark:text-amber-400" />
             <span>Cryptographic BLAKE3 Engine</span>
           </div>
           <h2 className="font-bangers text-2xl text-slate-900 uppercase tracking-wider mt-1">
@@ -271,8 +271,8 @@ export const DuplicatesTab: React.FC<DuplicatesTabProps> = ({ onOpenScanModal })
       {duplicateGroups.length > 0 && (
         <div className="p-3.5 bg-amber-100 border-2.5 border-slate-900 rounded-2xl shadow-comic flex flex-wrap items-center justify-between gap-3 text-xs font-fredoka font-bold">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center shrink-0 shadow-comic-sm">
-              <Copy className="w-5 h-5 text-slate-900" />
+            <div className="w-9 h-9 rounded-xl bg-amber-400 dark:!bg-[#1e2638] border-2 border-slate-900 dark:!border-white/[0.12] flex items-center justify-center shrink-0 shadow-comic-sm">
+              <Copy className="w-5 h-5 text-slate-900 dark:!text-amber-400" />
             </div>
             <div>
               <p className="font-comic text-sm text-slate-900 uppercase">
@@ -383,15 +383,15 @@ export const DuplicatesTab: React.FC<DuplicatesTabProps> = ({ onOpenScanModal })
                           </span>
 
                           {isOriginal && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] bg-emerald-400 border border-slate-900 text-slate-900 font-bangers uppercase tracking-wider shadow-xs">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] bg-emerald-400 dark:!bg-[#141923] border border-slate-900 dark:!border-emerald-500/45 text-slate-900 dark:!text-emerald-400 font-bangers uppercase tracking-wider shadow-xs">
                               Original File (Safe - Keep)
                             </span>
                           )}
 
                           {/* Critical Software Dependency Warning */}
                           {intel.isDependency && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] bg-rose-200 border border-slate-900 text-rose-950 font-fredoka font-bold shadow-xs flex items-center space-x-1">
-                              <ShieldAlert className="w-3 h-3 text-rose-700" />
+                            <span className="px-2 py-0.5 rounded-md text-[10px] bg-rose-200 dark:!bg-[#141923] border border-slate-900 dark:!border-rose-500/45 text-rose-950 dark:!text-rose-400 font-fredoka font-bold shadow-xs flex items-center space-x-1">
+                              <ShieldAlert className="w-3 h-3 text-rose-700 dark:!text-rose-400" />
                               <span>App Dependency (Keep — Do Not Delete)</span>
                             </span>
                           )}
@@ -438,7 +438,7 @@ export const DuplicatesTab: React.FC<DuplicatesTabProps> = ({ onOpenScanModal })
                       {!isOriginal && (
                         intel.isDependency ? (
                           <span
-                            className="px-2.5 py-1 rounded-lg text-[10px] font-fredoka font-bold bg-slate-200 border border-slate-400 text-slate-600 cursor-not-allowed"
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-fredoka font-bold bg-slate-200 dark:!bg-white/[0.04] border border-slate-400 dark:!border-white/10 text-slate-600 dark:!text-slate-400 cursor-not-allowed"
                             title="This file is required by installed software and should not be deleted."
                           >
                             Required Dependency

@@ -290,43 +290,43 @@ export const ExplorerTab: React.FC<ExplorerTabProps> = ({ onOpenScanModal }) => 
         <div className="overflow-x-auto flex-1 w-full">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b-2 border-slate-900 bg-amber-200 dark:bg-slate-800 text-slate-900 dark:text-amber-300 font-bangers uppercase tracking-wider select-none text-sm">
+              <tr className="border-b-2 border-slate-900 bg-slate-100 dark:bg-[#161c29] text-slate-800 dark:text-slate-200 font-bangers uppercase tracking-wider select-none text-sm">
                 <th
                   onClick={() => handleSort('name')}
-                  className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors w-auto"
+                  className="py-3 px-4 cursor-pointer hover:bg-amber-100 dark:hover:bg-white/[0.05] transition-colors w-auto"
                 >
                   <div className="flex items-center space-x-1">
-                    <span>Name & Location</span>
-                    <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
+                    <span>Name &amp; Location</span>
+                    <ArrowUpDown className={`w-3.5 h-3.5 ${sortCol === 'name' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
                   </div>
                 </th>
                 <th
                   onClick={() => handleSort('size')}
-                  className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors text-right w-40"
+                  className="py-3 px-4 cursor-pointer hover:bg-amber-100 dark:hover:bg-white/[0.05] transition-colors text-right w-40"
                 >
                   <div className="flex items-center justify-end space-x-1">
                     <span>Size</span>
-                    <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
+                    <ArrowUpDown className={`w-3.5 h-3.5 ${sortCol === 'size' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
                   </div>
                 </th>
                 {viewMode === 'files' ? (
                   <>
                     <th
                       onClick={() => handleSort('category')}
-                      className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors w-36 text-center"
+                      className="py-3 px-4 cursor-pointer hover:bg-amber-100 dark:hover:bg-white/[0.05] transition-colors w-36 text-center"
                     >
                       <div className="flex items-center justify-center space-x-1">
                         <span>Category</span>
-                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
+                        <ArrowUpDown className={`w-3.5 h-3.5 ${sortCol === 'category' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
                       </div>
                     </th>
                     <th
                       onClick={() => handleSort('date')}
-                      className="py-3 px-4 cursor-pointer hover:bg-amber-300 dark:hover:bg-slate-700 transition-colors w-44 text-right"
+                      className="py-3 px-4 cursor-pointer hover:bg-amber-100 dark:hover:bg-white/[0.05] transition-colors w-44 text-right"
                     >
                       <div className="flex items-center justify-end space-x-1">
                         <span>Modified</span>
-                        <ArrowUpDown className="w-3.5 h-3.5 text-slate-700 dark:text-amber-300/80" />
+                        <ArrowUpDown className={`w-3.5 h-3.5 ${sortCol === 'date' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
                       </div>
                     </th>
                   </>
@@ -465,7 +465,7 @@ export const ExplorerTab: React.FC<ExplorerTabProps> = ({ onOpenScanModal }) => 
                                   ? 'Move to Recycle Bin / Trash'
                                   : 'Delete permanently'
                               }
-                              className="inline-flex items-center justify-center p-1.5 rounded-lg border-2 border-slate-900 bg-rose-100 hover:bg-rose-500 hover:text-white text-rose-700 active:translate-y-0.5 shadow-comic-sm transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                              className="inline-flex items-center justify-center p-1.5 rounded-lg border-2 border-slate-900 dark:!border-white/[0.12] bg-rose-100 dark:!bg-[#1b2232] hover:bg-rose-500 dark:hover:!bg-rose-500 hover:text-white dark:hover:!text-white text-rose-700 dark:!text-slate-300 active:translate-y-0.5 shadow-comic-sm transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -493,7 +493,7 @@ export const ExplorerTab: React.FC<ExplorerTabProps> = ({ onOpenScanModal }) => 
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="font-fredoka font-bold text-slate-900 text-sm truncate">
-                                {folder.name}
+                                {cleanDisplayPath(folder.name)}
                               </p>
                               <p
                                 className="text-[11px] text-slate-500 truncate font-mono"
@@ -512,7 +512,15 @@ export const ExplorerTab: React.FC<ExplorerTabProps> = ({ onOpenScanModal }) => 
                           </div>
                           <div className="w-24 ml-auto mt-1 h-2 bg-slate-200 border border-slate-900 rounded-full overflow-hidden p-[1px]">
                             <div
-                              className="h-full bg-amber-400 rounded-full transition-all"
+                              className={`h-full rounded-full transition-all ${
+                                percent >= 75
+                                  ? 'bg-rose-500'
+                                  : percent >= 45
+                                    ? 'bg-orange-400'
+                                    : percent >= 20
+                                      ? 'bg-amber-400'
+                                      : 'bg-sky-400'
+                              }`}
                               style={{ width: `${percent}%` }}
                             />
                           </div>
@@ -551,8 +559,8 @@ export const ExplorerTab: React.FC<ExplorerTabProps> = ({ onOpenScanModal }) => 
           </table>
         </div>
 
-        {/* Comic Pagination Bar */}
-        <div className="p-3 border-t-2.5 border-slate-900 bg-amber-50 dark:bg-[#131d31] flex items-center justify-between flex-wrap gap-2 text-xs font-fredoka font-bold text-slate-700 w-full">
+        {/* Pagination Bar */}
+        <div className="p-3 border-t-2 border-slate-900 bg-slate-50 dark:!bg-[#111622] flex items-center justify-between flex-wrap gap-2 text-xs font-fredoka font-bold text-slate-700 w-full">
           <span className="font-comic font-bold text-slate-800">
             Showing {currentList.length === 0 ? 0 : (page - 1) * pageSize + 1}–
             {Math.min(page * pageSize, currentList.length)} of {formatNumber(currentList.length)} items

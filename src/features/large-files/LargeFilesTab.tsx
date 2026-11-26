@@ -616,7 +616,7 @@ export const LargeFilesTab: React.FC<LargeFilesTabProps> = ({ onOpenScanModal })
                   #{idx + 1}
                 </span>
 
-                <div className="shrink-0 p-1 bg-amber-100 border-2 border-slate-900 rounded-lg shadow-[1.5px_1.5px_0px_#0f172a] group-hover:scale-105 transition-transform mt-0.5">
+                <div className="shrink-0 p-1 bg-amber-100 dark:!bg-transparent border-2 border-slate-900 dark:!border-transparent rounded-lg shadow-[1.5px_1.5px_0px_#0f172a] dark:!shadow-none group-hover:scale-105 transition-transform mt-0.5">
                   <ComicCategoryFileIcon category={file.category} className="w-5 h-5" />
                 </div>
 
@@ -668,7 +668,7 @@ export const LargeFilesTab: React.FC<LargeFilesTabProps> = ({ onOpenScanModal })
 
                   {/* Plain-English context card for normal users */}
                   {intel.explanation && (
-                    <div className="mt-2 p-2.5 rounded-xl bg-amber-100/70 dark:bg-[#152238] border-1.5 border-slate-900/40 dark:border-amber-400/35 border-l-4 border-l-amber-400 text-[11px] font-fredoka text-slate-800 flex items-start space-x-2 shadow-xs">
+                    <div className="mt-2 p-2.5 rounded-xl bg-amber-50 dark:bg-[#151c2b] border border-amber-300/90 dark:border-white/[0.09] text-[11px] font-fredoka text-slate-800 flex items-start space-x-2 shadow-xs">
                       <Info className="w-4 h-4 text-amber-800 dark:text-amber-400 shrink-0 mt-0.5" />
                       <div className="space-y-1 flex-1 min-w-0">
                         <span className="font-medium text-slate-900 dark:text-slate-100 leading-snug block">
@@ -736,7 +736,7 @@ export const LargeFilesTab: React.FC<LargeFilesTabProps> = ({ onOpenScanModal })
                       ? 'Move to Recycle Bin / Trash'
                       : 'Delete permanently'
                   }
-                  className="inline-flex items-center justify-center p-1.5 rounded-lg border-2 border-slate-900 bg-rose-100 hover:bg-rose-500 hover:text-white text-rose-700 active:translate-y-0.5 shadow-comic-sm transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center p-1.5 rounded-lg border-2 border-slate-900 dark:!border-white/[0.12] bg-rose-100 dark:!bg-[#1b2232] hover:bg-rose-500 dark:hover:!bg-rose-500 hover:text-white dark:hover:!text-white text-rose-700 dark:!text-slate-300 active:translate-y-0.5 shadow-comic-sm transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

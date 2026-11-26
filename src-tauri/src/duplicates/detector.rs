@@ -4,31 +4,54 @@ use crate::models::{DuplicateGroup, ScanOptions, ScannedFile};
 use crate::scanner::categorize::categorize_file;
 use crate::scanner::exclusions::{is_file_hidden, ExclusionFilter};
 use crate::scanner::traversal::get_effective_file_size;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::UNIX_EPOCH;
 use walkdir::WalkDir;
 
-const MIN_ROOT_DUPLICATE_SIZE: u64 = 1024; // 1 KB minimum to skip tiny empty/stub files
+const DEFAULT_ROOT_DUPLICATE_MIN_BYTES: u64 = 1_048_576; // 1 MB default avoids hashing 500k+ tiny cache/object stubs
+const DEEP_ROOT_DUPLICATE_MIN_BYTES: u64 = 65_536; // 64 KB when deep scan is explicitly requested
 const MAX_DUPLICATE_GROUPS: usize = 500;
 
 pub struct DuplicateDetector;
 
 impl DuplicateDetector {
-    /// Detect duplicates across an entire scanned directory tree without storing all file metadata in RAM.
-    /// Stage 1: Walk directory with the active exclusions and group `(size -> PathBuf)` for files >= 1 KB,
-    ///          immediately discarding unique file sizes.
-    /// Stage 2: Fast partial hash (4KB prefix) for size-collision candidates.
-    /// Stage 3: Full cryptographic BLAKE3 content hash for prefix matches.
+    /// Detect duplicates across an entire scanned directory tree in parallel.
     pub fn find_duplicates_in_root<F>(
         options: &ScanOptions,
         cancel_token: Arc<AtomicBool>,
-        mut progress_callback: F,
+        progress_callback: F,
     ) -> AppResult<Vec<DuplicateGroup>>
     where
-        F: FnMut(usize, usize),
+        F: FnMut(usize, usize) + Send,
+    {
+        let min_bytes = if options.deep_duplicate_scan {
+            DEEP_ROOT_DUPLICATE_MIN_BYTES
+        } else {
+            DEFAULT_ROOT_DUPLICATE_MIN_BYTES
+        };
+        Self::find_duplicates_in_root_with_min_size(
+            options,
+            min_bytes,
+            cancel_token,
+            progress_callback,
+        )
+    }
+
+    /// Stage 1: Walk directory with active exclusions and group `(size -> PathBuf)` for files >= `min_size_bytes`.
+    /// Stage 2: Sort colliding size groups largest-reclaimable-first and parallel-hash 4KB prefixes via Rayon.
+    /// Stage 3: Parallel full cryptographic BLAKE3 hash for prefix matches.
+    pub fn find_duplicates_in_root_with_min_size<F>(
+        options: &ScanOptions,
+        min_size_bytes: u64,
+        cancel_token: Arc<AtomicBool>,
+        progress_callback: F,
+    ) -> AppResult<Vec<DuplicateGroup>>
+    where
+        F: FnMut(usize, usize) + Send,
     {
         let root_path = PathBuf::from(&options.root_path);
         if !root_path.exists() {
@@ -67,7 +90,7 @@ impl DuplicateDetector {
 
             if metadata.is_file() {
                 let size = get_effective_file_size(&metadata);
-                if size >= MIN_ROOT_DUPLICATE_SIZE {
+                if size >= min_size_bytes {
                     size_groups
                         .entry(size)
                         .or_default()
@@ -76,76 +99,113 @@ impl DuplicateDetector {
             }
         }
 
-        // Immediately drop singleton sizes so only collision candidates remain in memory
-        let candidate_groups: Vec<(u64, Vec<PathBuf>)> = size_groups
+        // Immediately drop singleton sizes so only collision candidates remain in memory,
+        // then sort largest potential savings first.
+        let mut candidate_groups: Vec<(u64, Vec<PathBuf>)> = size_groups
             .into_iter()
             .filter(|(_, group)| group.len() >= 2)
             .collect();
+        candidate_groups.sort_by(|a, b| {
+            let sav_a = (a.1.len() as u64 - 1).saturating_mul(a.0);
+            let sav_b = (b.1.len() as u64 - 1).saturating_mul(b.0);
+            sav_b.cmp(&sav_a)
+        });
 
         let total_candidates: usize = candidate_groups.iter().map(|(_, g)| g.len()).sum();
-        let mut processed_candidates = 0;
-        let mut final_duplicate_groups: Vec<DuplicateGroup> = Vec::new();
-        let mut file_id_counter: usize = 0;
+        let processed_counter = AtomicUsize::new(0);
+        let callback_mutex = Mutex::new(progress_callback);
+        let file_id_counter = AtomicUsize::new(0);
 
-        for (size, group) in candidate_groups {
-            if cancel_token.load(Ordering::Relaxed) {
-                return Err(AppError::Cancelled);
-            }
-
-            // Stage 2: 4KB prefix hash
-            let mut prefix_groups: HashMap<String, Vec<PathBuf>> = HashMap::new();
-            for path in group {
+        let result_groups: Vec<DuplicateGroup> = candidate_groups
+            .into_par_iter()
+            .flat_map(|(size, group)| -> Vec<DuplicateGroup> {
                 if cancel_token.load(Ordering::Relaxed) {
-                    return Err(AppError::Cancelled);
+                    return Vec::new();
                 }
 
-                if let Ok(prefix_hash) = ContentHasher::hash_prefix(&path, 4096) {
+                // Stage 2: Parallel 4KB prefix hash within candidate size group
+                let prefix_pairs: Vec<(String, PathBuf)> = group
+                    .into_par_iter()
+                    .filter_map(|path| {
+                        if cancel_token.load(Ordering::Relaxed) {
+                            return None;
+                        }
+                        let prefix = ContentHasher::hash_prefix(&path, 4096).ok();
+                        let done = processed_counter.fetch_add(1, Ordering::Relaxed) + 1;
+                        if done % 32 == 0 || done == total_candidates {
+                            if let Ok(mut cb) = callback_mutex.try_lock() {
+                                cb(done, total_candidates);
+                            }
+                        }
+                        prefix.map(|h| (h, path))
+                    })
+                    .collect();
+
+                let mut prefix_groups: HashMap<String, Vec<PathBuf>> = HashMap::new();
+                for (prefix_hash, path) in prefix_pairs {
                     prefix_groups.entry(prefix_hash).or_default().push(path);
                 }
-                processed_candidates += 1;
-                progress_callback(processed_candidates, total_candidates);
-            }
 
-            // Stage 3: Full BLAKE3 cryptographic hash for files matching prefix hash
-            for (_prefix, sub_group) in prefix_groups {
-                if sub_group.len() < 2 {
-                    continue;
-                }
-
-                let mut full_hash_groups: HashMap<String, Vec<PathBuf>> = HashMap::new();
-                for path in sub_group {
-                    if cancel_token.load(Ordering::Relaxed) {
-                        return Err(AppError::Cancelled);
+                // Stage 3: Full BLAKE3 cryptographic hash for prefix matches
+                let mut group_duplicates = Vec::new();
+                for (_prefix, sub_group) in prefix_groups {
+                    if sub_group.len() < 2 || cancel_token.load(Ordering::Relaxed) {
+                        continue;
                     }
 
-                    if let Ok(full_hash) = ContentHasher::hash_full(&path, &cancel_token) {
+                    let full_pairs: Vec<(String, PathBuf)> = sub_group
+                        .into_par_iter()
+                        .filter_map(|path| {
+                            if cancel_token.load(Ordering::Relaxed) {
+                                return None;
+                            }
+                            ContentHasher::hash_full(&path, &cancel_token)
+                                .ok()
+                                .map(|h| (h, path))
+                        })
+                        .collect();
+
+                    let mut full_hash_groups: HashMap<String, Vec<PathBuf>> = HashMap::new();
+                    for (full_hash, path) in full_pairs {
                         full_hash_groups.entry(full_hash).or_default().push(path);
                     }
-                }
 
-                for (hash, matching_paths) in full_hash_groups {
-                    if matching_paths.len() >= 2 {
-                        let count = matching_paths.len() as u64;
-                        let reclaimable = (count - 1) * size;
-                        let scanned_files: Vec<ScannedFile> = matching_paths
-                            .iter()
-                            .map(|p| {
-                                file_id_counter += 1;
-                                Self::build_scanned_file(p, size, file_id_counter)
-                            })
-                            .collect();
+                    for (hash, matching_paths) in full_hash_groups {
+                        if matching_paths.len() >= 2 {
+                            let count = matching_paths.len() as u64;
+                            let reclaimable = (count - 1).saturating_mul(size);
+                            let scanned_files: Vec<ScannedFile> = matching_paths
+                                .iter()
+                                .map(|p| {
+                                    let seq = file_id_counter.fetch_add(1, Ordering::Relaxed) + 1;
+                                    Self::build_scanned_file(p, size, seq)
+                                })
+                                .collect();
 
-                        final_duplicate_groups.push(DuplicateGroup {
-                            hash,
-                            size_bytes: size,
-                            reclaimable_bytes: reclaimable,
-                            files: scanned_files,
-                        });
+                            group_duplicates.push(DuplicateGroup {
+                                hash,
+                                size_bytes: size,
+                                reclaimable_bytes: reclaimable,
+                                files: scanned_files,
+                            });
+                        }
                     }
                 }
+                group_duplicates
+            })
+            .collect();
+
+        if cancel_token.load(Ordering::Relaxed) {
+            return Err(AppError::Cancelled);
+        }
+
+        if total_candidates > 0 {
+            if let Ok(mut cb) = callback_mutex.lock() {
+                cb(total_candidates, total_candidates);
             }
         }
 
+        let mut final_duplicate_groups = result_groups;
         final_duplicate_groups.sort_by(|a, b| b.reclaimable_bytes.cmp(&a.reclaimable_bytes));
         final_duplicate_groups.truncate(MAX_DUPLICATE_GROUPS);
         Ok(final_duplicate_groups)
@@ -304,8 +364,13 @@ mod tests {
         };
 
         let cancel = Arc::new(AtomicBool::new(false));
-        let groups = DuplicateDetector::find_duplicates_in_root(&options, cancel, |_, _| {})
-            .expect("duplicate scan should succeed");
+        let groups = DuplicateDetector::find_duplicates_in_root_with_min_size(
+            &options,
+            1024,
+            cancel,
+            |_, _| {},
+        )
+        .expect("duplicate scan should succeed");
 
         assert_eq!(groups.len(), 1);
         assert_eq!(groups[0].files.len(), 2);
